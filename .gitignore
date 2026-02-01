@@ -9,6 +9,9 @@
 /resources/js/actions
 /resources/js/routes
 /resources/js/wayfinder
+!/resources/js/actions/.gitkeep
+!/resources/js/routes/.gitkeep
+!/resources/js/wayfinder/.gitkeep
 /vendor
 .DS_Store
 .env
