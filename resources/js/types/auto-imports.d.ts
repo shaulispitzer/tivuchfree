@@ -85,9 +85,6 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { UseAppearanceReturn, Appearance, ResolvedAppearance } from '../composables/useAppearance'
-  import('../composables/useAppearance')
-  // @ts-ignore
   export type { UseCurrentUrlReturn } from '../composables/useCurrentUrl'
   import('../composables/useCurrentUrl')
   // @ts-ignore
@@ -117,7 +114,6 @@ declare module 'vue' {
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
     readonly getInitials: UnwrapRef<typeof import('../composables/useInitials')['getInitials']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
-    readonly initializeTheme: UnwrapRef<typeof import('../composables/useAppearance')['initializeTheme']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -156,8 +152,6 @@ declare module 'vue' {
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
-    readonly updateTheme: UnwrapRef<typeof import('../composables/useAppearance')['updateTheme']>
-    readonly useAppearance: UnwrapRef<typeof import('../composables/useAppearance')['useAppearance']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
