@@ -126,7 +126,8 @@
         "resources/scripts/**/*.ts",
         "resources/scripts/**/*.d.ts",
         "resources/js/**/*.tsx",
-        "resources/js/**/*.vue"
+        "resources/js/**/*.vue",
+        "resources/types/generated.d.ts"
     ],
     "vueCompilerOptions": {
         "jsxTemplates": true,
