@@ -26,7 +26,7 @@ export default defineConfig({
                     swiper: ['swiper'],
                     'date-fns': ['date-fns'],
                     'vue-tippy': ['vue-tippy'],
-                    '@formkit/vue': ['@formkit/vue'],
+                    // '@formkit/vue': ['@formkit/vue'],
                     'vue-i18n': ['vue-i18n'],
                     axios: ['axios'],
                 },
