@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Data\Shared\SharedData;
+use App\Data\UserData;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,15 +37,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
-            'name' => config('app.name'),
-            'auth' => [
-                'user' => $request->user(),
+        $state = new SharedData(
+            user: fn () => UserData::optional($request->user()),
+        );
 
-            ],
-            'notifications' => "hello world",
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-        ];
+        return $state->toArray();
     }
 }
