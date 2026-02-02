@@ -12,5 +12,8 @@ Route::get('dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::post('/locale', LocaleController::class)->name('locale');
+Route::get('playground', function () {
+    return Inertia::render('Playground');
+})->name('playground');
 
 require __DIR__.'/settings.php';

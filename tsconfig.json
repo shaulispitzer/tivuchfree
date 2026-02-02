@@ -127,7 +127,9 @@
         "resources/scripts/**/*.d.ts",
         "resources/js/**/*.tsx",
         "resources/js/**/*.vue",
-        "resources/types/generated.d.ts"
+        "resources/types/generated.d.ts",
+        "formkit.config.ts",
+        "formkit.theme.ts"
     ],
     "vueCompilerOptions": {
         "jsxTemplates": true,

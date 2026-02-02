@@ -1,11 +1,40 @@
-import { createInertiaApp } from '@inertiajs/vue3';
+import { plugin as formkitPlugin } from '@formkit/vue';
+import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import '../css/app.css';
+import Toast, { POSITION, type PluginOptions } from 'vue-toastification';
+import AppLayout from '@/layouts/app/AppLayout.vue';
+import formkitConfig from '../../formkit.config';
+import i18nInstance from '../js/plugins/i18n';
+
+import { notifications } from './plugins/notifications';
+
 // import { initializeTheme } from './composables/useAppearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const toastOptions: PluginOptions = {
+    position: POSITION.BOTTOM_CENTER,
+    rtl: true,
+    newestOnTop: true,
+    timeout: 3000,
+};
+
+type AppLocale = 'en' | 'he';
+
+const normalizeLocale = (locale?: string): AppLocale =>
+    locale === 'he' ? 'he' : 'en';
+
+const setI18nLocale = (locale: AppLocale) => {
+    i18nInstance.global.locale.value = locale;
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'he' ? 'rtl' : 'ltr';
+};
+
+const getInitialLocale = (props: {
+    initialPage?: { props?: { locale?: string } };
+}): AppLocale => normalizeLocale(props.initialPage?.props?.locale);
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -13,10 +42,30 @@ createInertiaApp({
         resolvePageComponent(
             `./pages/${name}.vue`,
             import.meta.glob<DefineComponent>('./pages/**/*.vue'),
-        ),
+        ).then((page) => {
+            const pagesWithoutLayout = ['auth/Login', 'auth/Register'];
+            if (!pagesWithoutLayout.includes(name)) {
+                page.default.layout = AppLayout;
+            }
+            return page;
+        }),
     setup({ el, App, props, plugin }) {
+        setI18nLocale(getInitialLocale(props));
+
+        router.on('success', (event) => {
+            const locale = normalizeLocale(
+                (event.detail.page.props as { locale?: string }).locale,
+            );
+
+            setI18nLocale(locale);
+        });
+
         createApp({ render: () => h(App, props) })
             .use(plugin)
+            .use(i18nInstance)
+            .use(Toast, toastOptions)
+            .use(notifications)
+            .use(formkitPlugin, formkitConfig)
             .mount(el);
     },
     progress: {
