@@ -6,6 +6,7 @@ use App\Models\User;
 use Carbon\CarbonInterface;
 use Spatie\LaravelData\Data;
 
+/** @typescript */
 class UserData extends Data
 {
     public function __construct(

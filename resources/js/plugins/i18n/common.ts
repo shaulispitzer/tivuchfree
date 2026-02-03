@@ -83,7 +83,6 @@ export default {
                 'Are you sure you want to perform this action?',
 
             status: 'Status',
-
             type: 'Type',
             back: 'Back',
             loadMore: 'Load More',
@@ -91,35 +90,26 @@ export default {
             unknown: 'Unknown',
             of: 'of',
             pleaseNote: 'Please note',
-
             created: 'Created',
             notSet: 'Not set',
             inactive: 'Inactive',
             delete: 'Delete',
             link: 'Link',
             unlink: 'Unlink',
-
             date: 'Date',
             time: 'Time',
             location: 'Location',
             yes: 'Yes',
             no: 'No',
-
             send: 'Send',
             view: 'View',
             information: 'Information',
             adults: 'Adults',
             children: 'Children',
-
-            media: 'Media',
-            mediaCreate: 'Create Media',
             coverImage: 'Cover Image',
             city: 'City',
-
             LOCAL: 'Local',
-
             allRightsReserved: 'All rights reserved',
-
             contactForm: 'Contact Form | Contact Forms',
             language: 'Language',
             en: 'English',

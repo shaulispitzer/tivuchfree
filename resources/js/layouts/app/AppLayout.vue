@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Modal as InertiaModal } from '../../../../vendor/emargareten/inertia-modal';
 import AppContent from './AppContent.vue';
 import AppHeader from './AppHeader.vue';
 </script>
@@ -8,4 +9,5 @@ import AppHeader from './AppHeader.vue';
     <AppContent>
         <slot />
     </AppContent>
+    <InertiaModal />
 </template>

@@ -1,9 +1,40 @@
 <template>
     <h1>Playground</h1>
-    <Button>Click me</Button>
-    <FormKit type="text" name="name" :label="t('auth.login')" />
+    <Button @click="open = true">Click me</Button>
+    <Button @click="showModal">show Modal</Button>
+    <FormKit type="text" name="name" validation="required">
+        <template #label>
+            <span
+                >{{ t('auth.login') }}<span class="text-red-500"> *</span></span
+            >
+        </template>
+    </FormKit>
+    <Modal
+        :open="open"
+        title="Modal Title"
+        @confirm="confirm"
+        @close="cancel"
+        :as-page="false"
+    >
+        <p>Modal Content</p>
+    </Modal>
 </template>
 
 <script setup lang="ts">
 const { t } = useI18n();
+
+const open = ref(false);
+
+function confirm() {
+    console.log('confirm');
+    open.value = false;
+}
+
+function cancel() {
+    console.log('cancel');
+    open.value = false;
+}
+function showModal() {
+    router.get('sample-modale-out');
+}
 </script>

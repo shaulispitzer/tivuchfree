@@ -173,3 +173,10 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+    .formkit-label,
+    .formkit-input {
+        @apply text-black;
+    }
+}

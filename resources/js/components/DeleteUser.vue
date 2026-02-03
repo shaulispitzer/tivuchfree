@@ -1,24 +1,16 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { useTemplateRef } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import Modal from '@/components/Modal.vue';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const passwordInput = useTemplateRef('passwordInput');
+const isModalOpen = ref(false);
 </script>
 
 <template>
@@ -37,78 +29,78 @@ const passwordInput = useTemplateRef('passwordInput');
                     Please proceed with caution, this cannot be undone.
                 </p>
             </div>
-            <Dialog>
-                <DialogTrigger as-child>
-                    <Button variant="destructive" data-test="delete-user-button"
-                        >Delete account</Button
-                    >
-                </DialogTrigger>
-                <DialogContent>
-                    <Form
-                        v-bind="ProfileController.destroy.form()"
-                        reset-on-success
-                        @error="() => passwordInput?.$el?.focus()"
-                        :options="{
-                            preserveScroll: true,
-                        }"
-                        class="space-y-6"
-                        v-slot="{ errors, processing, reset, clearErrors }"
-                    >
-                        <DialogHeader class="space-y-3">
-                            <DialogTitle
-                                >Are you sure you want to delete your
-                                account?</DialogTitle
-                            >
-                            <DialogDescription>
-                                Once your account is deleted, all of its
-                                resources and data will also be permanently
-                                deleted. Please enter your password to confirm
-                                you would like to permanently delete your
-                                account.
-                            </DialogDescription>
-                        </DialogHeader>
+            <Button
+                variant="destructive"
+                data-test="delete-user-button"
+                @click="isModalOpen = true"
+            >
+                Delete account
+            </Button>
+            <Form
+                v-bind="ProfileController.destroy.form()"
+                reset-on-success
+                @error="() => passwordInput?.$el?.focus()"
+                :options="{
+                    preserveScroll: true,
+                }"
+                class="space-y-6"
+                v-slot="{ errors, processing, reset, clearErrors }"
+            >
+                <Modal
+                    :open="isModalOpen"
+                    title="Are you sure you want to delete your account?"
+                    :actions="false"
+                    @close="
+                        () => {
+                            isModalOpen = false;
+                            clearErrors();
+                            reset();
+                        }
+                    "
+                >
+                    <p class="text-sm text-neutral-600 dark:text-neutral-200">
+                        Once your account is deleted, all of its resources and
+                        data will also be permanently deleted. Please enter
+                        your password to confirm you would like to permanently
+                        delete your account.
+                    </p>
 
-                        <div class="grid gap-2">
-                            <Label for="password" class="sr-only"
-                                >Password</Label
-                            >
-                            <Input
-                                id="password"
-                                type="password"
-                                name="password"
-                                ref="passwordInput"
-                                placeholder="Password"
-                            />
-                            <InputError :message="errors.password" />
-                        </div>
+                    <div class="mt-6 grid gap-2">
+                        <Label for="password" class="sr-only">Password</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            name="password"
+                            ref="passwordInput"
+                            placeholder="Password"
+                        />
+                        <InputError :message="errors.password" />
+                    </div>
 
-                        <DialogFooter class="gap-2">
-                            <DialogClose as-child>
-                                <Button
-                                    variant="secondary"
-                                    @click="
-                                        () => {
-                                            clearErrors();
-                                            reset();
-                                        }
-                                    "
-                                >
-                                    Cancel
-                                </Button>
-                            </DialogClose>
-
-                            <Button
-                                type="submit"
-                                variant="destructive"
-                                :disabled="processing"
-                                data-test="confirm-delete-user-button"
-                            >
-                                Delete account
-                            </Button>
-                        </DialogFooter>
-                    </Form>
-                </DialogContent>
-            </Dialog>
+                    <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                        <Button
+                            variant="secondary"
+                            @click="
+                                () => {
+                                    isModalOpen = false;
+                                    clearErrors();
+                                    reset();
+                                }
+                            "
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="destructive"
+                            :disabled="processing"
+                            data-test="confirm-delete-user-button"
+                        >
+                            Delete account
+                        </Button>
+                    </div>
+                </Modal>
+            </Form>
         </div>
     </div>
 </template>

@@ -8,6 +8,7 @@ use Closure;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScriptType;
 
+/** @typescript */
 class SharedData extends Data
 {
     public function __construct(

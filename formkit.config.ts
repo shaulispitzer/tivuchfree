@@ -9,7 +9,7 @@ const resolveLocale = (): 'en' | 'he' => {
 
     return document.documentElement.lang === 'he' ? 'he' : 'en';
 };
-
+// make the label of the input black
 export default defaultConfig({
     locales: { en, he },
     locale: resolveLocale(),

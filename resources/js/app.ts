@@ -7,6 +7,7 @@ import '../css/app.css';
 import Toast, { POSITION, type PluginOptions } from 'vue-toastification';
 import AppLayout from '@/layouts/app/AppLayout.vue';
 import formkitConfig from '../../formkit.config';
+import { modal } from '../../vendor/emargareten/inertia-modal';
 import i18nInstance from '../js/plugins/i18n';
 
 import { notifications } from './plugins/notifications';
@@ -66,6 +67,13 @@ createInertiaApp({
             .use(Toast, toastOptions)
             .use(notifications)
             .use(formkitPlugin, formkitConfig)
+            .use(modal, {
+                resolve: (name: string) =>
+                    resolvePageComponent(
+                        `./pages/${name}.vue`,
+                        import.meta.glob<DefineComponent>('./pages/**/*.vue'),
+                    ),
+            })
             .mount(el);
     },
     progress: {
