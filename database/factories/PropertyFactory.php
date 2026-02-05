@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -32,8 +33,7 @@ class PropertyFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'neighbourhood_id' => null,
-            'listing_id' => strtoupper(fake()->bothify('LIST-####')),
+            'neighbourhood' => fake()->optional()->randomElement(Neighbourhood::values()),
             'price' => fake()->randomFloat(2, 2500, 18000),
             'street' => fake()->streetName(),
             'building_number' => (string) fake()->buildingNumber(),

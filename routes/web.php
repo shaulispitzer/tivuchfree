@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PlaygroundController;
 use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\StreetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,6 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::post('properties', [PropertyController::class, 'store'])->name('properties.store');
     Route::get('properties/{property}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
     Route::put('properties/{property}', [PropertyController::class, 'update'])->name('properties.update');
+
+    Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
+    Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
+    Route::post('streets', [StreetController::class, 'store'])->name('streets.store');
+    Route::get('streets/{street}/edit', [StreetController::class, 'edit'])->name('streets.edit');
+    Route::put('streets/{street}', [StreetController::class, 'update'])->name('streets.update');
+    Route::delete('streets/{street}', [StreetController::class, 'destroy'])->name('streets.destroy');
 });
 // modale route
 Route::get('sample-modale', function () {

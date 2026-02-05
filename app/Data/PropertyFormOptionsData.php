@@ -9,6 +9,7 @@ use Spatie\LaravelData\Data;
 class PropertyFormOptionsData extends Data
 {
     /**
+     * @param  array<int, PropertyOptionData>  $neighbourhoods
      * @param  array<int, PropertyOptionData>  $lease_types
      * @param  array<int, PropertyOptionData>  $furnished
      * @param  array<int, PropertyOptionData>  $access
@@ -18,6 +19,7 @@ class PropertyFormOptionsData extends Data
      * @param  array<int, PropertyOptionData>  $apartment_condition
      */
     public function __construct(
+        public array $neighbourhoods,
         public array $lease_types,
         public array $furnished,
         public array $access,
@@ -28,6 +30,7 @@ class PropertyFormOptionsData extends Data
     ) {}
 
     /**
+     * @param  array<int, PropertyOptionLabel>  $neighbourhoods
      * @param  array<int, PropertyOptionLabel>  $leaseTypes
      * @param  array<int, PropertyOptionLabel>  $furnished
      * @param  array<int, PropertyOptionLabel>  $access
@@ -37,6 +40,7 @@ class PropertyFormOptionsData extends Data
      * @param  array<int, PropertyOptionLabel>  $apartmentCondition
      */
     public static function fromEnums(
+        array $neighbourhoods,
         array $leaseTypes,
         array $furnished,
         array $access,
@@ -46,6 +50,7 @@ class PropertyFormOptionsData extends Data
         array $apartmentCondition,
     ): self {
         return new self(
+            neighbourhoods: self::map($neighbourhoods),
             lease_types: self::map($leaseTypes),
             furnished: self::map($furnished),
             access: self::map($access),

@@ -81,6 +81,7 @@ declare module 'vue' {
     NavMain: typeof import('./../components/NavMain.vue')['default']
     NavUser: typeof import('./../components/NavUser.vue')['default']
     PlaceholderPattern: typeof import('./../components/PlaceholderPattern.vue')['default']
+    PropertyCard: typeof import('./../components/PropertyCard.vue')['default']
     PropertyFormFields: typeof import('./../components/PropertyFormFields.vue')['default']
     Separator: typeof import('./../components/ui/separator/Separator.vue')['default']
     Sheet: typeof import('./../components/ui/sheet/Sheet.vue')['default']

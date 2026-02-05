@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Data\PropertyData;
 use App\Data\PropertyFormOptionsData;
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -125,6 +126,7 @@ class PropertyController extends Controller
     protected function formOptions(): PropertyFormOptionsData
     {
         return PropertyFormOptionsData::fromEnums(
+            Neighbourhood::cases(),
             PropertyLeaseType::cases(),
             PropertyFurnished::cases(),
             PropertyAccess::cases(),

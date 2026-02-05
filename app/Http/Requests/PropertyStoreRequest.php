@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -31,8 +32,7 @@ class PropertyStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'neighbourhood_id' => ['nullable', 'integer', 'min:1'],
-            'listing_id' => ['required', 'string', 'max:100'],
+            'neighbourhood' => ['nullable', Rule::enum(Neighbourhood::class)],
             'price' => ['nullable', 'numeric', 'min:0'],
             'street' => ['required', 'string', 'max:255'],
             'building_number' => ['nullable', 'string', 'max:50'],

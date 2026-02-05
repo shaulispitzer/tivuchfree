@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -22,8 +23,7 @@ class PropertyData extends Data
     public function __construct(
         public int $id,
         public int $user_id,
-        public ?int $neighbourhood_id,
-        public string $listing_id,
+        public ?Neighbourhood $neighbourhood,
         public ?float $price,
         public string $street,
         public ?string $building_number,
@@ -58,8 +58,7 @@ class PropertyData extends Data
         return new self(
             id: $property->id,
             user_id: $property->user_id,
-            neighbourhood_id: $property->neighbourhood_id,
-            listing_id: $property->listing_id,
+            neighbourhood: $property->neighbourhood,
             price: $property->price !== null ? (float) $property->price : null,
             street: $property->street,
             building_number: $property->building_number,

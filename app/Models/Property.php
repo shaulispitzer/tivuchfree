@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -14,12 +15,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Translatable\HasTranslations;
 
 class Property extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\PropertyFactory> */
     use HasFactory;
 
+    use HasTranslations;
     use InteractsWithMedia;
 
     /**
@@ -27,8 +30,7 @@ class Property extends Model implements HasMedia
      */
     protected $fillable = [
         'user_id',
-        'neighbourhood_id',
-        'listing_id',
+        'neighbourhood',
         'price',
         'street',
         'building_number',
@@ -54,6 +56,8 @@ class Property extends Model implements HasMedia
         'has_parking_spot',
     ];
 
+    public array $translatable = ['additional_info'];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -65,6 +69,7 @@ class Property extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'neighbourhood' => Neighbourhood::class,
             'price' => 'decimal:2',
             'available_from' => 'date',
             'available_to' => 'date',

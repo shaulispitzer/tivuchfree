@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 function propertyPayload(array $overrides = []): array
 {
     return array_merge([
-        'listing_id' => 'LIST-1001',
+        'neighbourhood' => Neighbourhood::Sanhedria->value,
         'price' => 12000,
         'street' => 'Jabotinsky',
         'building_number' => '10',

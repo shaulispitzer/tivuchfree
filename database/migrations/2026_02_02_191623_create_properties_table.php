@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->unsignedBigInteger('neighbourhood_id')->nullable()->index();
-            $table->string('listing_id');
+            $table->string('neighbourhood')->nullable()->index();
             $table->decimal('price', 12, 2)->nullable();
             $table->string('street');
             $table->string('building_number')->nullable();

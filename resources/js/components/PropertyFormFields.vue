@@ -9,6 +9,7 @@ type Option = {
 };
 
 type PropertyFormOptions = {
+    neighbourhoods: Option[];
     lease_types: Option[];
     furnished: Option[];
     access: Option[];
@@ -19,8 +20,7 @@ type PropertyFormOptions = {
 };
 
 type Property = {
-    neighbourhood_id: number | null;
-    listing_id: string;
+    neighbourhood: string | null;
     price: number | null;
     street: string;
     building_number: string | null;
@@ -64,26 +64,23 @@ const toDateValue = (value?: string | null) =>
 <template>
     <div class="grid gap-6">
         <div class="grid gap-2">
-            <Label for="neighbourhood_id">Neighbourhood ID</Label>
-            <Input
-                id="neighbourhood_id"
-                name="neighbourhood_id"
-                type="number"
-                min="1"
-                :default-value="props.property?.neighbourhood_id ?? ''"
-            />
-            <InputError :message="props.errors.neighbourhood_id" />
-        </div>
-
-        <div class="grid gap-2">
-            <Label for="listing_id">Listing ID</Label>
-            <Input
-                id="listing_id"
-                name="listing_id"
-                required
-                :default-value="props.property?.listing_id ?? ''"
-            />
-            <InputError :message="props.errors.listing_id" />
+            <Label for="neighbourhood">Neighbourhood</Label>
+            <select
+                id="neighbourhood"
+                name="neighbourhood"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                :value="props.property?.neighbourhood ?? ''"
+            >
+                <option value="">Select neighbourhood</option>
+                <option
+                    v-for="option in props.options.neighbourhoods"
+                    :key="option.value"
+                    :value="option.value"
+                >
+                    {{ option.label }}
+                </option>
+            </select>
+            <InputError :message="props.errors.neighbourhood" />
         </div>
 
         <div class="grid gap-2">

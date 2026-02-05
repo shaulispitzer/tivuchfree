@@ -52,9 +52,9 @@ const formatDate = (value: string | null) =>
         >
             <div class="flex items-start justify-between gap-4">
                 <div class="space-y-1">
-                    <p class="text-sm text-muted-foreground">Listing ID</p>
+                    <p class="text-sm text-muted-foreground">Property ID</p>
                     <p class="text-base font-semibold">
-                        {{ property.listing_id }}
+                        {{ property.id }}
                     </p>
                     <p class="text-sm text-muted-foreground">
                         Posted by {{ property.user.name }}
@@ -85,8 +85,8 @@ const formatDate = (value: string | null) =>
                         {{ property.price ?? '—' }}
                     </div>
                     <div>
-                        <span class="font-medium">Neighbourhood ID:</span>
-                        {{ property.neighbourhood_id ?? '—' }}
+                        <span class="font-medium">Neighbourhood:</span>
+                        {{ property.neighbourhood ?? '—' }}
                     </div>
                     <div>
                         <span class="font-medium">Street:</span>
