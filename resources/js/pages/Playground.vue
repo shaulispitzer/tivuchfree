@@ -9,6 +9,7 @@
             >
         </template>
     </FormKit>
+    <IconAccessibility class="h-4"/>
     <Modal
         :open="open"
         title="Modal Title"
@@ -21,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import IconAccessibility from '~icons/carbon/accessibility';
 const { t } = useI18n();
 
 const open = ref(false);

@@ -12,6 +12,7 @@ use App\Models\Property;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 
 function propertyPayload(array $overrides = []): array
 {
@@ -87,4 +88,19 @@ test('admins can update any property', function () {
 
     $response->assertRedirect(route('properties.edit', $property));
     expect($property->fresh()->street)->toBe('Herzl');
+});
+
+test('properties index is displayed', function () {
+    $property = Property::factory()->create();
+
+    $response = $this->get(route('properties.index'));
+
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('properties/Index')
+            ->has('properties', 1)
+            ->where('properties.0.id', $property->id)
+            ->where('properties.0.street', $property->street)
+        );
 });

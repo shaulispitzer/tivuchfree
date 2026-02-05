@@ -111,7 +111,7 @@
     </TransitionRoot>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
     TransitionRoot,
     TransitionChild,
@@ -119,7 +119,7 @@ import {
     DialogPanel,
     DialogTitle,
 } from '@headlessui/vue';
-import { useModal } from '/vendor/emargareten/inertia-modal';
+import { useModal } from '../../../vendor/emargareten/inertia-modal';
 
 const { t, locale } = useI18n();
 

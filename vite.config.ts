@@ -1,7 +1,7 @@
 import DefineOptions from 'unplugin-vue-define-options/vite';
-// import { FileSystemIconLoader } from 'unplugin-icons/loaders';
-// import Icons from 'unplugin-icons/vite';
-// import IconsResolver from 'unplugin-icons/resolver';
+import { FileSystemIconLoader } from 'unplugin-icons/loaders';
+import Icons from 'unplugin-icons/vite';
+import IconsResolver from 'unplugin-icons/resolver';
 import autoImport from 'unplugin-auto-import/vite';
 import components from 'unplugin-vue-components/vite';
 import { defineConfig } from 'vite';
@@ -39,10 +39,10 @@ export default defineConfig({
             dirs: ['resources/js/components'],
             dts: 'resources/js/types/components.d.ts',
             resolvers: [
-                // IconsResolver({
-                //     prefix: 'icon',
-                //     customCollections: ['custom'],
-                // }),
+                IconsResolver({
+                    prefix: 'icon',
+                    customCollections: ['custom'],
+                }),
                 (name: string) => {
                     const components = ['Link', 'Head'];
                     if (components.includes(name)) {
@@ -54,19 +54,19 @@ export default defineConfig({
                 },
             ],
         }),
-        // Icons({
-        //     scale: 1,
-        //     autoInstall: true,
-        //     compiler: 'vue3',
-        //     iconCustomizer(collection, icon, props) {
-        //         // we want to use tailwind classes for sizing
-        //         props.width = '100%';
-        //         props.height = '100%';
-        //     },
-        //     customCollections: {
-        //         custom: FileSystemIconLoader('./resources/assets/icons'),
-        //     },
-        // }),
+        Icons({
+            scale: 1,
+            autoInstall: true,
+            compiler: 'vue3',
+            iconCustomizer(collection, icon, props) {
+                // we want to use tailwind classes for sizing
+                props.width = '100%';
+                props.height = '100%';
+            },
+            customCollections: {
+                custom: FileSystemIconLoader('./resources/assets/icons'),
+            },
+        }),
         autoImport({
             vueTemplate: true,
             dts: 'resources/js/types/auto-imports.d.ts',
