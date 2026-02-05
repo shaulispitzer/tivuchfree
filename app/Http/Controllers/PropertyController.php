@@ -58,6 +58,7 @@ class PropertyController extends Controller
      */
     public function store(PropertyStoreRequest $request)
     {
+        dd($request->all());
         $data = $request->validated();
 
         if ($data['type'] === PropertyLeaseType::LongTerm->value) {

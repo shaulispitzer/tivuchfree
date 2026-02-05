@@ -17,6 +17,7 @@ export default defineConfigWithVueTs(
             'resources/js/components/ui/*',
             'formkit.config.ts',
             'formkit.theme.ts',
+            'resources/types/generated.d.ts',
         ],
     },
     {

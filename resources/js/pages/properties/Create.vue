@@ -27,11 +27,7 @@ defineProps({
         class="mt-6 space-y-6"
         v-slot="{ errors, processing }"
     >
-        <PropertyFormFields
-            :errors="errors"
-            :options="options"
-            require-main-image
-        />
+        <PropertyFormFields :errors="errors" :options="options" />
 
         <div class="flex items-center gap-4">
             <Button type="submit" :disabled="processing">Save</Button>
