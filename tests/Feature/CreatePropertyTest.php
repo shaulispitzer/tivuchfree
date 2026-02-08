@@ -20,12 +20,13 @@ it('creates a property without images', function () {
         'street' => 'Main Street',
         'floor' => '2',
         'type' => PropertyLeaseType::LongTerm->value,
-        'available_to' => Carbon::parse('2024-12-31')->toDateString(),
-        'available_from' => Carbon::parse('2024-01-01')->toDateString(),
+        'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
         'furnished' => PropertyFurnished::Yes->value,
     ]);
 
+    $response->assertStatus(302);
+    
     $property = Property::query()->first();
 
     expect($property)->not->toBeNull();
