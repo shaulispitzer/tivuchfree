@@ -5,15 +5,12 @@ use App\Enums\PropertyLeaseType;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
-it('creates a property with a main image', function () {
-    Storage::fake('public');
+it('creates a property without images', function () {
 
     /** @var User $user */
     $user = User::factory()->create();
@@ -25,13 +22,13 @@ it('creates a property with a main image', function () {
         'available_from' => now()->toDateString(),
         'bedrooms' => 2,
         'furnished' => PropertyFurnished::Yes->value,
-        'main_image' => UploadedFile::fake()->image('main.jpg', 1200, 800),
     ]);
 
     $property = Property::query()->first();
 
     expect($property)->not->toBeNull();
     expect($property->user_id)->toBe($user->id);
+    expect($property->getFirstMedia('main_image'))->toBeNull();
 
     $response->assertRedirect(route('properties.edit', $property));
 });

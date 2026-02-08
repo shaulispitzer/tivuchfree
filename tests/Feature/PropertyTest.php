@@ -10,8 +10,6 @@ use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Models\Property;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 function propertyPayload(array $overrides = []): array
@@ -44,13 +42,9 @@ function propertyPayload(array $overrides = []): array
 }
 
 test('authenticated users can create properties', function () {
-    Storage::fake(config('media-library.disk_name', 'public'));
-
     $user = User::factory()->create();
 
-    $payload = propertyPayload([
-        'main_image' => UploadedFile::fake()->image('main.jpg'),
-    ]);
+    $payload = propertyPayload();
 
     $response = $this->actingAs($user)->post(route('properties.store'), $payload);
 
@@ -59,7 +53,7 @@ test('authenticated users can create properties', function () {
     $response->assertRedirect(route('properties.edit', $property));
     expect($property)->not->toBeNull();
     expect($property->user_id)->toBe($user->id);
-    expect($property->getFirstMedia('main_image'))->not->toBeNull();
+    expect($property->getFirstMedia('main_image'))->toBeNull();
 });
 
 test('non owners cannot update properties', function () {

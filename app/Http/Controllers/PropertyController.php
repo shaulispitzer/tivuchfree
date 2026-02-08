@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Forms\PropertyFormData;
 use App\Data\PropertyData;
 use App\Data\PropertyFormOptionsData;
 use App\Enums\Neighbourhood;
@@ -12,9 +13,9 @@ use App\Enums\PropertyFurnished;
 use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
-use App\Http\Requests\PropertyStoreRequest;
 use App\Http\Requests\PropertyUpdateRequest;
 use App\Models\Property;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -56,27 +57,24 @@ class PropertyController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PropertyStoreRequest $request)
+    public function store(PropertyFormData $data, Request $request)
     {
-        dd($request->all());
-        $data = $request->validated();
+        // dd($data, $request->all());
+        // $data = $request->validated();
 
-        if ($data['type'] === PropertyLeaseType::LongTerm->value) {
-            $data['available_to'] = null;
+        if ($data->type === PropertyLeaseType::LongTerm->value) {
+            $data->available_to = null;
         }
+        // correct the following code to use the data object
+        $property = Property::create($data->toArray() + ['user_id' => $request->user()->id]);
 
-        $property = Property::create(array_merge(
-            Arr::except($data, ['main_image', 'images']),
-            ['user_id' => $request->user()->id],
-        ));
+        // $property->addMediaFromRequest('main_image')->toMediaCollection('main_image');
 
-        $property->addMediaFromRequest('main_image')->toMediaCollection('main_image');
+        // foreach ($request->file('images', []) as $image) {
+        //     $property->addMedia($image)->toMediaCollection('images');
+        // }
 
-        foreach ($request->file('images', []) as $image) {
-            $property->addMedia($image)->toMediaCollection('images');
-        }
-
-        return redirect()->route('properties.edit', $property);
+        return redirect()->route('properties.edit', $property)->success('Property created successfully');
     }
 
     /**

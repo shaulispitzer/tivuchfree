@@ -66,28 +66,25 @@ class Property extends Model implements HasMedia
     /**
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'neighbourhood' => Neighbourhood::class,
-            'price' => 'decimal:2',
-            'available_from' => 'date',
-            'available_to' => 'date',
-            'views' => 'integer',
-            'taken' => 'boolean',
-            'succah_porch' => 'boolean',
-            'has_dud_shemesh' => 'boolean',
-            'has_machsan' => 'boolean',
-            'has_parking_spot' => 'boolean',
-            'type' => PropertyLeaseType::class,
-            'furnished' => PropertyFurnished::class,
-            'access' => PropertyAccess::class,
-            'kitchen_dining_room' => PropertyKitchenDiningRoom::class,
-            'porch_garden' => PropertyPorchGarden::class,
-            'air_conditioning' => PropertyAirConditioning::class,
-            'apartment_condition' => PropertyApartmentCondition::class,
-        ];
-    }
+    protected $casts = [
+        'neighbourhood' => Neighbourhood::class,
+        'price' => 'decimal:2',
+        'available_from' => 'date',
+        'available_to' => 'date',
+        'views' => 'integer',
+        'taken' => 'boolean',
+        'succah_porch' => 'boolean',
+        'has_dud_shemesh' => 'boolean',
+        'has_machsan' => 'boolean',
+        'has_parking_spot' => 'boolean',
+        'type' => PropertyLeaseType::class,
+        'furnished' => PropertyFurnished::class,
+        'access' => PropertyAccess::class,
+        'kitchen_dining_room' => PropertyKitchenDiningRoom::class,
+        'porch_garden' => PropertyPorchGarden::class,
+        'air_conditioning' => PropertyAirConditioning::class,
+        'apartment_condition' => PropertyApartmentCondition::class,
+    ];
 
     public function registerMediaCollections(): void
     {

@@ -8,7 +8,7 @@ user_id: number;
 neighbourhood: App.Enums.Neighbourhood | null;
 price: number | null;
 street: string;
-building_number: string | null;
+building_number: number;
 floor: string;
 type: App.Enums.PropertyLeaseType;
 available_from: string;
@@ -54,6 +54,17 @@ name: string;
 email: string;
 is_admin: boolean | null;
 created_at: string | null;
+};
+}
+declare namespace App.Data.Forms {
+export type PropertyFormData = {
+street: string;
+floor: string;
+type: App.Enums.PropertyLeaseType;
+available_from: string;
+available_to: string | null;
+bedrooms: number;
+furnished: App.Enums.PropertyFurnished;
 };
 }
 declare namespace App.Data.Shared {

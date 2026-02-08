@@ -60,7 +60,7 @@ class PropertyStoreRequest extends FormRequest
             'has_dud_shemesh' => ['boolean'],
             'has_machsan' => ['boolean'],
             'has_parking_spot' => ['boolean'],
-            'main_image' => ['required', 'image', 'max:5120'],
+            'main_image' => ['nullable', 'image', 'max:5120'],
             'images' => ['nullable', 'array', 'max:4'],
             'images.*' => ['image', 'max:5120'],
         ];

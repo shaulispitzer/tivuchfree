@@ -3,11 +3,7 @@
     <Button @click="open = true">Click me</Button>
     <Button @click="showModal">show Modal</Button>
     <FormKit type="text" name="name" validation="required">
-        <template #label>
-            <span
-                >{{ t('auth.login') }}<span class="text-red-500"> *</span></span
-            >
-        </template>
+
     </FormKit>
     <IconAccessibility class="h-4"/>
     <Modal
