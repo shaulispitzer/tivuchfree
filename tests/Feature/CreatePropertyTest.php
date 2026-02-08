@@ -4,6 +4,7 @@ use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
@@ -19,7 +20,8 @@ it('creates a property without images', function () {
         'street' => 'Main Street',
         'floor' => '2',
         'type' => PropertyLeaseType::LongTerm->value,
-        'available_from' => now()->toDateString(),
+        'available_to' => Carbon::parse('2024-12-31')->toDateString(),
+        'available_from' => Carbon::parse('2024-01-01')->toDateString(),
         'bedrooms' => 2,
         'furnished' => PropertyFurnished::Yes->value,
     ]);
