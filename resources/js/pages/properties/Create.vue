@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
 
+import PropertyImageUploader from '@/components/PropertyImageUploader.vue';
 import { Button } from '@/components/ui/button';
 import { index, store } from '@/routes/properties';
 
@@ -34,10 +35,15 @@ const form = useForm<App.Data.Forms.PropertyFormData>({
     floor: '',
     type: LeaseType.LongTerm,
     available_from: getLocalDateString(new Date()) + 'T00:00:00Z',
-    available_to: getLocalDateString(new Date()) + 'T00:00:00Z',
+    available_to: null,
     bedrooms: 0,
     furnished: 'no',
+    temp_upload_id: null,
+    image_media_ids: [],
+    main_image_media_id: null,
 });
+
+const uploadingImages = ref(false);
 
 const isMediumTerm = computed(() => form.type === 'medium_term');
 
@@ -69,12 +75,11 @@ watch(
 );
 
 function submit(): void {
-    console.log(form.data());
-    form.post(store.url(), {
-        onSuccess: () => {
-            router.visit(index());
-        },
-    });
+    if (uploadingImages.value) {
+        return;
+    }
+
+    form.post(store.url());
 }
 </script>
 
@@ -88,7 +93,13 @@ function submit(): void {
         </Button>
     </div>
 
-    <FormKit type="form" class="mt-6 space-y-6" @submit="submit">
+    <FormKit
+        type="form"
+        :actions="false"
+        class="mx-3 mt-6 space-y-6 px-6"
+        form-class="space-y-6"
+        @submit="submit"
+    >
         <div class="grid gap-2">
             <FormKit
                 v-model="form.street"
@@ -183,6 +194,27 @@ function submit(): void {
             <div v-if="form.errors.furnished" class="text-sm text-red-600">
                 {{ form.errors.furnished }}
             </div>
+        </div>
+
+        <PropertyImageUploader
+            v-model:tempUploadId="form.temp_upload_id"
+            v-model:mediaIds="form.image_media_ids"
+            v-model:mainMediaId="form.main_image_media_id"
+            v-model:uploading="uploadingImages"
+            :error="
+                form.errors.main_image_media_id ||
+                form.errors.image_media_ids ||
+                form.errors.temp_upload_id
+            "
+        />
+
+        <div class="flex items-center gap-4">
+            <Button
+                type="submit"
+                :disabled="form.processing || uploadingImages"
+            >
+                Create
+            </Button>
         </div>
     </FormKit>
 </template>

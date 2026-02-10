@@ -27,9 +27,10 @@ const props = defineProps({
 });
 
 const imageUrls = computed(() => {
-    const urls = [props.property.main_image_url, ...props.property.image_urls].filter(
-        (url): url is string => typeof url === 'string' && url.length > 0,
-    );
+    const urls = [
+        props.property.main_image_url,
+        ...props.property.image_urls,
+    ].filter((url): url is string => typeof url === 'string' && url.length > 0);
 
     return Array.from(new Set(urls));
 });
@@ -53,7 +54,8 @@ const formatDate = (value: string | null) =>
 
 const swiperStyles = {
     '--swiper-pagination-color': 'var(--color-primary)',
-    '--swiper-pagination-bullet-inactive-color': 'var(--color-muted-foreground)',
+    '--swiper-pagination-bullet-inactive-color':
+        'var(--color-muted-foreground)',
     '--swiper-pagination-bullet-inactive-opacity': '0.35',
     '--swiper-navigation-color': 'var(--color-primary)',
 };
@@ -75,7 +77,10 @@ const showNavigation = computed(() => imageUrls.value.length > 1);
                 class="property-card-swiper"
                 :style="swiperStyles"
             >
-                <SwiperSlide v-for="(url, index) in imageUrls" :key="`${url}-${index}`">
+                <SwiperSlide
+                    v-for="(url, index) in imageUrls"
+                    :key="`${url}-${index}`"
+                >
                     <img
                         :src="url"
                         alt="Property image"
@@ -97,24 +102,19 @@ const showNavigation = computed(() => imageUrls.value.length > 1);
         <div class="space-y-4 p-4">
             <div class="flex items-start justify-between gap-4">
                 <div class="space-y-1">
-                    <div class="flex items-center gap-2 text-base font-semibold">
+                    <div
+                        class="flex items-center gap-2 text-base font-semibold"
+                    >
                         <IconHome class="h-4 w-4 text-primary" />
                         <span>{{ addressLine }}</span>
                     </div>
-                    <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div
+                        class="flex items-center gap-2 text-xs text-muted-foreground"
+                    >
                         <IconMapMarker class="h-4 w-4" />
                         <span>{{ formatLabel(property.neighbourhood) }}</span>
                     </div>
                 </div>
-
-                <Button
-                    v-if="property.can_edit"
-                    variant="secondary"
-                    size="sm"
-                    as-child
-                >
-                    <Link :href="edit(property.id)">Edit</Link>
-                </Button>
             </div>
 
             <div

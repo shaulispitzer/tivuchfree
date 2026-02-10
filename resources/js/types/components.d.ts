@@ -85,6 +85,7 @@ declare module 'vue' {
     PlaceholderPattern: typeof import('./../components/PlaceholderPattern.vue')['default']
     PropertyCard: typeof import('./../components/PropertyCard.vue')['default']
     PropertyFormFields: typeof import('./../components/PropertyFormFields.vue')['default']
+    PropertyImageUploader: typeof import('./../components/PropertyImageUploader.vue')['default']
     Separator: typeof import('./../components/ui/separator/Separator.vue')['default']
     Sheet: typeof import('./../components/ui/sheet/Sheet.vue')['default']
     SheetClose: typeof import('./../components/ui/sheet/SheetClose.vue')['default']

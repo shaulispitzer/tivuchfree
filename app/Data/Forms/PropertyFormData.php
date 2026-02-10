@@ -2,9 +2,13 @@
 
 namespace App\Data\Forms;
 
+use App\Data\Casts\IntegerArrayCast;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use Carbon\Carbon;
+use Spatie\LaravelData\Attributes\Validation\Nullable;
+use Spatie\LaravelData\Attributes\Validation\Sometimes;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
 /** @typescript */
@@ -18,5 +22,11 @@ class PropertyFormData extends Data
         public ?Carbon $available_to,
         public int $bedrooms,
         public PropertyFurnished $furnished,
+        public ?int $temp_upload_id = null,
+        #[Sometimes]
+        #[Nullable]
+        #[WithCast(IntegerArrayCast::class)]
+        public ?array $image_media_ids = [],
+        public ?int $main_image_media_id = null,
     ) {}
 }

@@ -15,9 +15,12 @@ use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Http\Requests\PropertyUpdateRequest;
 use App\Models\Property;
+use App\Models\TempUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class PropertyController extends Controller
@@ -59,20 +62,100 @@ class PropertyController extends Controller
      */
     public function store(PropertyFormData $data, Request $request)
     {
-        // dd($data, $request->all());
-        // $data = $request->validated();
 
-        if ($data->type === PropertyLeaseType::LongTerm->value) {
+        if ($data->type === PropertyLeaseType::LongTerm) {
             $data->available_to = null;
         }
-        // correct the following code to use the data object
-        $property = Property::create($data->toArray() + ['user_id' => $request->user()->id]);
+        $property = DB::transaction(function () use ($data, $request) {
+            $property = Property::create([
+                'user_id' => $request->user()->id,
+                'street' => $data->street,
+                'floor' => $data->floor,
+                'type' => $data->type,
+                'available_from' => $data->available_from,
+                'available_to' => $data->available_to,
+                'bedrooms' => $data->bedrooms,
+                'furnished' => $data->furnished,
+            ]);
 
-        // $property->addMediaFromRequest('main_image')->toMediaCollection('main_image');
+            $mediaIds = $data->image_media_ids ? array_values(array_unique($data->image_media_ids)) : [];
 
-        // foreach ($request->file('images', []) as $image) {
-        //     $property->addMedia($image)->toMediaCollection('images');
-        // }
+            if (! $data->temp_upload_id || $mediaIds === []) {
+                return $property;
+            }
+
+            if (count($mediaIds) > 6) {
+                throw ValidationException::withMessages([
+                    'image_media_ids' => 'You can upload up to 6 images.',
+                ]);
+            }
+
+            $tempUpload = TempUpload::query()
+                ->whereKey($data->temp_upload_id)
+                ->where('user_id', $request->user()->id)
+                ->first();
+
+            if (! $tempUpload) {
+                throw ValidationException::withMessages([
+                    'temp_upload_id' => 'Invalid upload session.',
+                ]);
+            }
+
+            $mediaItems = $tempUpload->media()
+                ->where('collection_name', 'images')
+                ->whereIn('id', $mediaIds)
+                ->get()
+                ->keyBy('id');
+
+            if ($mediaItems->count() !== count($mediaIds)) {
+                throw ValidationException::withMessages([
+                    'image_media_ids' => 'One or more images are missing.',
+                ]);
+            }
+
+            $mainId = $data->main_image_media_id ?? $mediaIds[0];
+
+            if (! in_array($mainId, $mediaIds, true)) {
+                throw ValidationException::withMessages([
+                    'main_image_media_id' => 'Main image must be one of the uploaded images.',
+                ]);
+            }
+
+            $mainMedia = $mediaItems->get($mainId);
+
+            if (! $mainMedia) {
+                throw ValidationException::withMessages([
+                    'main_image_media_id' => 'Main image is missing.',
+                ]);
+            }
+
+            $mainMedia->move($property, 'main_image');
+
+            $order = 1;
+            foreach ($mediaIds as $mediaId) {
+                if ((int) $mediaId === (int) $mainId) {
+                    continue;
+                }
+
+                $media = $mediaItems->get($mediaId);
+
+                if (! $media) {
+                    continue;
+                }
+
+                $moved = $media->move($property, 'images');
+
+                $moved->update([
+                    'order_column' => $order,
+                ]);
+
+                $order++;
+            }
+
+            $tempUpload->delete();
+
+            return $property;
+        });
 
         return redirect()->route('properties.edit', $property)->success('Property created successfully');
     }

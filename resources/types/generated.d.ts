@@ -65,6 +65,9 @@ available_from: string;
 available_to: string | null;
 bedrooms: number;
 furnished: App.Enums.PropertyFurnished;
+temp_upload_id: number | null;
+image_media_ids: Array<any> | null;
+main_image_media_id: number | null;
 };
 }
 declare namespace App.Data.Shared {

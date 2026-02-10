@@ -1,5 +1,6 @@
 import { plugin as formkitPlugin } from '@formkit/vue';
 import { createInertiaApp, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
@@ -36,6 +37,16 @@ const setI18nLocale = (locale: AppLocale) => {
 const getInitialLocale = (props: {
     initialPage?: { props?: { locale?: string } };
 }): AppLocale => normalizeLocale(props.initialPage?.props?.locale);
+
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+const csrfToken = document
+    .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+    ?.getAttribute('content');
+
+if (csrfToken) {
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+}
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PlaygroundController;
 use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\PropertyImageUploadController;
 use App\Http\Controllers\StreetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,6 +21,11 @@ Route::get('playground', [PlaygroundController::class, 'index'])->name('playgrou
 Route::get('properties', [PropertyController::class, 'index'])->name('properties.index');
 
 Route::middleware('auth')->group(function () {
+    Route::post('property-image-uploads', [PropertyImageUploadController::class, 'store'])
+        ->name('property-image-uploads.store');
+    Route::delete('property-image-uploads/{tempUpload}/media/{media}', [PropertyImageUploadController::class, 'destroy'])
+        ->name('property-image-uploads.destroy');
+
     Route::get('properties/create', [PropertyController::class, 'create'])->name('properties.create');
     Route::post('properties', [PropertyController::class, 'store'])->name('properties.store');
     Route::get('properties/{property}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
