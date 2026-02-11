@@ -107,6 +107,9 @@ async function removeImage(item: ImageItem): Promise<void> {
     );
 
     images.value = images.value.filter((i) => i.key !== item.key);
+    if (images.value.length === 0) {
+        emit('update:tempUploadId', null);
+    }
     syncToParent();
 }
 

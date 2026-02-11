@@ -28,11 +28,15 @@ class PropertyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+
         $properties = Property::query()
             ->with(['user', 'media'])
             ->latest()
+            ->when($request->neighbourhood, function ($query) use ($request) {
+                $query->where('neighbourhood', $request->neighbourhood);
+            })
             ->get()
             ->map(fn (Property $property) => PropertyData::fromModel(
                 $property,
@@ -42,6 +46,7 @@ class PropertyController extends Controller
         return Inertia::render('properties/Index', [
             'properties' => $properties,
             'can_create' => Auth::check(),
+            'filters' => $request->all(),
         ]);
     }
 

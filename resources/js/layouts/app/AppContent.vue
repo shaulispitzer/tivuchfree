@@ -16,7 +16,7 @@ const className = computed(() => props.class);
         <slot />
     </SidebarInset> -->
     <main
-        class="max-w mx-auto flex h-full w-full flex-1 flex-col gap-4 rounded-xl"
+        class="mx-auto flex h-full w-full max-w-400 flex-1 flex-col gap-4 rounded-xl px-4"
         :class="className"
     >
         <slot />

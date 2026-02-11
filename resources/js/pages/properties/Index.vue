@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import type { PropType } from 'vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import { Button } from '@/components/ui/button';
-import { create } from '@/routes/properties';
+import { create, index } from '@/routes/properties';
 
-defineProps({
+const props = defineProps({
     properties: {
         type: Array as PropType<Array<App.Data.PropertyData>>,
         required: true,
@@ -14,7 +15,32 @@ defineProps({
         type: Boolean,
         required: true,
     },
+    filters: {
+        type: Object as PropType<{
+            neighbourhood: string | null;
+        }>,
+        required: true,
+    },
 });
+
+const filters = ref({
+    neighbourhood: props.filters.neighbourhood ?? '',
+});
+
+watch(
+    () => filters.value.neighbourhood,
+    (neighbourhood) => {
+        const query =
+            neighbourhood && neighbourhood.trim() !== ''
+                ? { neighbourhood }
+                : {};
+
+        router.get(index(), query, {
+            preserveScroll: true,
+            preserveState: false,
+        });
+    },
+);
 </script>
 
 <template>
@@ -26,7 +52,15 @@ defineProps({
             <Link :href="create()">Add property</Link>
         </Button>
     </div>
-
+    <form>
+        <select name="neighbourhood" v-model="filters.neighbourhood">
+            <option value="">All</option>
+            <option value="Romema">Romema</option>
+            <option value="Sorotzkin">Sorotzkin</option>
+            <option value="Mekor Baruch">Mekor Baruch</option>
+            <option value="Geula">Geula</option>
+        </select>
+    </form>
     <div
         v-if="properties.length === 0"
         class="mt-6 text-sm text-muted-foreground"

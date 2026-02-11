@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PlaygroundController;
@@ -19,6 +20,11 @@ Route::post('/locale', LocaleController::class)->name('locale');
 Route::get('playground', [PlaygroundController::class, 'index'])->name('playground');
 
 Route::get('properties', [PropertyController::class, 'index'])->name('properties.index');
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('properties', [AdminPropertyController::class, 'index'])->name('properties.index');
+    Route::delete('properties/{property}', [AdminPropertyController::class, 'destroy'])->name('properties.destroy');
+});
 
 Route::middleware('auth')->group(function () {
     Route::post('property-image-uploads', [PropertyImageUploadController::class, 'store'])

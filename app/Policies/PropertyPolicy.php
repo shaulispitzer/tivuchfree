@@ -38,4 +38,12 @@ class PropertyPolicy
     {
         return $user->is_admin || $property->user_id === $user->id;
     }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Property $property): bool
+    {
+        return $user->is_admin;
+    }
 }

@@ -17,6 +17,13 @@ const LeaseType = {
     LongTerm: 'long_term',
 } as const satisfies Record<string, App.Enums.PropertyLeaseType>;
 
+type PropertyCreateFormData = Omit<
+    App.Data.Forms.PropertyFormData,
+    'bedrooms'
+> & {
+    bedrooms: number | undefined;
+};
+
 function getLocalDateString(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -30,19 +37,18 @@ function toISODateTime(dateString: string | null): string | null {
     return `${dateString}T00:00:00Z`;
 }
 
-const form = useForm<App.Data.Forms.PropertyFormData>({
+const form = useForm<PropertyCreateFormData>({
     street: '',
     floor: '',
     type: LeaseType.LongTerm,
     available_from: getLocalDateString(new Date()) + 'T00:00:00Z',
     available_to: null,
-    bedrooms: 0,
+    bedrooms: undefined,
     furnished: 'no',
     temp_upload_id: null,
     image_media_ids: [],
     main_image_media_id: null,
 });
-
 const uploadingImages = ref(false);
 
 const isMediumTerm = computed(() => form.type === 'medium_term');
@@ -107,6 +113,7 @@ function submit(): void {
                 name="street"
                 label="Street"
                 validation="required"
+                label-class="required-asterisk"
             />
             <div v-if="form.errors.street" class="text-sm text-red-600">
                 {{ form.errors.street }}
@@ -120,6 +127,7 @@ function submit(): void {
                 name="floor"
                 label="Floor"
                 validation="required"
+                label-class="required-asterisk"
             />
             <div v-if="form.errors.floor" class="text-sm text-red-600">
                 {{ form.errors.floor }}
@@ -135,6 +143,7 @@ function submit(): void {
                 placeholder="Select type"
                 :options="options.lease_types"
                 validation="required"
+                label-class="required-asterisk"
             />
             <div v-if="form.errors.type" class="text-sm text-red-600">
                 {{ form.errors.type }}
@@ -148,6 +157,7 @@ function submit(): void {
                 name="available_from"
                 label="Available from"
                 validation="required"
+                label-class="required-asterisk"
             />
             <div v-if="form.errors.available_from" class="text-sm text-red-600">
                 {{ form.errors.available_from }}
@@ -161,6 +171,7 @@ function submit(): void {
                 name="available_to"
                 label="Available to"
                 validation="required"
+                label-class="required-asterisk"
             />
             <div v-if="form.errors.available_to" class="text-sm text-red-600">
                 {{ form.errors.available_to }}
@@ -174,7 +185,8 @@ function submit(): void {
                 name="bedrooms"
                 label="Bedrooms"
                 number
-                validation="required|min:0"
+                validation="required|min:1|max:10"
+                label-class="required-asterisk"
             />
             <div v-if="form.errors.bedrooms" class="text-sm text-red-600">
                 {{ form.errors.bedrooms }}
@@ -190,6 +202,7 @@ function submit(): void {
                 placeholder="Select furnished status"
                 :options="options.furnished"
                 validation="required"
+                label-class="required-asterisk"
             />
             <div v-if="form.errors.furnished" class="text-sm text-red-600">
                 {{ form.errors.furnished }}

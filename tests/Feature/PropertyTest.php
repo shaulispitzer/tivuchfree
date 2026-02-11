@@ -98,3 +98,47 @@ test('properties index is displayed', function () {
             ->where('properties.0.street', $property->street)
         );
 });
+
+test('admins can view admin properties index', function () {
+    $admin = User::factory()->admin()->create();
+    $property = Property::factory()->create();
+
+    $response = $this->actingAs($admin)->get(route('admin.properties.index'));
+
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/Properties')
+            ->has('properties', 1)
+            ->where('properties.0.id', $property->id)
+            ->where('properties.0.street', $property->street)
+            ->where('properties.0.user.name', $property->user->name)
+        );
+});
+
+test('admins can delete properties', function () {
+    $admin = User::factory()->admin()->create();
+    $property = Property::factory()->create();
+
+    $response = $this->actingAs($admin)->delete(route('admin.properties.destroy', $property));
+
+    $response->assertRedirect(route('admin.properties.index'));
+    expect(Property::find($property->id))->toBeNull();
+});
+
+test('non admins cannot access admin properties', function () {
+    $user = User::factory()->create();
+    $property = Property::factory()->create();
+
+    $this->actingAs($user)->get(route('admin.properties.index'))->assertForbidden();
+    $this->actingAs($user)->delete(route('admin.properties.destroy', $property))
+        ->assertForbidden();
+});
+
+test('guests cannot access admin properties', function () {
+    $property = Property::factory()->create();
+
+    $this->get(route('admin.properties.index'))->assertRedirect(route('login'));
+    $this->delete(route('admin.properties.destroy', $property))
+        ->assertRedirect(route('login'));
+});
