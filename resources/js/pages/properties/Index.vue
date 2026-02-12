@@ -21,6 +21,10 @@ const props = defineProps({
         }>,
         required: true,
     },
+    neighbourhood_options: {
+        type: Array as PropType<string[]>,
+        required: true,
+    },
 });
 
 const filters = ref({
@@ -55,10 +59,13 @@ watch(
     <form>
         <select name="neighbourhood" v-model="filters.neighbourhood">
             <option value="">All</option>
-            <option value="Romema">Romema</option>
-            <option value="Sorotzkin">Sorotzkin</option>
-            <option value="Mekor Baruch">Mekor Baruch</option>
-            <option value="Geula">Geula</option>
+            <option
+                v-for="neighbourhood in neighbourhood_options"
+                :key="neighbourhood"
+                :value="neighbourhood"
+            >
+                {{ neighbourhood }}
+            </option>
         </select>
     </form>
     <div

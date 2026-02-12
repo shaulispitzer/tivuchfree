@@ -15,11 +15,11 @@ use Inertia\Testing\AssertableInertia as Assert;
 function propertyPayload(array $overrides = []): array
 {
     return array_merge([
-        'neighbourhood' => Neighbourhood::Sanhedria->value,
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
         'price' => 12000,
         'street' => 'Jabotinsky',
         'building_number' => '10',
-        'floor' => '3',
+        'floor' => 3,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => now()->addWeek()->toIso8601String(),
         'available_to' => null,
@@ -84,6 +84,21 @@ test('admins can update any property', function () {
     expect($property->fresh()->street)->toBe('Herzl');
 });
 
+test('property update rejects non-numeric floor values', function () {
+    $owner = User::factory()->create();
+    $property = Property::factory()->create(['user_id' => $owner->id]);
+
+    $response = $this->actingAs($owner)
+        ->from(route('properties.edit', $property))
+        ->put(route('properties.update', $property), propertyPayload([
+            'floor' => 'ground',
+        ]));
+
+    $response
+        ->assertRedirect(route('properties.edit', $property))
+        ->assertSessionHasErrors(['floor']);
+});
+
 test('properties index is displayed', function () {
     $property = Property::factory()->create();
 
@@ -96,6 +111,28 @@ test('properties index is displayed', function () {
             ->has('properties', 1)
             ->where('properties.0.id', $property->id)
             ->where('properties.0.street', $property->street)
+        );
+});
+
+test('properties index can filter by a single neighbourhood from multi-neighbourhood properties', function () {
+    $matchingProperty = Property::factory()->create([
+        'neighbourhoods' => [Neighbourhood::Geula->value, Neighbourhood::MekorBaruch->value],
+    ]);
+
+    Property::factory()->create([
+        'neighbourhoods' => [Neighbourhood::Belz->value],
+    ]);
+
+    $response = $this->get(route('properties.index', [
+        'neighbourhood' => Neighbourhood::Geula->value,
+    ]));
+
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('properties/Index')
+            ->has('properties', 1)
+            ->where('properties.0.id', $matchingProperty->id)
         );
 });
 

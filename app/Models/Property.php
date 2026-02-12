@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -30,7 +29,7 @@ class Property extends Model implements HasMedia
      */
     protected $fillable = [
         'user_id',
-        'neighbourhood',
+        'neighbourhoods',
         'price',
         'street',
         'building_number',
@@ -67,10 +66,12 @@ class Property extends Model implements HasMedia
      * @return array<string, string>
      */
     protected $casts = [
-        'neighbourhood' => Neighbourhood::class,
+        'neighbourhoods' => 'array',
         'price' => 'decimal:2',
         'available_from' => 'date',
         'available_to' => 'date',
+        'floor' => 'float',
+        'bedrooms' => 'float',
         'views' => 'integer',
         'taken' => 'boolean',
         'succah_porch' => 'boolean',

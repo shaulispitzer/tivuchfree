@@ -5,11 +5,11 @@ locale: App.Enums.Locale;
 export type PropertyData = {
 id: number;
 user_id: number;
-neighbourhood: App.Enums.Neighbourhood | null;
+neighbourhoods: Array<any>;
 price: number | null;
 street: string;
 building_number: number;
-floor: string;
+floor: number;
 type: App.Enums.PropertyLeaseType;
 available_from: string;
 available_to: string | null;
@@ -58,8 +58,9 @@ created_at: string | null;
 }
 declare namespace App.Data.Forms {
 export type PropertyFormData = {
+neighbourhoods: Array<any>;
 street: string;
-floor: string;
+floor: number;
 type: App.Enums.PropertyLeaseType;
 available_from: string;
 available_to: string | null;

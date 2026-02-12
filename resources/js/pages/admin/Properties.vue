@@ -8,7 +8,7 @@ type Property = {
     id: number;
     street: string;
     building_number: number;
-    floor: string;
+    floor: number;
     bedrooms: number;
     type: string;
     user: {

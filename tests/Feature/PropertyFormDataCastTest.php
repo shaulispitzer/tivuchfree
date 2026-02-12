@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
@@ -12,8 +13,9 @@ test('property store accepts empty image_media_ids', function () {
     $user = User::factory()->create();
 
     $response = actingAs($user)->post(route('properties.store'), [
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
         'street' => 'Main Street',
-        'floor' => '2',
+        'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => now()->toIso8601String(),
         'available_to' => null,

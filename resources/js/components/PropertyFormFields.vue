@@ -20,11 +20,11 @@ type PropertyFormOptions = {
 };
 
 type Property = {
-    neighbourhood: string | null;
+    neighbourhoods: string[];
     price: number | null;
     street: string;
     building_number: string | null;
-    floor: string;
+    floor: number;
     type: string;
     available_from: string;
     available_to: string | null;
@@ -64,23 +64,28 @@ const toDateValue = (value?: string | null) =>
 <template>
     <div class="grid gap-6">
         <div class="grid gap-2">
-            <Label for="neighbourhood">Neighbourhood</Label>
+            <Label for="neighbourhoods">Neighbourhoods</Label>
             <select
-                id="neighbourhood"
-                name="neighbourhood"
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-                :value="props.property?.neighbourhood ?? ''"
+                id="neighbourhoods"
+                name="neighbourhoods[]"
+                multiple
+                class="min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
             >
-                <option value="">Select neighbourhood</option>
                 <option
                     v-for="option in props.options.neighbourhoods"
                     :key="option.value"
                     :value="option.value"
+                    :selected="
+                        props.property?.neighbourhoods?.includes(option.value) ?? false
+                    "
                 >
                     {{ option.label }}
                 </option>
             </select>
-            <InputError :message="props.errors.neighbourhood" />
+            <p class="text-xs text-muted-foreground">
+                Select between 1 and 3 neighbourhoods.
+            </p>
+            <InputError :message="props.errors.neighbourhoods" />
         </div>
 
         <div class="grid gap-2">
@@ -122,6 +127,9 @@ const toDateValue = (value?: string | null) =>
             <Input
                 id="floor"
                 name="floor"
+                type="number"
+                step="0.1"
+                min="0"
                 required
                 :default-value="props.property?.floor ?? ''"
             />
@@ -180,6 +188,7 @@ const toDateValue = (value?: string | null) =>
                 id="bedrooms"
                 name="bedrooms"
                 type="number"
+                step="0.1"
                 min="0"
                 required
                 :default-value="props.property?.bedrooms ?? ''"

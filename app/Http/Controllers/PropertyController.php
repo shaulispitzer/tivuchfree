@@ -20,6 +20,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -35,7 +37,7 @@ class PropertyController extends Controller
             ->with(['user', 'media'])
             ->latest()
             ->when($request->neighbourhood, function ($query) use ($request) {
-                $query->where('neighbourhood', $request->neighbourhood);
+                $query->whereJsonContains('neighbourhoods', $request->neighbourhood);
             })
             ->get()
             ->map(fn (Property $property) => PropertyData::fromModel(
@@ -47,6 +49,10 @@ class PropertyController extends Controller
             'properties' => $properties,
             'can_create' => Auth::check(),
             'filters' => $request->all(),
+            'neighbourhood_options' => array_map(
+                fn (Neighbourhood $neighbourhood) => $neighbourhood->value,
+                Neighbourhood::cases(),
+            ),
         ]);
     }
 
@@ -68,12 +74,22 @@ class PropertyController extends Controller
     public function store(PropertyFormData $data, Request $request)
     {
 
+        Validator::make([
+            'neighbourhoods' => $data->neighbourhoods,
+            'floor' => $data->floor,
+        ], [
+            'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
+            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+            'floor' => ['required', 'numeric', 'decimal:0,1', 'min:0'],
+        ])->validate();
+
         if ($data->type === PropertyLeaseType::LongTerm) {
             $data->available_to = null;
         }
         $property = DB::transaction(function () use ($data, $request) {
             $property = Property::create([
                 'user_id' => $request->user()->id,
+                'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
                 'street' => $data->street,
                 'floor' => $data->floor,
                 'type' => $data->type,

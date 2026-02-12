@@ -3,9 +3,16 @@ import type { PropType } from 'vue';
 
 import PropertyImageUploader from '@/components/PropertyImageUploader.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { index, store } from '@/routes/properties';
 
-defineProps({
+const props = defineProps({
     options: {
         type: Object as PropType<App.Data.PropertyFormOptionsData>,
         required: true,
@@ -19,8 +26,9 @@ const LeaseType = {
 
 type PropertyCreateFormData = Omit<
     App.Data.Forms.PropertyFormData,
-    'bedrooms'
+    'floor' | 'bedrooms'
 > & {
+    floor: number | undefined;
     bedrooms: number | undefined;
 };
 
@@ -38,8 +46,9 @@ function toISODateTime(dateString: string | null): string | null {
 }
 
 const form = useForm<PropertyCreateFormData>({
+    neighbourhoods: [],
     street: '',
-    floor: '',
+    floor: undefined,
     type: LeaseType.LongTerm,
     available_from: getLocalDateString(new Date()) + 'T00:00:00Z',
     available_to: null,
@@ -52,6 +61,21 @@ const form = useForm<PropertyCreateFormData>({
 const uploadingImages = ref(false);
 
 const isMediumTerm = computed(() => form.type === 'medium_term');
+const neighbourhoodClientError = computed(() => {
+    if (form.neighbourhoods.length === 0) {
+        return 'Please select at least one neighbourhood.';
+    }
+
+    if (form.neighbourhoods.length > 3) {
+        return 'You can select up to 3 neighbourhoods.';
+    }
+
+    if (new Set(form.neighbourhoods).size !== form.neighbourhoods.length) {
+        return 'Each neighbourhood can only be selected once.';
+    }
+
+    return null;
+});
 
 // Computed properties to handle date conversion
 const availableFrom = computed<string>({
@@ -80,11 +104,27 @@ watch(
     },
 );
 
+watch(
+    () => form.neighbourhoods,
+    () => {
+        if (form.errors.neighbourhoods) {
+            form.clearErrors('neighbourhoods');
+        }
+    },
+    { deep: true },
+);
+
 function submit(): void {
     if (uploadingImages.value) {
         return;
     }
 
+    if (neighbourhoodClientError.value) {
+        form.setError('neighbourhoods', neighbourhoodClientError.value);
+        return;
+    }
+
+    form.clearErrors('neighbourhoods');
     form.post(store.url());
 }
 </script>
@@ -106,6 +146,37 @@ function submit(): void {
         form-class="space-y-6"
         @submit="submit"
     >
+        <div class="grid gap-3">
+            <label class="required-asterisk">Neighbourhoods</label>
+            <Select v-model="form.neighbourhoods" multiple>
+                <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Select 1 to 3 neighbourhoods" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem
+                        v-for="option in props.options.neighbourhoods"
+                        :key="option.value"
+                        :value="option.value"
+                    >
+                        {{ option.label }}
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+            <p class="text-xs text-muted-foreground">
+                Select between 1 and 3 neighbourhoods.
+            </p>
+
+            <div v-if="form.errors.neighbourhoods" class="text-sm text-red-600">
+                {{ form.errors.neighbourhoods }}
+            </div>
+            <div
+                v-if="form.errors['neighbourhoods.0']"
+                class="text-sm text-red-600"
+            >
+                {{ form.errors['neighbourhoods.0'] }}
+            </div>
+        </div>
+
         <div class="grid gap-2">
             <FormKit
                 v-model="form.street"
@@ -123,10 +194,12 @@ function submit(): void {
         <div class="grid gap-2">
             <FormKit
                 v-model="form.floor"
-                type="text"
+                type="number"
                 name="floor"
                 label="Floor"
-                validation="required"
+                step="0.1"
+                number
+                validation="number|min:0|required"
                 label-class="required-asterisk"
             />
             <div v-if="form.errors.floor" class="text-sm text-red-600">
@@ -141,7 +214,7 @@ function submit(): void {
                 name="type"
                 label="Type"
                 placeholder="Select type"
-                :options="options.lease_types"
+                :options="props.options.lease_types"
                 validation="required"
                 label-class="required-asterisk"
             />
@@ -184,6 +257,7 @@ function submit(): void {
                 type="number"
                 name="bedrooms"
                 label="Bedrooms"
+                step="0.5"
                 number
                 validation="required|min:1|max:10"
                 label-class="required-asterisk"
@@ -200,7 +274,7 @@ function submit(): void {
                 name="furnished"
                 label="Furnished"
                 placeholder="Select furnished status"
-                :options="options.furnished"
+                :options="props.options.furnished"
                 validation="required"
                 label-class="required-asterisk"
             />

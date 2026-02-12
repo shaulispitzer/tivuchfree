@@ -15,12 +15,13 @@ use Spatie\LaravelData\Data;
 class PropertyFormData extends Data
 {
     public function __construct(
+        public array $neighbourhoods,
         public string $street,
-        public string $floor,
+        public float $floor,
         public PropertyLeaseType $type,
         public Carbon $available_from,
         public ?Carbon $available_to,
-        public int $bedrooms,
+        public float $bedrooms,
         public PropertyFurnished $furnished,
         public ?int $temp_upload_id = null,
         #[Sometimes]

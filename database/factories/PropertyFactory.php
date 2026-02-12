@@ -33,11 +33,13 @@ class PropertyFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'neighbourhood' => fake()->optional()->randomElement(Neighbourhood::values()),
+            'neighbourhoods' => [
+                fake()->randomElement(Neighbourhood::values()),
+            ],
             'price' => fake()->randomFloat(2, 2500, 18000),
             'street' => fake()->streetName(),
             'building_number' => (string) fake()->buildingNumber(),
-            'floor' => (string) fake()->numberBetween(1, 12),
+            'floor' => fake()->randomFloat(1, 0, 12),
             'type' => $type,
             'available_from' => $availableFrom,
             'available_to' => $availableTo,

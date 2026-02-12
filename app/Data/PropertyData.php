@@ -2,7 +2,6 @@
 
 namespace App\Data;
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -19,19 +18,20 @@ class PropertyData extends Data
 {
     /**
      * @param  array<int, string>  $image_urls
+     * @param  array<int, string>  $neighbourhoods
      */
     public function __construct(
         public int $id,
         public int $user_id,
-        public ?Neighbourhood $neighbourhood,
+        public array $neighbourhoods,
         public ?float $price,
         public string $street,
         public int $building_number,
-        public string $floor,
+        public float $floor,
         public PropertyLeaseType $type,
         public CarbonInterface $available_from,
         public ?CarbonInterface $available_to,
-        public int $bedrooms,
+        public float $bedrooms,
         public ?int $square_meter,
         public int $views,
         public PropertyFurnished $furnished,
@@ -58,15 +58,15 @@ class PropertyData extends Data
         return new self(
             id: $property->id,
             user_id: $property->user_id,
-            neighbourhood: $property->neighbourhood,
+            neighbourhoods: $property->neighbourhoods ?? [],
             price: $property->price !== null ? (float) $property->price : null,
             street: $property->street,
             building_number: (int) $property->building_number,
-            floor: $property->floor,
+            floor: (float) $property->floor,
             type: $property->type,
             available_from: $property->available_from,
             available_to: $property->available_to,
-            bedrooms: $property->bedrooms,
+            bedrooms: (float) $property->bedrooms,
             square_meter: $property->square_meter,
             views: $property->views,
             furnished: $property->furnished,

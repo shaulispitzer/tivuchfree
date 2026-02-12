@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
@@ -43,8 +44,9 @@ it('uploads images immediately and attaches them on property creation', function
         ->json();
 
     $payload = [
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
         'street' => 'Main Street',
-        'floor' => '2',
+        'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => now()->toIso8601String(),
         'available_to' => null,

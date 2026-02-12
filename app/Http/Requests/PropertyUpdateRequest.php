@@ -33,11 +33,12 @@ class PropertyUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'neighbourhood' => ['nullable', Rule::enum(Neighbourhood::class)],
+            'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
+            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'street' => ['required', 'string', 'max:255'],
             'building_number' => ['nullable', 'string', 'max:50'],
-            'floor' => ['required', 'string', 'max:50'],
+            'floor' => ['required', 'numeric', 'decimal:0,1', 'min:0'],
             'type' => ['required', Rule::enum(PropertyLeaseType::class)],
             'available_from' => ['required', 'date'],
             'available_to' => [
@@ -46,7 +47,7 @@ class PropertyUpdateRequest extends FormRequest
                 'after_or_equal:available_from',
                 'required_if:type,'.PropertyLeaseType::MediumTerm->value,
             ],
-            'bedrooms' => ['required', 'integer', 'min:0'],
+            'bedrooms' => ['required', 'numeric', 'decimal:0,1', 'min:0'],
             'square_meter' => ['nullable', 'integer', 'min:0'],
             'furnished' => ['required', Rule::enum(PropertyFurnished::class)],
             'taken' => ['boolean'],

@@ -61,6 +61,16 @@ const swiperStyles = {
 };
 
 const showNavigation = computed(() => imageUrls.value.length > 1);
+
+const neighbourhoodLabel = computed(() => {
+    const neighbourhoods = props.property.neighbourhoods ?? [];
+
+    if (neighbourhoods.length === 0) {
+        return '—';
+    }
+
+    return neighbourhoods.map((neighbourhood) => formatLabel(neighbourhood)).join(', ');
+});
 </script>
 
 <template>
@@ -112,7 +122,7 @@ const showNavigation = computed(() => imageUrls.value.length > 1);
                         class="flex items-center gap-2 text-xs text-muted-foreground"
                     >
                         <IconMapMarker class="h-4 w-4" />
-                        <span>{{ formatLabel(property.neighbourhood) }}</span>
+                        <span>{{ neighbourhoodLabel }}</span>
                     </div>
                 </div>
             </div>
