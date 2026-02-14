@@ -32,26 +32,107 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
+        $validated = Validator::make($request->query(), [
+            'neighbourhood' => ['nullable', Rule::enum(Neighbourhood::class)],
+            'availability' => ['nullable', Rule::in(['all', 'available'])],
+            'bedrooms_min' => ['nullable', 'numeric', 'min:0'],
+            'bedrooms_max' => ['nullable', 'numeric', 'min:0'],
+            'furnished' => ['nullable', Rule::enum(PropertyFurnished::class)],
+            'type' => ['nullable', Rule::enum(PropertyLeaseType::class)],
+            'available_from' => ['nullable', 'date'],
+            'available_to' => ['nullable', 'date', 'after_or_equal:available_from'],
+            'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'newest', 'oldest'])],
+        ])->validate();
 
-        $properties = Property::query()
-            ->with(['user', 'media'])
-            ->latest()
-            ->when($request->neighbourhood, function ($query) use ($request) {
-                $query->whereJsonContains('neighbourhoods', $request->neighbourhood);
+        $bedroomsMin = isset($validated['bedrooms_min']) ? (float) $validated['bedrooms_min'] : null;
+        $bedroomsMax = isset($validated['bedrooms_max']) ? (float) $validated['bedrooms_max'] : null;
+        $availability = $validated['availability'] ?? 'all';
+        $type = $validated['type'] ?? null;
+        $sort = $validated['sort'] ?? 'newest';
+
+        $propertiesQuery = Property::query()
+            ->with(['media'])
+            ->when(isset($validated['neighbourhood']), function ($query) use ($validated) {
+                $query->whereJsonContains('neighbourhoods', $validated['neighbourhood']);
             })
+            ->when($availability === 'available', function ($query) {
+                $query->where('taken', false);
+            })
+            ->when(isset($validated['furnished']), function ($query) use ($validated) {
+                $query->where('furnished', $validated['furnished']);
+            })
+            ->when($type !== null, function ($query) use ($type) {
+                $query->where('type', $type);
+            })
+            ->when(
+                $bedroomsMin !== null || $bedroomsMax !== null,
+                function ($query) use ($bedroomsMin, $bedroomsMax) {
+                    if ($bedroomsMin !== null && $bedroomsMax !== null) {
+                        $query->whereBetween('bedrooms', [
+                            min($bedroomsMin, $bedroomsMax),
+                            max($bedroomsMin, $bedroomsMax),
+                        ]);
+
+                        return;
+                    }
+
+                    $query->where('bedrooms', $bedroomsMin ?? $bedroomsMax);
+                },
+            )
+            ->when($type === PropertyLeaseType::MediumTerm->value, function ($query) use ($validated) {
+                if (isset($validated['available_from'])) {
+                    $query->whereDate('available_from', '>=', $validated['available_from']);
+                }
+
+                if (isset($validated['available_to'])) {
+                    $query->whereDate('available_to', '<=', $validated['available_to']);
+                }
+            });
+
+        $propertiesQuery = match ($sort) {
+            'price_asc' => $propertiesQuery->orderBy('price')->orderByDesc('created_at'),
+            'price_desc' => $propertiesQuery->orderByDesc('price')->orderByDesc('created_at'),
+            'oldest' => $propertiesQuery->oldest(),
+            default => $propertiesQuery->latest(),
+        };
+
+        $properties = $propertiesQuery
             ->get()
-            ->map(fn (Property $property) => PropertyData::fromModel(
-                $property,
-                Auth::user()?->can('update', $property) ?? false,
+            ->map(fn (Property $property) => (
+                PropertyData::fromModel($property)->except('user', 'user_id')->toArray()
             ));
 
         return Inertia::render('properties/Index', [
             'properties' => $properties,
             'can_create' => Auth::check(),
-            'filters' => $request->all(),
+            'filters' => [
+                'neighbourhood' => $validated['neighbourhood'] ?? null,
+                'availability' => $availability,
+                'bedrooms_min' => $bedroomsMin,
+                'bedrooms_max' => $bedroomsMax,
+                'furnished' => $validated['furnished'] ?? null,
+                'type' => $type,
+                'available_from' => $validated['available_from'] ?? null,
+                'available_to' => $validated['available_to'] ?? null,
+                'sort' => $sort,
+            ],
             'neighbourhood_options' => array_map(
                 fn (Neighbourhood $neighbourhood) => $neighbourhood->value,
                 Neighbourhood::cases(),
+            ),
+            'furnished_options' => array_map(
+                fn (PropertyFurnished $furnished) => [
+                    'value' => $furnished->value,
+                    'label' => $furnished->label(),
+                ],
+                PropertyFurnished::cases(),
+            ),
+            'type_options' => array_map(
+                fn (PropertyLeaseType $leaseType) => [
+                    'value' => $leaseType->value,
+                    'label' => $leaseType->label(),
+                ],
+                PropertyLeaseType::cases(),
             ),
         ]);
     }
@@ -191,7 +272,7 @@ class PropertyController extends Controller
         $property->loadMissing(['user', 'media']);
 
         return Inertia::render('properties/Edit', [
-            'property' => PropertyData::fromModel($property, true),
+            'property' => PropertyData::fromModel($property),
             'options' => $this->formOptions(),
         ]);
     }

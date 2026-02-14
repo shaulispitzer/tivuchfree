@@ -57,6 +57,7 @@ export default defineConfigWithVueTs(
                         'sibling',
                         'index',
                     ],
+                    pathGroups: [{ pattern: '@/**', group: 'internal' }],
                     alphabetize: {
                         order: 'asc',
                         caseInsensitive: true,

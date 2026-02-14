@@ -181,7 +181,13 @@
     }
 }
 .required-asterisk::after {
-    content: '*';
+    content: ' *';
     color: red;
-    margin-left: 0.25rem;
+  
+}
+
+.slider-red {
+    --slider-connect-bg: var(--primary);
+    --slider-tooltip-bg: var(--primary);
+    --slider-handle-ring-color: #ef444430;
 }

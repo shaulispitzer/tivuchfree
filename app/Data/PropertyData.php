@@ -22,7 +22,7 @@ class PropertyData extends Data
      */
     public function __construct(
         public int $id,
-        public int $user_id,
+        public ?int $user_id,
         public array $neighbourhoods,
         public ?float $price,
         public string $street,
@@ -47,14 +47,15 @@ class PropertyData extends Data
         public bool $has_dud_shemesh,
         public bool $has_machsan,
         public bool $has_parking_spot,
-        public UserData $user,
+        public ?UserData $user,
         public ?string $main_image_url,
         public array $image_urls,
-        public bool $can_edit,
     ) {}
 
-    public static function fromModel(Property $property, bool $canEdit = false): self
-    {
+    public static function fromModel(
+        Property $property,
+
+    ): self {
         return new self(
             id: $property->id,
             user_id: $property->user_id,
@@ -82,10 +83,9 @@ class PropertyData extends Data
             has_dud_shemesh: $property->has_dud_shemesh,
             has_machsan: $property->has_machsan,
             has_parking_spot: $property->has_parking_spot,
-            user: UserData::fromModel($property->user),
+            user: $property->user !== null ? UserData::fromModel($property->user) : null,
             main_image_url: $property->getFirstMediaUrl('main_image') ?: null,
             image_urls: $property->getMedia('images')->map(fn ($media) => $media->getUrl())->all(),
-            can_edit: $canEdit,
         );
     }
 }

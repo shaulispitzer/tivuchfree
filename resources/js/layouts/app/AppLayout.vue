@@ -5,7 +5,10 @@ import AppHeader from './AppHeader.vue';
 </script>
 
 <template>
-    <AppHeader />
+    <!-- make the header sticky -->
+
+    <AppHeader class="sticky top-0 z-50" />
+
     <AppContent>
         <slot />
     </AppContent>

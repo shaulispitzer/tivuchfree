@@ -7,6 +7,7 @@ import type { PropType } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { edit } from '@/routes/properties';
+import fallbackPropertyImage from '../../assets/Untitled-design-5-1.webp';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -14,7 +15,6 @@ import IconBed from '~icons/mdi/bed';
 import IconCalendarRange from '~icons/mdi/calendar-range';
 import IconHome from '~icons/mdi/home-outline';
 import IconHomeVariant from '~icons/mdi/home-variant-outline';
-import IconImageOff from '~icons/mdi/image-off-outline';
 import IconMapMarker from '~icons/mdi/map-marker-outline';
 import IconRulerSquare from '~icons/mdi/ruler-square';
 import IconSofa from '~icons/mdi/sofa';
@@ -69,7 +69,9 @@ const neighbourhoodLabel = computed(() => {
         return '—';
     }
 
-    return neighbourhoods.map((neighbourhood) => formatLabel(neighbourhood)).join(', ');
+    return neighbourhoods
+        .map((neighbourhood) => formatLabel(neighbourhood))
+        .join(', ');
 });
 </script>
 
@@ -100,12 +102,13 @@ const neighbourhoodLabel = computed(() => {
                 </SwiperSlide>
             </Swiper>
 
-            <div
-                v-else
-                class="flex h-52 w-full items-center justify-center bg-muted text-sm text-muted-foreground"
-            >
-                <IconImageOff class="h-5 w-5" />
-                <span class="ml-2">No images available</span>
+            <div v-else class="h-52 w-full">
+                <img
+                    :src="fallbackPropertyImage"
+                    alt="Default property image"
+                    class="h-full w-full object-cover opacity-70 contrast-75"
+                    loading="lazy"
+                />
             </div>
         </div>
 

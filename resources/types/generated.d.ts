@@ -4,7 +4,7 @@ locale: App.Enums.Locale;
 };
 export type PropertyData = {
 id: number;
-user_id: number;
+user_id: number | null;
 neighbourhoods: Array<any>;
 price: number | null;
 street: string;
@@ -29,10 +29,9 @@ additional_info: string | null;
 has_dud_shemesh: boolean;
 has_machsan: boolean;
 has_parking_spot: boolean;
-user: App.Data.UserData;
+user: App.Data.UserData | null;
 main_image_url: string | null;
 image_urls: Array<any>;
-can_edit: boolean;
 };
 export type PropertyFormOptionsData = {
 neighbourhoods: Array<any>;

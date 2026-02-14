@@ -22,9 +22,7 @@ const localeToggleFlag = computed(() =>
     currentLocale.value === 'he' ? '🇬🇧' : '🇮🇱',
 );
 const localeToggleLabel = computed(() =>
-    currentLocale.value === 'he'
-        ? 'Switch to English'
-        : 'Switch to Hebrew',
+    currentLocale.value === 'he' ? 'Switch to English' : 'Switch to Hebrew',
 );
 const handleNavClick = (label: string) => {
     console.log(`${label} clicked`);
@@ -46,7 +44,9 @@ const handleLocaleChange = () => {
 
 <template>
     <div>
-        <div class="border-b border-sidebar-border/80">
+        <div
+            class="border-b border-sidebar-border/80 bg-white/80 backdrop-blur-sm"
+        >
             <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
