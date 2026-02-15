@@ -4,6 +4,7 @@ use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
+use App\Models\Street;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +13,17 @@ use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
 
+function streetIdForNeighbourhood(Neighbourhood $neighbourhood): int
+{
+    return Street::factory()->create([
+        'name' => [
+            'en' => 'Test Street',
+            'he' => 'רחוב בדיקה',
+        ],
+        'neighbourhood' => $neighbourhood,
+    ])->id;
+}
+
 it('creates a property without images', function () {
 
     /** @var User $user */
@@ -19,7 +31,7 @@ it('creates a property without images', function () {
 
     $response = actingAs($user)->post(route('properties.store'), [
         'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => 'Main Street',
+        'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
@@ -44,7 +56,7 @@ it('stores bedrooms with one decimal place', function () {
 
     $response = actingAs($user)->post(route('properties.store'), [
         'neighbourhoods' => [Neighbourhood::Gush80->value, Neighbourhood::BarIlan->value],
-        'street' => 'Decimal Street',
+        'street' => streetIdForNeighbourhood(Neighbourhood::Gush80),
         'floor' => 4.5,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
@@ -69,7 +81,7 @@ it('rejects non-numeric floor values', function () {
         ->from(route('properties.create'))
         ->post(route('properties.store'), [
             'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-            'street' => 'Validation Street',
+            'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
             'floor' => 'second',
             'type' => PropertyLeaseType::LongTerm->value,
             'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
@@ -95,7 +107,7 @@ it('validates that no more than three neighbourhoods can be selected', function 
                 Neighbourhood::Gush80->value,
                 Neighbourhood::Geula->value,
             ],
-            'street' => 'Validation Street',
+            'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
             'floor' => 1,
             'type' => PropertyLeaseType::LongTerm->value,
             'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),

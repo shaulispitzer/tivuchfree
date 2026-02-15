@@ -1,8 +1,17 @@
 <script setup lang="ts">
+import axios from 'axios';
+import { Check, ChevronsUpDown } from 'lucide-vue-next';
 import type { PropType } from 'vue';
 
 import PropertyImageUploader from '@/components/PropertyImageUploader.vue';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -10,7 +19,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { index, store } from '@/routes/properties';
+
+type StreetOption = {
+    id: number;
+    name: string;
+};
 
 const props = defineProps({
     options: {
@@ -26,8 +41,9 @@ const LeaseType = {
 
 type PropertyCreateFormData = Omit<
     App.Data.Forms.PropertyFormData,
-    'floor' | 'bedrooms'
+    'street' | 'floor' | 'bedrooms'
 > & {
+    street: number | undefined;
     floor: number | undefined;
     bedrooms: number | undefined;
 };
@@ -47,7 +63,7 @@ function toISODateTime(dateString: string | null): string | null {
 
 const form = useForm<PropertyCreateFormData>({
     neighbourhoods: [],
-    street: '',
+    street: undefined,
     floor: undefined,
     type: LeaseType.LongTerm,
     available_from: getLocalDateString(new Date()) + 'T00:00:00Z',
@@ -59,6 +75,12 @@ const form = useForm<PropertyCreateFormData>({
     main_image_media_id: null,
 });
 const uploadingImages = ref(false);
+const streetComboboxOpen = ref(false);
+const streetSearch = ref('');
+const streetsLoading = ref(false);
+const streetOptions = ref<StreetOption[]>([]);
+let streetsFetchTimeout: ReturnType<typeof setTimeout> | undefined;
+let streetsRequestId = 0;
 
 const isMediumTerm = computed(() => form.type === 'medium_term');
 const neighbourhoodClientError = computed(() => {
@@ -67,7 +89,7 @@ const neighbourhoodClientError = computed(() => {
     }
 
     if (form.neighbourhoods.length > 3) {
-        return 'You can select up to 3 neighbourhoods.';
+        return 'You can select up to 3 neighbourhoods. Please remove at least one neighbourhood.';
     }
 
     if (new Set(form.neighbourhoods).size !== form.neighbourhoods.length) {
@@ -75,6 +97,32 @@ const neighbourhoodClientError = computed(() => {
     }
 
     return null;
+});
+const neighbourhoodLimitError = computed(() => {
+    if (form.neighbourhoods.length > 3) {
+        return 'You can select up to 3 neighbourhoods. Please remove at least one neighbourhood.';
+    }
+
+    return null;
+});
+const filteredStreetOptions = computed(() => {
+    const query = streetSearch.value.trim().toLowerCase();
+    const streets = streetOptions.value;
+
+    if (query === '') {
+        return streets;
+    }
+
+    return streets.filter((street) =>
+        street.name.toLowerCase().includes(query),
+    );
+});
+const selectedStreetName = computed(() => {
+    const selectedStreet = streetOptions.value.find(
+        (street) => street.id === form.street,
+    );
+
+    return selectedStreet?.name ?? '';
 });
 
 // Computed properties to handle date conversion
@@ -95,6 +143,38 @@ const availableTo = computed<string>({
     },
 });
 
+async function loadStreets(): Promise<void> {
+    if (form.neighbourhoods.length === 0) {
+        streetOptions.value = [];
+        streetsLoading.value = false;
+        return;
+    }
+
+    const requestId = ++streetsRequestId;
+    streetsLoading.value = true;
+
+    try {
+        const response = await axios.get<{ streets: StreetOption[] }>(
+            '/properties/streets',
+            {
+                params: {
+                    neighbourhoods: form.neighbourhoods,
+                },
+            },
+        );
+
+        if (requestId !== streetsRequestId) {
+            return;
+        }
+
+        streetOptions.value = response.data.streets;
+    } finally {
+        if (requestId === streetsRequestId) {
+            streetsLoading.value = false;
+        }
+    }
+}
+
 watch(
     () => form.type,
     (type) => {
@@ -110,9 +190,37 @@ watch(
         if (form.errors.neighbourhoods) {
             form.clearErrors('neighbourhoods');
         }
+
+        form.street = undefined;
+        streetSearch.value = '';
+
+        if (form.errors.street) {
+            form.clearErrors('street');
+        }
+
+        if (streetsFetchTimeout) {
+            clearTimeout(streetsFetchTimeout);
+        }
+
+        streetsFetchTimeout = setTimeout(() => {
+            void loadStreets();
+        }, 200);
     },
     { deep: true },
 );
+
+onBeforeUnmount(() => {
+    if (streetsFetchTimeout) {
+        clearTimeout(streetsFetchTimeout);
+    }
+});
+
+function selectStreet(streetId: number): void {
+    form.street = streetId;
+    form.clearErrors('street');
+    streetComboboxOpen.value = false;
+    streetSearch.value = '';
+}
 
 function submit(): void {
     if (uploadingImages.value) {
@@ -166,7 +274,16 @@ function submit(): void {
                 Select between 1 and 3 neighbourhoods.
             </p>
 
-            <div v-if="form.errors.neighbourhoods" class="text-sm text-red-600">
+            <div
+                v-if="neighbourhoodLimitError"
+                class="text-sm font-medium text-red-600"
+            >
+                {{ neighbourhoodLimitError }}
+            </div>
+            <div
+                v-else-if="form.errors.neighbourhoods"
+                class="text-sm text-red-600"
+            >
                 {{ form.errors.neighbourhoods }}
             </div>
             <div
@@ -178,14 +295,79 @@ function submit(): void {
         </div>
 
         <div class="grid gap-2">
-            <FormKit
-                v-model="form.street"
-                type="text"
-                name="street"
-                label="Street"
-                validation="required"
-                label-class="required-asterisk"
-            />
+            <Label class="required-asterisk">Street</Label>
+            <Popover v-model:open="streetComboboxOpen">
+                <PopoverTrigger as-child>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        :aria-expanded="streetComboboxOpen"
+                        class="w-full justify-between font-normal"
+                    >
+                        <span class="truncate">
+                            {{
+                                selectedStreetName ||
+                                (form.neighbourhoods.length > 0
+                                    ? 'Select street'
+                                    : 'Select neighbourhood first')
+                            }}
+                        </span>
+                        <ChevronsUpDown
+                            class="ml-2 size-4 shrink-0 opacity-50"
+                        />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent class="w-(--reka-popover-trigger-width) p-2">
+                    <Input
+                        v-model="streetSearch"
+                        class="mb-2 h-9"
+                        placeholder="Search street..."
+                        :disabled="form.neighbourhoods.length === 0"
+                    />
+
+                    <div class="max-h-60 overflow-y-auto">
+                        <p
+                            v-if="form.neighbourhoods.length === 0"
+                            class="py-6 text-center text-sm text-muted-foreground"
+                        >
+                            Select at least one neighbourhood first.
+                        </p>
+                        <p
+                            v-else-if="streetsLoading"
+                            class="py-6 text-center text-sm text-muted-foreground"
+                        >
+                            Loading streets...
+                        </p>
+                        <p
+                            v-else-if="filteredStreetOptions.length === 0"
+                            class="py-6 text-center text-sm text-muted-foreground"
+                        >
+                            No street found.
+                        </p>
+                        <div v-else class="space-y-1">
+                            <button
+                                v-for="streetOption in filteredStreetOptions"
+                                :key="streetOption.id"
+                                type="button"
+                                class="flex w-full items-center rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                                @click="selectStreet(streetOption.id)"
+                            >
+                                <span>{{ streetOption.name }}</span>
+                                <Check
+                                    :class="
+                                        cn(
+                                            'ml-auto size-4',
+                                            form.street === streetOption.id
+                                                ? 'opacity-100'
+                                                : 'opacity-0',
+                                        )
+                                    "
+                                />
+                            </button>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
             <div v-if="form.errors.street" class="text-sm text-red-600">
                 {{ form.errors.street }}
             </div>

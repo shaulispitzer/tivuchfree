@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
         ->name('property-image-uploads.destroy');
 
     Route::get('properties/create', [PropertyController::class, 'create'])->name('properties.create');
+    Route::get('properties/streets', [PropertyController::class, 'streets'])->name('properties.streets');
     Route::post('properties', [PropertyController::class, 'store'])->name('properties.store');
     Route::get('properties/{property}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
     Route::put('properties/{property}', [PropertyController::class, 'update'])->name('properties.update');

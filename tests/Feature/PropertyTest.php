@@ -9,6 +9,7 @@ use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Models\Property;
+use App\Models\Street;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -43,8 +44,17 @@ function propertyPayload(array $overrides = []): array
 
 test('authenticated users can create properties', function () {
     $user = User::factory()->create();
+    $street = Street::factory()->create([
+        'name' => [
+            'en' => 'Jabotinsky',
+            'he' => 'ז׳בוטינסקי',
+        ],
+        'neighbourhood' => Neighbourhood::Sanhedria,
+    ]);
 
-    $payload = propertyPayload();
+    $payload = propertyPayload([
+        'street' => $street->id,
+    ]);
 
     $response = $this->actingAs($user)->post(route('properties.store'), $payload);
 
@@ -53,7 +63,36 @@ test('authenticated users can create properties', function () {
     $response->assertRedirect(route('properties.edit', $property));
     expect($property)->not->toBeNull();
     expect($property->user_id)->toBe($user->id);
+    expect($property->street)->toBe($street->getTranslation('name', 'he'));
     expect($property->getFirstMedia('main_image'))->toBeNull();
+});
+
+test('property streets endpoint loads streets by selected neighbourhoods', function () {
+    $user = User::factory()->create();
+
+    $street = Street::factory()->create([
+        'name' => [
+            'en' => 'Bar Ilan Street',
+            'he' => 'בר אילן',
+        ],
+        'neighbourhood' => Neighbourhood::BarIlan,
+    ]);
+
+    $this->actingAs($user)
+        ->getJson(route('properties.streets'))
+        ->assertOk()
+        ->assertJson([
+            'streets' => [],
+        ]);
+
+    $this->actingAs($user)
+        ->getJson(route('properties.streets', [
+            'neighbourhoods' => [Neighbourhood::BarIlan->value],
+        ]))
+        ->assertOk()
+        ->assertJsonCount(1, 'streets')
+        ->assertJsonPath('streets.0.id', $street->id)
+        ->assertJsonPath('streets.0.name', $street->getTranslation('name', 'en'));
 });
 
 test('non owners cannot update properties', function () {

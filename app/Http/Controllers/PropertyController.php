@@ -15,7 +15,9 @@ use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Http\Requests\PropertyUpdateRequest;
 use App\Models\Property;
+use App\Models\Street;
 use App\Models\TempUpload;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -150,6 +152,20 @@ class PropertyController extends Controller
         ]);
     }
 
+    public function streets(Request $request): JsonResponse
+    {
+        $this->authorize('create', Property::class);
+
+        $validated = Validator::make($request->query(), [
+            'neighbourhoods' => ['nullable', 'array', 'min:1', 'max:3'],
+            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+        ])->validate();
+
+        return response()->json([
+            'streets' => $this->streetOptions($validated['neighbourhoods'] ?? []),
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -158,21 +174,33 @@ class PropertyController extends Controller
 
         Validator::make([
             'neighbourhoods' => $data->neighbourhoods,
+            'street' => $data->street,
             'floor' => $data->floor,
         ], [
             'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
             'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+            'street' => ['required', 'integer', 'exists:streets,id'],
             'floor' => ['required', 'numeric', 'decimal:0,1', 'min:0'],
         ])->validate();
+
+        $streetInHebrew = Street::query()
+            ->find($data->street)
+            ?->getTranslation('name', 'he');
+
+        if (! is_string($streetInHebrew) || $streetInHebrew === '') {
+            throw ValidationException::withMessages([
+                'street' => 'Please select a valid street.',
+            ]);
+        }
 
         if ($data->type === PropertyLeaseType::LongTerm) {
             $data->available_to = null;
         }
-        $property = DB::transaction(function () use ($data, $request) {
+        $property = DB::transaction(function () use ($data, $request, $streetInHebrew) {
             $property = Property::create([
                 'user_id' => $request->user()->id,
                 'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
-                'street' => $data->street,
+                'street' => $streetInHebrew,
                 'floor' => $data->floor,
                 'type' => $data->type,
                 'available_from' => $data->available_from,
@@ -320,5 +348,38 @@ class PropertyController extends Controller
             PropertyAirConditioning::cases(),
             PropertyApartmentCondition::cases(),
         );
+    }
+
+    /**
+     * @param  array<int, string>  $neighbourhoods
+     * @return array<int, array{id: int, name: string}>
+     */
+    protected function streetOptions(array $neighbourhoods = []): array
+    {
+        if ($neighbourhoods === []) {
+            return [];
+        }
+
+        $locale = app()->getLocale();
+
+        return Street::query()
+            ->whereIn('neighbourhood', array_values(array_unique($neighbourhoods)))
+            ->get()
+            ->map(function (Street $street) use ($locale): array {
+                $localizedName = $street->getTranslation('name', $locale, false);
+
+                if (! is_string($localizedName) || $localizedName === '') {
+                    $localizedName = $street->getTranslation('name', 'he');
+                }
+
+                return [
+                    'id' => $street->id,
+                    'name' => $localizedName,
+                ];
+            })
+            ->unique('name')
+            ->sortBy('name')
+            ->values()
+            ->all();
     }
 }
