@@ -69,8 +69,8 @@ export default defineConfig({
         }),
         autoImport({
             vueTemplate: true,
+            dirs: ['resources/js/composables', 'resources/js/types'],
             dts: 'resources/js/types/auto-imports.d.ts',
-            dirs: ['resources/js/composables'],
             imports: [
                 'vue',
                 { 'momentum-trail-patch': ['route', 'current'] },

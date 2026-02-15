@@ -108,11 +108,11 @@ test('properties index is displayed', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $property->id)
-            ->where('properties.0.street', $property->street)
-            ->missing('properties.0.user')
-            ->missing('properties.0.user_id')
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $property->id)
+            ->where('properties.data.0.street', $property->street)
+            ->missing('properties.data.0.user')
+            ->missing('properties.data.0.user_id')
         );
 });
 
@@ -126,10 +126,10 @@ test('properties index does not include owner details for owner listings', funct
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $property->id)
-            ->missing('properties.0.user')
-            ->missing('properties.0.user_id')
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $property->id)
+            ->missing('properties.data.0.user')
+            ->missing('properties.data.0.user_id')
         );
 });
 
@@ -150,8 +150,8 @@ test('properties index can filter by a single neighbourhood from multi-neighbour
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $matchingProperty->id)
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $matchingProperty->id)
         );
 });
 
@@ -172,8 +172,8 @@ test('properties index can filter only available listings', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $availableProperty->id)
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $availableProperty->id)
         );
 });
 
@@ -198,8 +198,8 @@ test('properties index can filter bedrooms by an exact single number', function 
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $matchingProperty->id)
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $matchingProperty->id)
         );
 });
 
@@ -225,8 +225,8 @@ test('properties index can filter bedrooms by range', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $matchingProperty->id)
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $matchingProperty->id)
         );
 });
 
@@ -247,8 +247,8 @@ test('properties index can filter by furnished status', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $matchingProperty->id)
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $matchingProperty->id)
         );
 });
 
@@ -287,8 +287,8 @@ test('properties index can filter medium term properties by available date range
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
-            ->has('properties', 1)
-            ->where('properties.0.id', $matchingProperty->id)
+            ->has('properties.data', 1)
+            ->where('properties.data.0.id', $matchingProperty->id)
         );
 });
 
@@ -317,9 +317,9 @@ test('properties index can sort listings', function (string $sort, array $expect
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/Index')
             ->where('filters.sort', $sort)
-            ->where('properties.0.price', $expectedOrder[0])
-            ->where('properties.1.price', $expectedOrder[1])
-            ->where('properties.2.price', $expectedOrder[2])
+            ->where('properties.data.0.price', $expectedOrder[0])
+            ->where('properties.data.1.price', $expectedOrder[1])
+            ->where('properties.data.2.price', $expectedOrder[2])
         );
 })->with([
     'price ascending' => ['price_asc', [8000, 12000, 15000]],
@@ -327,6 +327,25 @@ test('properties index can sort listings', function (string $sort, array $expect
     'newest first' => ['newest', [12000, 15000, 8000]],
     'oldest first' => ['oldest', [8000, 15000, 12000]],
 ]);
+
+test('properties index returns paginated data', function () {
+    Property::factory()->count(13)->create();
+
+    $response = $this->get(route('properties.index'));
+
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('properties/Index')
+            ->has('properties.data', 12)
+            ->where('properties.total', 13)
+            ->where('properties.per_page', 12)
+            ->where('properties.current_page', 1)
+            ->where('properties.last_page', 2)
+            ->where('properties.from', 1)
+            ->where('properties.to', 12)
+        );
+});
 
 test('admins can view admin properties index', function () {
     $admin = User::factory()->admin()->create();

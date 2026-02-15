@@ -82,6 +82,7 @@ declare module 'vue' {
     NavigationMenuViewport: typeof import('./../components/ui/navigation-menu/NavigationMenuViewport.vue')['default']
     NavMain: typeof import('./../components/NavMain.vue')['default']
     NavUser: typeof import('./../components/NavUser.vue')['default']
+    PaginationNav: typeof import('./../components/PaginationNav.vue')['default']
     PlaceholderPattern: typeof import('./../components/PlaceholderPattern.vue')['default']
     Popover: typeof import('./../components/ui/popover/Popover.vue')['default']
     PopoverAnchor: typeof import('./../components/ui/popover/PopoverAnchor.vue')['default']

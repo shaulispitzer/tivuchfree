@@ -13,3 +13,30 @@ export type AppPageProps<
     sidebarOpen: boolean;
     [key: string]: unknown;
 };
+
+type PaginationLink = {
+    active: boolean;
+    label: string;
+    url: string | null;
+};
+
+export type Paginator<T> = {
+    data: T[];
+    links: PaginationLink[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+    meta?: {
+        current_page: number;
+        from: number | null;
+        last_page: number;
+        path: string;
+        per_page: number;
+        to: number | null;
+        total: number;
+    };
+};

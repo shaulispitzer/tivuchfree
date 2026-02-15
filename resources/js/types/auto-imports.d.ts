@@ -74,6 +74,7 @@ declare global {
   const useSlots: typeof import('vue').useSlots
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useTwoFactorAuth: typeof import('../composables/useTwoFactorAuth').useTwoFactorAuth
+  const vueShimsD: typeof import('./vue-shims.d').default
   const watch: typeof import('vue').watch
   const watchEffect: typeof import('vue').watchEffect
   const watchPostEffect: typeof import('vue').watchPostEffect
@@ -82,17 +83,26 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
-  import('vue')
+  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef, UseCurrentUrlReturn, UseInitialsReturn, UseTwoFactorAuthReturn } from './auto-imports.d'
+  import('./auto-imports.d')
   // @ts-ignore
-  export type { UseCurrentUrlReturn } from '../composables/useCurrentUrl'
-  import('../composables/useCurrentUrl')
+  export type { GlobalComponents } from './components.d'
+  import('./components.d')
   // @ts-ignore
-  export type { UseInitialsReturn } from '../composables/useInitials'
-  import('../composables/useInitials')
+  export type { User, Auth, TwoFactorConfigContent } from './auth'
+  import('./auth')
   // @ts-ignore
-  export type { UseTwoFactorAuthReturn } from '../composables/useTwoFactorAuth'
-  import('../composables/useTwoFactorAuth')
+  export type { BreadcrumbItem, NavItem } from './navigation'
+  import('./navigation')
+  // @ts-ignore
+  export type { Appearance, ResolvedAppearance, AppShellVariant } from './ui'
+  import('./ui')
+  // @ts-ignore
+  export type { AppPageProps, Paginator } from './index'
+  import('./index')
+  // @ts-ignore
+  export type { RouterGlobal } from './routes.d'
+  import('./routes.d')
 }
 
 // for vue template auto import
@@ -165,6 +175,7 @@ declare module 'vue' {
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useTwoFactorAuth: UnwrapRef<typeof import('../composables/useTwoFactorAuth')['useTwoFactorAuth']>
+    readonly vueShimsD: UnwrapRef<typeof import('./vue-shims.d')['default']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>

@@ -97,8 +97,9 @@ class PropertyController extends Controller
         };
 
         $properties = $propertiesQuery
-            ->get()
-            ->map(fn (Property $property) => (
+            ->paginate(12)
+            ->withQueryString()
+            ->through(fn (Property $property) => (
                 PropertyData::fromModel($property)->except('user', 'user_id')->toArray()
             ));
 

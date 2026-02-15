@@ -4,6 +4,7 @@ import { router } from '@inertiajs/vue3';
 import Slider from '@vueform/slider';
 import type { PropType } from 'vue';
 import '@vueform/slider/themes/default.css';
+import PaginationNav from '@/components/PaginationNav.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +20,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { create, index } from '@/routes/properties';
+// import type { Paginator } from '@/types';
 import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
 type Option = {
@@ -105,7 +107,7 @@ function isSameBedroomsRange(
 
 const props = defineProps({
     properties: {
-        type: Array as PropType<Array<App.Data.PropertyData>>,
+        type: Object as PropType<Paginator<App.Data.PropertyData>>,
         required: true,
     },
     can_create: {
@@ -414,15 +416,25 @@ watch(
             </label>
         </div>
     </form>
-    <div v-if="properties.length === 0" class="text-sm text-muted-foreground">
+    <div
+        v-if="properties.data.length === 0"
+        class="text-sm text-muted-foreground"
+    >
         No properties have been added yet.
     </div>
 
     <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         <PropertyCard
-            v-for="property in properties"
+            v-for="property in properties.data"
             :key="property.id"
             :property="property"
         />
     </div>
+
+    <PaginationNav
+        :links="properties.links"
+        :from="properties.from"
+        :to="properties.to"
+        :total="properties.total"
+    />
 </template>
