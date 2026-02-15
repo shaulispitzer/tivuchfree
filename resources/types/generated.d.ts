@@ -58,6 +58,7 @@ created_at: string | null;
 declare namespace App.Data.Forms {
 export type PropertyFormData = {
 neighbourhoods: Array<any>;
+building_number: number | null;
 street: number;
 floor: number;
 type: App.Enums.PropertyLeaseType;

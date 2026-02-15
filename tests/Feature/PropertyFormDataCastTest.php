@@ -4,6 +4,7 @@ use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
+use App\Models\Street;
 use App\Models\User;
 
 use function Pest\Laravel\actingAs;
@@ -12,9 +13,11 @@ test('property store accepts empty image_media_ids', function () {
     /** @var User $user */
     $user = User::factory()->create();
 
+    $street = Street::factory()->create();
+
     $response = actingAs($user)->post(route('properties.store'), [
         'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => 'Main Street',
+        'street' => $street->id,
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => now()->toIso8601String(),

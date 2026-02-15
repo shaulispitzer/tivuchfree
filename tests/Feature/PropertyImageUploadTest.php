@@ -4,6 +4,7 @@ use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
+use App\Models\Street;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -43,9 +44,11 @@ it('uploads images immediately and attaches them on property creation', function
         ->assertOk()
         ->json();
 
+    $street = Street::factory()->create();
+
     $payload = [
         'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => 'Main Street',
+        'street' => $street->id,
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => now()->toIso8601String(),

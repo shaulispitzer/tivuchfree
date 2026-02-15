@@ -41,8 +41,9 @@ const LeaseType = {
 
 type PropertyCreateFormData = Omit<
     App.Data.Forms.PropertyFormData,
-    'street' | 'floor' | 'bedrooms'
+    'street' | 'floor' | 'bedrooms' | 'building_number'
 > & {
+    building_number: number | undefined;
     street: number | undefined;
     floor: number | undefined;
     bedrooms: number | undefined;
@@ -63,6 +64,7 @@ function toISODateTime(dateString: string | null): string | null {
 
 const form = useForm<PropertyCreateFormData>({
     neighbourhoods: [],
+    building_number: undefined,
     street: undefined,
     floor: undefined,
     type: LeaseType.LongTerm,
@@ -375,13 +377,32 @@ function submit(): void {
 
         <div class="grid gap-2">
             <FormKit
+                v-model="form.building_number"
+                type="number"
+                name="building_number"
+                label="Building number"
+                step="1"
+                number
+                validation="number|min:1"
+                label-class="required-asterisk"
+            />
+            <div
+                v-if="form.errors.building_number"
+                class="text-sm text-red-600"
+            >
+                {{ form.errors.building_number }}
+            </div>
+        </div>
+
+        <div class="grid gap-2">
+            <FormKit
                 v-model="form.floor"
                 type="number"
                 name="floor"
                 label="Floor"
                 step="0.1"
                 number
-                validation="number|min:0|required"
+                validation="number|min:0"
                 label-class="required-asterisk"
             />
             <div v-if="form.errors.floor" class="text-sm text-red-600">

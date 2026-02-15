@@ -16,6 +16,7 @@ class PropertyFormData extends Data
 {
     public function __construct(
         public array $neighbourhoods,
+        public ?int $building_number,
         public int $street,
         public float $floor,
         public PropertyLeaseType $type,

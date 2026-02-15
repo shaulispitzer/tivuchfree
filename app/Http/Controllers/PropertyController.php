@@ -200,6 +200,7 @@ class PropertyController extends Controller
             $property = Property::create([
                 'user_id' => $request->user()->id,
                 'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
+                'building_number' => $data->building_number,
                 'street' => $streetInHebrew,
                 'floor' => $data->floor,
                 'type' => $data->type,
