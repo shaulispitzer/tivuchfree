@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
 import Slider from '@vueform/slider';
-import type { PropType } from 'vue';
 import '@vueform/slider/themes/default.css';
-import PaginationNav from '@/components/PaginationNav.vue';
-import PropertyCard from '@/components/PropertyCard.vue';
 import { Button } from '@/components/ui/button';
 import {
     Popover,
@@ -19,13 +14,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { create, index } from '@/routes/properties';
-// import type { Paginator } from '@/types';
 import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
 type Option = {
     value: string;
     label: string;
+};
+
+export type PropertyFilterState = {
+    neighbourhood: string;
+    hide_taken_properties: boolean;
+    bedrooms_range: [number, number];
+    furnished: string;
+    type: string;
+    available_from: string;
+    available_to: string;
+    sort: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
 };
 
 const LeaseType = {
@@ -50,6 +54,36 @@ const ALL_NEIGHBOURHOODS_VALUE = '__all_neighbourhoods__';
 const ALL_FURNISHED_VALUE = '__all_furnished__';
 const ALL_TYPES_VALUE = '__all_types__';
 
+function cloneFilters(value: PropertyFilterState): PropertyFilterState {
+    return {
+        ...value,
+        bedrooms_range: [...value.bedrooms_range],
+    };
+}
+
+function isSameBedroomsRange(
+    first: [number, number],
+    second: [number, number],
+): boolean {
+    return first[0] === second[0] && first[1] === second[1];
+}
+
+function isSameFilterState(
+    first: PropertyFilterState,
+    second: PropertyFilterState,
+): boolean {
+    return (
+        first.neighbourhood === second.neighbourhood &&
+        first.hide_taken_properties === second.hide_taken_properties &&
+        isSameBedroomsRange(first.bedrooms_range, second.bedrooms_range) &&
+        first.furnished === second.furnished &&
+        first.type === second.type &&
+        first.available_from === second.available_from &&
+        first.available_to === second.available_to &&
+        first.sort === second.sort
+    );
+}
+
 function clampBedrooms(value: number): number {
     return Math.min(10, Math.max(1, value));
 }
@@ -67,25 +101,6 @@ function formatBedroomsRange(value: [number, number]): string {
     return `${formatBedrooms(value[0])} - ${formatBedrooms(value[1])}`;
 }
 
-function initialBedroomsRange(): [number, number] {
-    const min = props.filters.bedrooms_min;
-    const max = props.filters.bedrooms_max;
-
-    if (min !== null && max !== null) {
-        return [
-            clampBedrooms(Math.min(min, max)),
-            clampBedrooms(Math.max(min, max)),
-        ];
-    }
-
-    if (min !== null) {
-        const exact = clampBedrooms(min);
-        return [exact, exact];
-    }
-
-    return [1, 10];
-}
-
 function normalizeBedroomsRange(value: number | number[]): [number, number] {
     if (Array.isArray(value)) {
         const min = value[0] ?? 1;
@@ -98,171 +113,95 @@ function normalizeBedroomsRange(value: number | number[]): [number, number] {
     return [exact, exact];
 }
 
-function isSameBedroomsRange(
-    first: [number, number],
-    second: [number, number],
-): boolean {
-    return first[0] === second[0] && first[1] === second[1];
-}
+const props = defineProps<{
+    filters: PropertyFilterState;
+    neighbourhood_options: string[];
+    furnished_options: Option[];
+    type_options: Option[];
+}>();
 
-const props = defineProps({
-    properties: {
-        type: Object as PropType<Paginator<App.Data.PropertyData>>,
-        required: true,
-    },
-    can_create: {
-        type: Boolean,
-        required: true,
-    },
-    filters: {
-        type: Object as PropType<{
-            neighbourhood: string | null;
-            availability: 'all' | 'available' | null;
-            bedrooms_min: number | null;
-            bedrooms_max: number | null;
-            furnished: App.Enums.PropertyFurnished | null;
-            type: App.Enums.PropertyLeaseType | null;
-            available_from: string | null;
-            available_to: string | null;
-            sort: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
-        }>,
-        required: true,
-    },
-    neighbourhood_options: {
-        type: Array as PropType<string[]>,
-        required: true,
-    },
-    furnished_options: {
-        type: Array as PropType<Option[]>,
-        required: true,
-    },
-    type_options: {
-        type: Array as PropType<Option[]>,
-        required: true,
-    },
-});
+const emit = defineEmits<{
+    'update:filters': [value: PropertyFilterState];
+}>();
 
-const filters = ref({
-    neighbourhood: props.filters.neighbourhood ?? '',
-    hide_taken_properties: props.filters.availability === 'available',
-    bedrooms_range: initialBedroomsRange(),
-    furnished: props.filters.furnished ?? '',
-    type: props.filters.type ?? '',
-    available_from: props.filters.available_from?.slice(0, 10) ?? '',
-    available_to: props.filters.available_to?.slice(0, 10) ?? '',
-    sort: props.filters.sort ?? SortValue.Newest,
-});
-
-const bedroomsRangeDraft = ref<[number, number]>(initialBedroomsRange());
-
-function commitBedroomsRange(value: number | number[]): void {
-    const nextRange = normalizeBedroomsRange(value);
-
-    if (isSameBedroomsRange(filters.value.bedrooms_range, nextRange)) {
-        return;
-    }
-
-    filters.value.bedrooms_range = nextRange;
-}
+const localFilters = ref<PropertyFilterState>(cloneFilters(props.filters));
+const bedroomsRangeDraft = ref<[number, number]>([
+    ...localFilters.value.bedrooms_range,
+]);
 
 const isMediumTerm = computed(
-    () => filters.value.type === LeaseType.MediumTerm,
+    () => localFilters.value.type === LeaseType.MediumTerm,
 );
 
 const neighbourhoodSelectValue = computed({
-    get: (): string => filters.value.neighbourhood || ALL_NEIGHBOURHOODS_VALUE,
+    get: (): string =>
+        localFilters.value.neighbourhood || ALL_NEIGHBOURHOODS_VALUE,
     set: (value: string): void => {
-        filters.value.neighbourhood =
+        localFilters.value.neighbourhood =
             value === ALL_NEIGHBOURHOODS_VALUE ? '' : value;
     },
 });
 
 const furnishedSelectValue = computed({
-    get: (): string => filters.value.furnished || ALL_FURNISHED_VALUE,
+    get: (): string => localFilters.value.furnished || ALL_FURNISHED_VALUE,
     set: (value: string): void => {
-        filters.value.furnished = value === ALL_FURNISHED_VALUE ? '' : value;
+        localFilters.value.furnished =
+            value === ALL_FURNISHED_VALUE ? '' : value;
     },
 });
 
 const typeSelectValue = computed({
-    get: (): string => filters.value.type || ALL_TYPES_VALUE,
+    get: (): string => localFilters.value.type || ALL_TYPES_VALUE,
     set: (value: string): void => {
-        filters.value.type = value === ALL_TYPES_VALUE ? '' : value;
+        localFilters.value.type = value === ALL_TYPES_VALUE ? '' : value;
     },
 });
 
+function commitBedroomsRange(value: number | number[]): void {
+    const nextRange = normalizeBedroomsRange(value);
+
+    if (isSameBedroomsRange(localFilters.value.bedrooms_range, nextRange)) {
+        return;
+    }
+
+    localFilters.value.bedrooms_range = nextRange;
+}
+
 watch(
-    () => ({ ...filters.value }),
+    () => props.filters,
     (value) => {
-        const query: Record<string, string> = {};
-        const [rawBedroomsMin, rawBedroomsMax] = value.bedrooms_range;
-        const bedroomsMin = roundBedrooms(rawBedroomsMin);
-        const bedroomsMax = roundBedrooms(rawBedroomsMax);
-
-        if (value.neighbourhood.trim() !== '') {
-            query.neighbourhood = value.neighbourhood;
+        if (isSameFilterState(value, localFilters.value)) {
+            return;
         }
 
-        if (value.hide_taken_properties) {
-            query.availability = 'available';
-        }
-
-        if (!(bedroomsMin === 1 && bedroomsMax === 10)) {
-            query.bedrooms_min = bedroomsMin.toString();
-            query.bedrooms_max = bedroomsMax.toString();
-        }
-
-        if (value.furnished !== '') {
-            query.furnished = value.furnished;
-        }
-
-        if (value.type !== '') {
-            query.type = value.type;
-        }
-
-        if (
-            value.type === LeaseType.MediumTerm &&
-            value.available_from !== ''
-        ) {
-            query.available_from = value.available_from;
-        }
-
-        if (value.type === LeaseType.MediumTerm && value.available_to !== '') {
-            query.available_to = value.available_to;
-        }
-
-        if (value.sort !== SortValue.Newest) {
-            query.sort = value.sort;
-        }
-
-        router.get(index(), query, {
-            preserveScroll: true,
-            preserveState: true,
-        });
+        localFilters.value = cloneFilters(value);
+        bedroomsRangeDraft.value = [...value.bedrooms_range];
     },
     { deep: true },
 );
 
 watch(
-    () => filters.value.type,
-    (type) => {
-        if (type !== LeaseType.MediumTerm) {
-            filters.value.available_from = '';
-            filters.value.available_to = '';
+    () => localFilters.value.bedrooms_range,
+    (value) => {
+        if (isSameBedroomsRange(value, bedroomsRangeDraft.value)) {
+            return;
         }
+
+        bedroomsRangeDraft.value = [...value];
     },
+    { deep: true },
+);
+
+watch(
+    () => localFilters.value,
+    (value) => {
+        emit('update:filters', cloneFilters(value));
+    },
+    { deep: true },
 );
 </script>
 
 <template>
-    <Head title="Properties" />
-
-    <div class="flex items-center justify-between">
-        <h1 class="text-lg font-semibold">Properties</h1>
-        <Button v-if="can_create" as-child>
-            <Link :href="create()">Add property</Link>
-        </Button>
-    </div>
     <form class="mt-4">
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
             <Select v-model="neighbourhoodSelectValue" name="neighbourhood">
@@ -372,17 +311,17 @@ watch(
                 v-if="isMediumTerm"
                 type="date"
                 name="available_from"
-                v-model="filters.available_from"
+                v-model="localFilters.available_from"
                 class="h-9 rounded-md border border-input bg-background px-3 text-sm"
             />
             <input
                 v-if="isMediumTerm"
                 type="date"
                 name="available_to"
-                v-model="filters.available_to"
+                v-model="localFilters.available_to"
                 class="h-9 rounded-md border border-input bg-background px-3 text-sm"
             />
-            <Select v-model="filters.sort" name="sort">
+            <Select v-model="localFilters.sort" name="sort">
                 <SelectTrigger
                     class="group w-full hover:bg-accent data-[state=open]:bg-accent"
                 >
@@ -409,32 +348,11 @@ watch(
                 <input
                     type="checkbox"
                     name="hide_taken_properties"
-                    v-model="filters.hide_taken_properties"
+                    v-model="localFilters.hide_taken_properties"
                     class="h-4 w-4 rounded border-input"
                 />
                 Hide Taken Properties
             </label>
         </div>
     </form>
-    <div
-        v-if="properties.data.length === 0"
-        class="text-sm text-muted-foreground"
-    >
-        No properties have been added yet.
-    </div>
-
-    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        <PropertyCard
-            v-for="property in properties.data"
-            :key="property.id"
-            :property="property"
-        />
-    </div>
-
-    <PaginationNav
-        :links="properties.links"
-        :from="properties.from"
-        :to="properties.to"
-        :total="properties.total"
-    />
 </template>

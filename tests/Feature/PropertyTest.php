@@ -11,7 +11,9 @@ use App\Enums\PropertyPorchGarden;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\User;
+use App\Services\PropertyGeocoder;
 use Inertia\Testing\AssertableInertia as Assert;
+use Mockery\MockInterface;
 
 function propertyPayload(array $overrides = []): array
 {
@@ -42,7 +44,22 @@ function propertyPayload(array $overrides = []): array
     ], $overrides);
 }
 
+beforeEach(function () {
+    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('geocode')->andReturn(null);
+    });
+});
+
 test('authenticated users can create properties', function () {
+    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('geocode')
+            ->once()
+            ->andReturn([
+                'lat' => 31.8078717,
+                'lon' => 35.2148620,
+            ]);
+    });
+
     $user = User::factory()->create();
     $street = Street::factory()->create([
         'name' => [
@@ -64,6 +81,8 @@ test('authenticated users can create properties', function () {
     expect($property)->not->toBeNull();
     expect($property->user_id)->toBe($user->id);
     expect($property->street)->toBe($street->getTranslation('name', 'he'));
+    expect($property->lat)->toBe(31.8078717);
+    expect($property->lon)->toBe(35.214862);
     expect($property->getFirstMedia('main_image'))->toBeNull();
 });
 
@@ -109,6 +128,15 @@ test('non owners cannot update properties', function () {
 });
 
 test('admins can update any property', function () {
+    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('geocode')
+            ->once()
+            ->andReturn([
+                'lat' => 31.7801000,
+                'lon' => 35.2174000,
+            ]);
+    });
+
     $admin = User::factory()->admin()->create();
     $property = Property::factory()->create();
 
@@ -121,6 +149,29 @@ test('admins can update any property', function () {
 
     $response->assertRedirect(route('properties.edit', $property));
     expect($property->fresh()->street)->toBe('Herzl');
+    expect($property->fresh()->lat)->toBe(31.7801);
+    expect($property->fresh()->lon)->toBe(35.2174);
+});
+
+test('property update still succeeds when geocoding fails', function () {
+    $owner = User::factory()->create();
+    $property = Property::factory()->create([
+        'user_id' => $owner->id,
+        'lat' => 31.7,
+        'lon' => 35.2,
+    ]);
+
+    $response = $this->actingAs($owner)->put(
+        route('properties.update', $property),
+        propertyPayload([
+            'street' => 'HaNeviim',
+            'building_number' => null,
+        ]),
+    );
+
+    $response->assertRedirect(route('properties.edit', $property));
+    expect($property->fresh()->lat)->toBeNull();
+    expect($property->fresh()->lon)->toBeNull();
 });
 
 test('property update rejects non-numeric floor values', function () {
@@ -139,20 +190,47 @@ test('property update rejects non-numeric floor values', function () {
 });
 
 test('properties index is displayed', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->create([
+        'lat' => 31.7780,
+        'lon' => 35.2345,
+    ]);
 
     $response = $this->get(route('properties.index'));
 
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $property->id)
             ->where('properties.data.0.street', $property->street)
+            ->where('properties.data.0.lat', 31.778)
+            ->where('properties.data.0.lon', 35.2345)
             ->missing('properties.data.0.user')
             ->missing('properties.data.0.user_id')
         );
+});
+
+test('property show is returned as a modal with full details except user fields', function () {
+    $property = Property::factory()->create();
+
+    $response = $this
+        ->withoutMiddleware(\App\Http\Middleware\HandleInertiaRequests::class)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->get(route('properties.show', $property));
+
+    $response
+        ->assertOk()
+        ->assertHeader('X-Inertia-Modal', 'true')
+        ->assertJsonPath('props.modal.component', 'properties/Show')
+        ->assertJsonPath('props.modal.props.property.id', $property->id)
+        ->assertJsonPath('props.modal.props.property.street', $property->street)
+        ->assertJsonPath('props.modal.props.property.building_number', (int) $property->building_number)
+        ->assertJsonMissingPath('props.modal.props.property.user')
+        ->assertJsonMissingPath('props.modal.props.property.user_id');
 });
 
 test('properties index does not include owner details for owner listings', function () {
@@ -164,7 +242,7 @@ test('properties index does not include owner details for owner listings', funct
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $property->id)
             ->missing('properties.data.0.user')
@@ -188,7 +266,7 @@ test('properties index can filter by a single neighbourhood from multi-neighbour
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $matchingProperty->id)
         );
@@ -210,7 +288,7 @@ test('properties index can filter only available listings', function () {
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $availableProperty->id)
         );
@@ -236,7 +314,7 @@ test('properties index can filter bedrooms by an exact single number', function 
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $matchingProperty->id)
         );
@@ -263,7 +341,7 @@ test('properties index can filter bedrooms by range', function () {
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $matchingProperty->id)
         );
@@ -285,7 +363,7 @@ test('properties index can filter by furnished status', function () {
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $matchingProperty->id)
         );
@@ -325,7 +403,7 @@ test('properties index can filter medium term properties by available date range
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->has('properties.data', 1)
             ->where('properties.data.0.id', $matchingProperty->id)
         );
@@ -354,7 +432,7 @@ test('properties index can sort listings', function (string $sort, array $expect
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
+            ->component('properties/List')
             ->where('filters.sort', $sort)
             ->where('properties.data.0.price', $expectedOrder[0])
             ->where('properties.data.1.price', $expectedOrder[1])
@@ -375,14 +453,33 @@ test('properties index returns paginated data', function () {
     $response
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('properties/Index')
-            ->has('properties.data', 12)
+            ->component('properties/List')
+            ->has('properties.data', 5)
             ->where('properties.total', 13)
-            ->where('properties.per_page', 12)
+            ->where('properties.per_page', 5)
             ->where('properties.current_page', 1)
-            ->where('properties.last_page', 2)
+            ->where('properties.last_page', 3)
             ->where('properties.from', 1)
-            ->where('properties.to', 12)
+            ->where('properties.to', 5)
+        );
+});
+
+test('properties map view returns all filtered data with lightweight payload', function () {
+    Property::factory()->count(13)->create();
+
+    $response = $this->get(route('properties.index', [
+        'view' => 'map',
+    ]));
+
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('properties/Map')
+            ->where('filters.view', 'map')
+            ->has('properties', 13)
+            ->has('properties.0.id')
+            ->missing('properties.0.available_from')
+            ->missing('properties.0.type')
         );
 });
 

@@ -89,6 +89,7 @@ declare module 'vue' {
     PopoverContent: typeof import('./../components/ui/popover/PopoverContent.vue')['default']
     PopoverTrigger: typeof import('./../components/ui/popover/PopoverTrigger.vue')['default']
     PropertyCard: typeof import('./../components/PropertyCard.vue')['default']
+    PropertyFilters: typeof import('./../components/properties/PropertyFilters.vue')['default']
     PropertyFormFields: typeof import('./../components/PropertyFormFields.vue')['default']
     PropertyImageUploader: typeof import('./../components/PropertyImageUploader.vue')['default']
     Select: typeof import('./../components/ui/select/Select.vue')['default']

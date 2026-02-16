@@ -32,6 +32,8 @@ class Property extends Model implements HasMedia
         'neighbourhoods',
         'price',
         'street',
+        'lat',
+        'lon',
         'building_number',
         'floor',
         'type',
@@ -68,6 +70,8 @@ class Property extends Model implements HasMedia
     protected $casts = [
         'neighbourhoods' => 'array',
         'price' => 'decimal:2',
+        'lat' => 'float',
+        'lon' => 'float',
         'available_from' => 'date',
         'available_to' => 'date',
         'floor' => 'float',

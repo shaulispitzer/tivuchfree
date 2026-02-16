@@ -8,6 +8,8 @@ user_id: number | null;
 neighbourhoods: Array<any>;
 price: number | null;
 street: string;
+lat: number | null;
+lon: number | null;
 building_number: number;
 floor: number;
 type: App.Enums.PropertyLeaseType;

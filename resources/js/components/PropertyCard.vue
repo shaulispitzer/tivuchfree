@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
 import { Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { computed } from 'vue';
+
 import type { PropType } from 'vue';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { edit } from '@/routes/properties';
+
+import { show } from '@/routes/properties';
 import fallbackPropertyImage from '../../assets/Untitled-design-5-1.webp';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -76,113 +74,124 @@ const neighbourhoodLabel = computed(() => {
 </script>
 
 <template>
-    <article
-        class="overflow-hidden rounded-xl border border-input bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    <Link
+        :href="show(property.id)"
+        preserve-scroll
+        preserve-state
+        class="block focus-visible:outline-none"
     >
-        <div class="relative">
-            <Swiper
-                v-if="imageUrls.length > 0"
-                :modules="[Navigation, Pagination]"
-                :navigation="showNavigation"
-                :pagination="{ clickable: true }"
-                :loop="showNavigation"
-                class="property-card-swiper"
-                :style="swiperStyles"
-            >
-                <SwiperSlide
-                    v-for="(url, index) in imageUrls"
-                    :key="`${url}-${index}`"
+        <article
+            class="overflow-hidden rounded-xl border border-input bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/40"
+        >
+            <div class="relative">
+                <Swiper
+                    v-if="imageUrls.length > 0"
+                    :modules="[Navigation, Pagination]"
+                    :navigation="showNavigation"
+                    :pagination="{ clickable: true }"
+                    :loop="showNavigation"
+                    class="property-card-swiper"
+                    :style="swiperStyles"
                 >
+                    <SwiperSlide
+                        v-for="(url, index) in imageUrls"
+                        :key="`${url}-${index}`"
+                    >
+                        <img
+                            :src="url"
+                            alt="Property image"
+                            class="h-52 w-full object-cover"
+                            loading="lazy"
+                        />
+                    </SwiperSlide>
+                </Swiper>
+
+                <div v-else class="h-52 w-full">
                     <img
-                        :src="url"
-                        alt="Property image"
-                        class="h-52 w-full object-cover"
+                        :src="fallbackPropertyImage"
+                        alt="Default property image"
+                        class="h-full w-full object-cover opacity-70 contrast-75"
                         loading="lazy"
                     />
-                </SwiperSlide>
-            </Swiper>
-
-            <div v-else class="h-52 w-full">
-                <img
-                    :src="fallbackPropertyImage"
-                    alt="Default property image"
-                    class="h-full w-full object-cover opacity-70 contrast-75"
-                    loading="lazy"
-                />
-            </div>
-        </div>
-
-        <div class="space-y-4 p-4">
-            <div class="flex items-start justify-between gap-4">
-                <div class="space-y-1">
-                    <div
-                        class="flex items-center gap-2 text-base font-semibold"
-                    >
-                        <IconHome class="h-4 w-4 text-primary" />
-                        <span>{{ addressLine }}</span>
-                    </div>
-                    <div
-                        class="flex items-center gap-2 text-xs text-muted-foreground"
-                    >
-                        <IconMapMarker class="h-4 w-4" />
-                        <span>{{ neighbourhoodLabel }}</span>
-                    </div>
                 </div>
             </div>
 
-            <div
-                v-if="property.type === 'medium_term'"
-                class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
-            >
-                <Badge class="bg-yellow-300 text-yellow-950">
-                    <IconCalendarRange class="h-3.5 w-3.5" />
-                    Medium term
-                </Badge>
-                <span class="flex items-center gap-1">
+            <div class="space-y-4 p-4">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="space-y-1">
+                        <div
+                            class="flex items-center gap-2 text-base font-semibold"
+                        >
+                            <IconHome class="h-4 w-4 text-primary" />
+
+                            <span>{{ addressLine }}</span>
+                        </div>
+                        <div
+                            class="flex items-center gap-2 text-xs text-muted-foreground"
+                        >
+                            <IconMapMarker class="h-4 w-4" />
+                            <span>{{ neighbourhoodLabel }}</span>
+                        </div>
+                    </div>
+                    <span class="text-sm font-medium">{{
+                        property.price ? '₪' + property.price.toFixed(2) : ''
+                    }}</span>
+                </div>
+
+                <div
+                    v-if="property.type === 'medium_term'"
+                    class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+                >
+                    <Badge class="bg-yellow-300 text-yellow-950">
+                        <IconCalendarRange class="h-3.5 w-3.5" />
+                        Medium term
+                    </Badge>
+                    <span class="flex items-center gap-1">
+                        <IconCalendarRange class="h-4 w-4" />
+                        {{ formatDate(property.available_from) }} -
+                        {{ formatDate(property.available_to) }}
+                    </span>
+                </div>
+
+                <div
+                    v-else
+                    class="flex items-center gap-2 text-xs text-muted-foreground"
+                >
                     <IconCalendarRange class="h-4 w-4" />
-                    {{ formatDate(property.available_from) }} -
-                    {{ formatDate(property.available_to) }}
-                </span>
-            </div>
+                    Available from {{ formatDate(property.available_from) }}
+                </div>
 
-            <div
-                v-else
-                class="flex items-center gap-2 text-xs text-muted-foreground"
-            >
-                <IconCalendarRange class="h-4 w-4" />
-                Available from {{ formatDate(property.available_from) }}
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 text-sm">
-                <div class="flex items-center gap-2">
-                    <IconBed class="h-4 w-4 text-primary" />
-                    <span class="font-medium">{{ property.bedrooms }}</span>
-                    <span class="text-muted-foreground">Bedrooms</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <IconRulerSquare class="h-4 w-4 text-primary" />
-                    <span class="font-medium">{{
-                        property.square_meter ?? '—'
-                    }}</span>
-                    <span class="text-muted-foreground">m2</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <IconSofa class="h-4 w-4 text-primary" />
-                    <span class="text-muted-foreground">Furnished</span>
-                    <span class="font-medium">{{
-                        formatLabel(property.furnished)
-                    }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <IconHomeVariant class="h-4 w-4 text-primary" />
-                    <span class="text-muted-foreground">Condition</span>
-                    <span class="font-medium">{{
-                        formatLabel(property.apartment_condition)
-                    }}</span>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="flex items-center gap-2">
+                        <IconBed class="h-4 w-4 text-primary" />
+                        <span class="font-medium">{{ property.bedrooms }}</span>
+                        <span class="text-muted-foreground">Bedrooms</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <IconRulerSquare class="h-4 w-4 text-primary" />
+                        <span class="font-medium">{{
+                            property.square_meter ?? '—'
+                        }}</span>
+                        <span class="text-muted-foreground">m2</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <IconSofa class="h-4 w-4 text-primary" />
+                        <span class="text-muted-foreground">Furnished</span>
+                        <span class="font-medium">{{
+                            formatLabel(property.furnished)
+                        }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <IconHomeVariant class="h-4 w-4 text-primary" />
+                        <span class="text-muted-foreground">Condition</span>
+                        <span class="font-medium">{{
+                            formatLabel(property.apartment_condition)
+                        }}</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    </article>
+        </article>
+    </Link>
 </template>
 
 <style scoped>

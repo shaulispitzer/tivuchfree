@@ -17,6 +17,7 @@ use App\Http\Requests\PropertyUpdateRequest;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
+use App\Services\PropertyGeocoder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -29,6 +30,8 @@ use Inertia\Inertia;
 
 class PropertyController extends Controller
 {
+    public function __construct(protected PropertyGeocoder $propertyGeocoder) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -44,6 +47,7 @@ class PropertyController extends Controller
             'available_from' => ['nullable', 'date'],
             'available_to' => ['nullable', 'date', 'after_or_equal:available_from'],
             'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'newest', 'oldest'])],
+            'view' => ['nullable', Rule::in(['list', 'map'])],
         ])->validate();
 
         $bedroomsMin = isset($validated['bedrooms_min']) ? (float) $validated['bedrooms_min'] : null;
@@ -51,6 +55,7 @@ class PropertyController extends Controller
         $availability = $validated['availability'] ?? 'all';
         $type = $validated['type'] ?? null;
         $sort = $validated['sort'] ?? 'newest';
+        $view = $validated['view'] ?? 'list';
 
         $propertiesQuery = Property::query()
             ->with(['media'])
@@ -98,14 +103,59 @@ class PropertyController extends Controller
             default => $propertiesQuery->latest(),
         };
 
+        if ($view === 'map') {
+            $properties = $propertiesQuery
+                ->get()
+                ->map(fn (Property $property) => (
+                    PropertyData::fromModel($property)->only('id', 'price', 'bedrooms', 'lat', 'lon')->toArray()
+                ))
+                ->values()
+                ->all();
+
+            return Inertia::render('properties/Map', [
+                'properties' => $properties,
+                'can_create' => Auth::check(),
+                'filters' => [
+                    'neighbourhood' => $validated['neighbourhood'] ?? null,
+                    'availability' => $availability,
+                    'bedrooms_min' => $bedroomsMin,
+                    'bedrooms_max' => $bedroomsMax,
+                    'furnished' => $validated['furnished'] ?? null,
+                    'type' => $type,
+                    'available_from' => $validated['available_from'] ?? null,
+                    'available_to' => $validated['available_to'] ?? null,
+                    'sort' => $sort,
+                    'view' => $view,
+                ],
+                'neighbourhood_options' => array_map(
+                    fn (Neighbourhood $neighbourhood) => $neighbourhood->value,
+                    Neighbourhood::cases(),
+                ),
+                'furnished_options' => array_map(
+                    fn (PropertyFurnished $furnished) => [
+                        'value' => $furnished->value,
+                        'label' => $furnished->label(),
+                    ],
+                    PropertyFurnished::cases(),
+                ),
+                'type_options' => array_map(
+                    fn (PropertyLeaseType $leaseType) => [
+                        'value' => $leaseType->value,
+                        'label' => $leaseType->label(),
+                    ],
+                    PropertyLeaseType::cases(),
+                ),
+            ]);
+        }
+
         $properties = $propertiesQuery
-            ->paginate(12)
+            ->paginate(5)
             ->withQueryString()
             ->through(fn (Property $property) => (
-                PropertyData::fromModel($property)->except('user', 'user_id')->toArray()
+                PropertyData::fromModel($property)->only('id', 'price', 'neighbourhoods', 'street', 'lat', 'lon', 'building_number', 'floor', 'type', 'available_from', 'available_to', 'bedrooms', 'square_meter', 'views', 'furnished', 'taken', 'image_urls', 'main_image_url')->toArray()
             ));
 
-        return Inertia::render('properties/Index', [
+        return Inertia::render('properties/List', [
             'properties' => $properties,
             'can_create' => Auth::check(),
             'filters' => [
@@ -118,6 +168,7 @@ class PropertyController extends Controller
                 'available_from' => $validated['available_from'] ?? null,
                 'available_to' => $validated['available_to'] ?? null,
                 'sort' => $sort,
+                'view' => $view,
             ],
             'neighbourhood_options' => array_map(
                 fn (Neighbourhood $neighbourhood) => $neighbourhood->value,
@@ -196,12 +247,19 @@ class PropertyController extends Controller
         if ($data->type === PropertyLeaseType::LongTerm) {
             $data->available_to = null;
         }
-        $property = DB::transaction(function () use ($data, $request, $streetInHebrew) {
+        $coordinates = $this->propertyGeocoder->geocode(
+            $streetInHebrew,
+            $data->building_number !== null ? (string) $data->building_number : null,
+        );
+
+        $property = DB::transaction(function () use ($data, $request, $streetInHebrew, $coordinates) {
             $property = Property::create([
                 'user_id' => $request->user()->id,
                 'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
                 'building_number' => $data->building_number,
                 'street' => $streetInHebrew,
+                'lat' => $coordinates['lat'] ?? null,
+                'lon' => $coordinates['lon'] ?? null,
                 'floor' => $data->floor,
                 'type' => $data->type,
                 'available_from' => $data->available_from,
@@ -307,6 +365,19 @@ class PropertyController extends Controller
         ]);
     }
 
+    public function show(Request $request, Property $property)
+    {
+        $property->loadMissing(['media']);
+
+        $isMapView = $request->query('view') === 'map';
+
+        return Inertia::modal('properties/Show', [
+            'property' => PropertyData::fromModel($property)
+                ->except('user', 'user_id', 'taken', 'lon', 'lat')
+                ->toArray(),
+        ])->baseRoute('properties.index', $isMapView ? ['view' => 'map'] : []);
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -319,6 +390,14 @@ class PropertyController extends Controller
         if ($data['type'] === PropertyLeaseType::LongTerm->value) {
             $data['available_to'] = null;
         }
+
+        $coordinates = $this->propertyGeocoder->geocode(
+            $data['street'],
+            $data['building_number'] ?? null,
+        );
+
+        $data['lat'] = $coordinates['lat'] ?? null;
+        $data['lon'] = $coordinates['lon'] ?? null;
 
         $property->update(Arr::except($data, ['main_image', 'images']));
 

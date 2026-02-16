@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::put('streets/{street}', [StreetController::class, 'update'])->name('streets.update');
     Route::delete('streets/{street}', [StreetController::class, 'destroy'])->name('streets.destroy');
 });
+
+Route::get('properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
 // modale route
 Route::get('sample-modale', function () {
     return Inertia::render('SampleModale');

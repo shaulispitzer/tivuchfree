@@ -6,12 +6,20 @@ use App\Enums\PropertyLeaseType;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\User;
+use App\Services\PropertyGeocoder;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery\MockInterface;
 
 use function Pest\Laravel\actingAs;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('geocode')->andReturn(null);
+    });
+});
 
 function streetIdForNeighbourhood(Neighbourhood $neighbourhood): int
 {
@@ -25,6 +33,14 @@ function streetIdForNeighbourhood(Neighbourhood $neighbourhood): int
 }
 
 it('creates a property without images', function () {
+    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('geocode')
+            ->once()
+            ->andReturn([
+                'lat' => 31.8078717,
+                'lon' => 35.2148620,
+            ]);
+    });
 
     /** @var User $user */
     $user = User::factory()->create();
@@ -45,8 +61,32 @@ it('creates a property without images', function () {
 
     expect($property)->not->toBeNull();
     expect($property->user_id)->toBe($user->id);
+    expect($property->lat)->toBe(31.8078717);
+    expect($property->lon)->toBe(35.214862);
     expect($property->getFirstMedia('main_image'))->toBeNull();
 
+    $response->assertRedirect(route('properties.edit', $property));
+});
+
+it('still creates a property when geocoding fails', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $response = actingAs($user)->post(route('properties.store'), [
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+        'floor' => 2,
+        'type' => PropertyLeaseType::LongTerm->value,
+        'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
+        'bedrooms' => 2,
+        'furnished' => PropertyFurnished::Yes->value,
+    ]);
+
+    $property = Property::query()->latest()->first();
+
+    expect($property)->not->toBeNull();
+    expect($property->lat)->toBeNull();
+    expect($property->lon)->toBeNull();
     $response->assertRedirect(route('properties.edit', $property));
 });
 

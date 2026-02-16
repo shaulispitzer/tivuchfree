@@ -83,26 +83,23 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef, UseCurrentUrlReturn, UseInitialsReturn, UseTwoFactorAuthReturn } from './auto-imports.d'
+  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef, UseCurrentUrlReturn, UseInitialsReturn, UseTwoFactorAuthReturn, User, Auth, TwoFactorConfigContent } from './auto-imports.d'
   import('./auto-imports.d')
   // @ts-ignore
   export type { GlobalComponents } from './components.d'
   import('./components.d')
   // @ts-ignore
-  export type { User, Auth, TwoFactorConfigContent } from './auth'
-  import('./auth')
+  export type { AppPageProps, Paginator } from './index'
+  import('./index')
   // @ts-ignore
   export type { BreadcrumbItem, NavItem } from './navigation'
   import('./navigation')
   // @ts-ignore
-  export type { Appearance, ResolvedAppearance, AppShellVariant } from './ui'
-  import('./ui')
-  // @ts-ignore
-  export type { AppPageProps, Paginator } from './index'
-  import('./index')
-  // @ts-ignore
   export type { RouterGlobal } from './routes.d'
   import('./routes.d')
+  // @ts-ignore
+  export type { Appearance, ResolvedAppearance, AppShellVariant } from './ui'
+  import('./ui')
 }
 
 // for vue template auto import

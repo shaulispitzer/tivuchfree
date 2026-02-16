@@ -48,30 +48,28 @@
                                 margin,
                                 position,
                             ]"
-                            class="shadow-soft-lg dark:bg-dark-2 w-full overflow-hidden bg-white text-start align-middle transition-all dark:border dark:border-stone-700"
+                            class="shadow-soft-lg w-full overflow-hidden border border-gray-200 bg-white text-start align-middle transition-all"
                         >
                             <button
                                 v-if="closable"
-                                class="dark:bg-dark-4 absolute end-2 top-2 z-50 float-end h-8 w-8 cursor-pointer rounded-full p-1.5 text-primary"
+                                class="absolute end-2 top-2 z-50 float-end h-8 w-8 cursor-pointer rounded-full p-1.5 text-primary"
                                 @click="closeModal"
                             >
                                 x
                             </button>
                             <div
                                 v-if="title"
-                                class="space-s-3 mb-4 flex items-center pt-4"
+                                class="space-s-3 mb-4 flex items-center pt-2"
                             >
-                                <div
-                                    class="rounded-full bg-blue-100 p-2 text-white dark:bg-red-400"
-                                >
-                                    <!-- <Icon
+                                <div v-if="icon">
+                                    <Icon
                                         :name="icon"
-                                        class="dark:text-brand-50 h-5 w-5 text-primary"
-                                    /> -->
+                                        class="h-5 w-5 text-primary"
+                                    />
                                 </div>
                                 <DialogTitle
                                     as="h3"
-                                    class="text-brand-900 dark:text-brand-50 flex-1 text-lg leading-6 font-semibold"
+                                    class="text-brand-900 flex-1 text-lg leading-6 font-semibold"
                                 >
                                     {{ title }}
                                 </DialogTitle>
@@ -120,6 +118,7 @@ import {
     DialogTitle,
 } from '@headlessui/vue';
 import { useModal } from '../../../vendor/emargareten/inertia-modal';
+import Icon from '~icons/lucide/home';
 
 const { t, locale } = useI18n();
 
@@ -135,7 +134,7 @@ const props = defineProps({
     title: String,
     icon: {
         type: String,
-        default: 'warning',
+        default: null,
     },
     width: {
         type: String,
