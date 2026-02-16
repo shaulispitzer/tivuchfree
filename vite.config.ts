@@ -16,6 +16,7 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': '/resources/js',
+            '@assets': '/resources/assets',
         },
     },
     build: {
@@ -69,7 +70,8 @@ export default defineConfig({
         }),
         autoImport({
             vueTemplate: true,
-            dirs: ['resources/js/composables', 'resources/js/types'],
+
+            dirs: ['resources/js/composables'],
             dts: 'resources/js/types/auto-imports.d.ts',
             imports: [
                 'vue',

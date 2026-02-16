@@ -6,6 +6,7 @@ import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import { Button } from '@/components/ui/button';
 import { create, index } from '@/routes/properties';
+import type { Paginator } from '@/types';
 
 type Option = {
     value: string;
@@ -189,11 +190,15 @@ watch(activeView, () => {
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-lg font-semibold">Properties</h1>
         <div class="flex items-center gap-2">
-            <div class="inline-flex items-center rounded-md border border-input p-0.5">
+            <div
+                class="inline-flex items-center rounded-md border border-input p-0.5"
+            >
                 <Button
                     type="button"
                     size="sm"
-                    :variant="activeView === ViewMode.List ? 'secondary' : 'ghost'"
+                    :variant="
+                        activeView === ViewMode.List ? 'secondary' : 'ghost'
+                    "
                     @click="activeView = ViewMode.List"
                 >
                     List view
@@ -201,7 +206,9 @@ watch(activeView, () => {
                 <Button
                     type="button"
                     size="sm"
-                    :variant="activeView === ViewMode.Map ? 'secondary' : 'ghost'"
+                    :variant="
+                        activeView === ViewMode.Map ? 'secondary' : 'ghost'
+                    "
                     @click="activeView = ViewMode.Map"
                 >
                     Map view
@@ -222,7 +229,10 @@ watch(activeView, () => {
         @update:filters="updateFilters"
     />
 
-    <div v-if="properties.data.length === 0" class="text-sm text-muted-foreground">
+    <div
+        v-if="properties.data.length === 0"
+        class="text-sm text-muted-foreground"
+    >
         No properties have been added yet.
     </div>
 

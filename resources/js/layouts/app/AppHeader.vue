@@ -47,7 +47,9 @@ const handleLocaleChange = () => {
         <div
             class="border-b border-sidebar-border/80 bg-white/80 backdrop-blur-sm"
         >
-            <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+            <div
+                class="mx-auto flex h-16 items-center px-4 md:max-w-7xl xl:px-0"
+            >
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
                     <Sheet>

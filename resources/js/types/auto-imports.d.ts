@@ -83,23 +83,17 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef, UseCurrentUrlReturn, UseInitialsReturn, UseTwoFactorAuthReturn, User, Auth, TwoFactorConfigContent } from './auto-imports.d'
-  import('./auto-imports.d')
+  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
+  import('vue')
   // @ts-ignore
-  export type { GlobalComponents } from './components.d'
-  import('./components.d')
+  export type { UseCurrentUrlReturn } from '../composables/useCurrentUrl'
+  import('../composables/useCurrentUrl')
   // @ts-ignore
-  export type { AppPageProps, Paginator } from './index'
-  import('./index')
+  export type { UseInitialsReturn } from '../composables/useInitials'
+  import('../composables/useInitials')
   // @ts-ignore
-  export type { BreadcrumbItem, NavItem } from './navigation'
-  import('./navigation')
-  // @ts-ignore
-  export type { RouterGlobal } from './routes.d'
-  import('./routes.d')
-  // @ts-ignore
-  export type { Appearance, ResolvedAppearance, AppShellVariant } from './ui'
-  import('./ui')
+  export type { UseTwoFactorAuthReturn } from '../composables/useTwoFactorAuth'
+  import('../composables/useTwoFactorAuth')
 }
 
 // for vue template auto import
@@ -172,7 +166,6 @@ declare module 'vue' {
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useTwoFactorAuth: UnwrapRef<typeof import('../composables/useTwoFactorAuth')['useTwoFactorAuth']>
-    readonly vueShimsD: UnwrapRef<typeof import('./vue-shims.d')['default']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>

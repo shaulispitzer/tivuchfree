@@ -5,7 +5,8 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import type { PropType } from 'vue';
 
 import { show } from '@/routes/properties';
-import fallbackPropertyImage from '../../assets/Untitled-design-5-1.webp';
+import fallbackPropertyImage from '../../assets/default-property-image.webp';
+import takenStampImage from '../../assets/taken.png';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -77,12 +78,28 @@ const neighbourhoodLabel = computed(() => {
     <Link
         :href="show(property.id)"
         preserve-scroll
+        as="button"
         preserve-state
         class="block focus-visible:outline-none"
+        :class="property.taken === true ? 'cursor-default' : 'cursor-pointer'"
+        :disabled="property.taken === true"
     >
         <article
-            class="overflow-hidden rounded-xl border border-input bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary/40"
+            class="relative overflow-hidden rounded-xl border border-input bg-card shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40"
+            :class="
+                property.taken === true
+                    ? 'pointer-events-none grayscale opacity-70'
+                    : 'transition hover:-translate-y-0.5 hover:shadow-md'
+            "
         >
+            <img
+                v-if="property.taken === true"
+                :src="takenStampImage"
+                alt="Taken property"
+                class="pointer-events-none absolute inset-x-0 top-5 z-20 mx-auto w-40 select-none"
+                loading="lazy"
+            />
+
             <div class="relative">
                 <Swiper
                     v-if="imageUrls.length > 0"
