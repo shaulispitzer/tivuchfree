@@ -2,10 +2,8 @@
     <h1>Playground</h1>
     <Button @click="open = true">Click me</Button>
     <Button @click="showModal">show Modal</Button>
-    <FormKit type="text" name="name" validation="required">
-
-    </FormKit>
-    <IconAccessibility class="h-4"/>
+    <FormKit type="text" name="name" validation="required"> </FormKit>
+    <IconAccessibility class="h-4" />
     <Modal
         :open="open"
         title="Modal Title"
@@ -18,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { sampleModaleOut } from '@/routes';
 import IconAccessibility from '~icons/carbon/accessibility';
 const { t } = useI18n();
 
@@ -33,6 +32,6 @@ function cancel() {
     open.value = false;
 }
 function showModal() {
-    router.get('sample-modale-out');
+    router.get(sampleModaleOut());
 }
 </script>

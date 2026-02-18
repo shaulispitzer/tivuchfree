@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { Check, ChevronsUpDown } from 'lucide-vue-next';
 import type { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import PropertyImageUploader from '@/components/PropertyImageUploader.vue';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ const props = defineProps({
         required: true,
     },
 });
+const { t } = useI18n();
 
 const LeaseType = {
     MediumTerm: 'medium_term',
@@ -103,22 +105,22 @@ let streetsRequestId = 0;
 const isMediumTerm = computed(() => form.type === 'medium_term');
 const neighbourhoodClientError = computed(() => {
     if (form.neighbourhoods.length === 0) {
-        return 'Please select at least one neighbourhood.';
+        return t('common.selectAtLeastOneNeighbourhood');
     }
 
     if (form.neighbourhoods.length > 3) {
-        return 'You can select up to 3 neighbourhoods. Please remove at least one neighbourhood.';
+        return t('common.upToThreeNeighbourhoods');
     }
 
     if (new Set(form.neighbourhoods).size !== form.neighbourhoods.length) {
-        return 'Each neighbourhood can only be selected once.';
+        return t('common.neighbourhoodUnique');
     }
 
     return null;
 });
 const neighbourhoodLimitError = computed(() => {
     if (form.neighbourhoods.length > 3) {
-        return 'You can select up to 3 neighbourhoods. Please remove at least one neighbourhood.';
+        return t('common.upToThreeNeighbourhoods');
     }
 
     return null;
@@ -291,12 +293,12 @@ function submit(): void {
 </script>
 
 <template>
-    <Head title="Create property" />
+    <Head :title="t('common.createProperty')" />
 
     <div class="flex items-center justify-between">
-        <h1 class="text-lg font-semibold">Create property</h1>
+        <h1 class="text-lg font-semibold">{{ t('common.createProperty') }}</h1>
         <Button as-child>
-            <Link :href="index()">Back to list</Link>
+            <Link :href="index()">{{ t('common.backToList') }}</Link>
         </Button>
     </div>
 
@@ -308,15 +310,17 @@ function submit(): void {
         @submit="submit"
     >
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Contact</h2>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.contactSection') }}
+            </h2>
             <div class="grid gap-4 md:grid-cols-2">
                 <div class="grid gap-2">
                     <FormKit
                         v-model="contactNameInput"
                         type="text"
                         name="contact_name"
-                        label="Contact Name"
-                        placeholder="Optional"
+                        :label="t('common.contactName')"
+                        :placeholder="t('common.optional')"
                     />
                     <div
                         v-if="form.errors.contact_name"
@@ -331,7 +335,7 @@ function submit(): void {
                         v-model="form.contact_phone"
                         type="text"
                         name="contact_phone"
-                        label="Contact Phone"
+                        :label="t('common.contactPhone')"
                         validation="required"
                         label-class="required-asterisk"
                     />
@@ -346,14 +350,20 @@ function submit(): void {
         </Card>
 
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Location</h2>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.location') }}
+            </h2>
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div class="grid gap-3 md:col-span-2">
-                    <Label class="required-asterisk">Neighbourhoods</Label>
+                    <Label class="required-asterisk">{{
+                        t('common.neighbourhoods')
+                    }}</Label>
                     <Select v-model="form.neighbourhoods" multiple>
                         <SelectTrigger class="w-full border-0 shadow-sm">
                             <SelectValue
-                                placeholder="Select 1 to 3 neighbourhoods"
+                                :placeholder="
+                                    t('common.selectOneToThreeNeighbourhoods')
+                                "
                             />
                         </SelectTrigger>
                         <SelectContent>
@@ -387,7 +397,9 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2 md:col-span-2 xl:col-span-1">
-                    <Label class="required-asterisk">Street</Label>
+                    <Label class="required-asterisk">{{
+                        t('common.street')
+                    }}</Label>
                     <Popover v-model:open="streetComboboxOpen">
                         <PopoverTrigger as-child>
                             <Button
@@ -400,8 +412,10 @@ function submit(): void {
                                     {{
                                         selectedStreetName ||
                                         (form.neighbourhoods.length > 0
-                                            ? 'Select street'
-                                            : 'Select neighbourhood first')
+                                            ? t('common.selectStreet')
+                                            : t(
+                                                  'common.selectNeighbourhoodFirst',
+                                              ))
                                     }}
                                 </span>
                                 <ChevronsUpDown
@@ -415,7 +429,7 @@ function submit(): void {
                             <Input
                                 v-model="streetSearch"
                                 class="mb-2 h-9"
-                                placeholder="Search street..."
+                                :placeholder="t('common.searchStreet')"
                                 :disabled="form.neighbourhoods.length === 0"
                             />
                             <div class="max-h-60 overflow-y-auto">
@@ -423,13 +437,17 @@ function submit(): void {
                                     v-if="form.neighbourhoods.length === 0"
                                     class="py-6 text-center text-sm text-muted-foreground"
                                 >
-                                    Select at least one neighbourhood first.
+                                    {{
+                                        t(
+                                            'common.selectAtLeastOneNeighbourhoodFirst',
+                                        )
+                                    }}
                                 </p>
                                 <p
                                     v-else-if="streetsLoading"
                                     class="py-6 text-center text-sm text-muted-foreground"
                                 >
-                                    Loading streets...
+                                    {{ t('common.loadingStreets') }}
                                 </p>
                                 <p
                                     v-else-if="
@@ -437,7 +455,7 @@ function submit(): void {
                                     "
                                     class="py-6 text-center text-sm text-muted-foreground"
                                 >
-                                    No street found.
+                                    {{ t('common.noStreetFound') }}
                                 </p>
                                 <div v-else class="space-y-1">
                                     <button
@@ -474,7 +492,7 @@ function submit(): void {
                         v-model="form.building_number"
                         type="number"
                         name="building_number"
-                        label="Building number"
+                        :label="t('common.buildingNumber')"
                         step="1"
                         number
                         validation="number|min:1"
@@ -493,7 +511,7 @@ function submit(): void {
                         v-model="form.floor"
                         type="number"
                         name="floor"
-                        label="Floor"
+                        :label="t('common.floor')"
                         step="0.5"
                         number
                         validation="number"
@@ -508,7 +526,7 @@ function submit(): void {
 
         <Card>
             <h2 class="text-sm font-semibold text-foreground/80">
-                Property details
+                {{ t('common.propertyDetails') }}
             </h2>
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div class="grid gap-2">
@@ -516,8 +534,8 @@ function submit(): void {
                         v-model="form.type"
                         type="select"
                         name="type"
-                        label="Type"
-                        placeholder="Select type"
+                        :label="t('common.type')"
+                        :placeholder="t('common.selectType')"
                         :options="props.options.lease_types"
                         validation="required"
                         label-class="required-asterisk"
@@ -532,7 +550,7 @@ function submit(): void {
                         v-model="availableFrom"
                         type="date"
                         name="available_from"
-                        label="Available from"
+                        :label="t('common.availableFrom')"
                         validation="required"
                         label-class="required-asterisk"
                     />
@@ -549,7 +567,7 @@ function submit(): void {
                         v-model="availableTo"
                         type="date"
                         name="available_to"
-                        label="Available to"
+                        :label="t('common.availableTo')"
                         validation="required"
                         label-class="required-asterisk"
                     />
@@ -566,7 +584,7 @@ function submit(): void {
                         v-model="form.bedrooms"
                         type="number"
                         name="bedrooms"
-                        label="Bedrooms"
+                        :label="t('common.bedrooms')"
                         step="0.5"
                         number
                         validation="required|min:1|max:10"
@@ -585,7 +603,7 @@ function submit(): void {
                         v-model="squareMeterInput"
                         type="number"
                         name="square_meter"
-                        label="Square meter"
+                        :label="t('common.squareMeter')"
                         step="1"
                         number
                         validation="number|min:0"
@@ -603,7 +621,7 @@ function submit(): void {
                         v-model="bathroomsInput"
                         type="number"
                         name="bathrooms"
-                        label="Bathrooms"
+                        :label="t('common.bathrooms')"
                         step="1"
                         number
                         validation="number|min:0"
@@ -621,8 +639,8 @@ function submit(): void {
                         v-model="form.furnished"
                         type="select"
                         name="furnished"
-                        label="Furnished"
-                        placeholder="Select furnished status"
+                        :label="t('common.furnished')"
+                        :placeholder="t('common.selectFurnishedStatus')"
                         :options="props.options.furnished"
                         validation="required"
                         label-class="required-asterisk"
@@ -640,8 +658,8 @@ function submit(): void {
                         v-model="form.access"
                         type="select"
                         name="access"
-                        label="Access"
-                        placeholder="Select access"
+                        :label="t('common.access')"
+                        :placeholder="t('common.selectAccess')"
                         :options="props.options.access"
                     />
                     <div v-if="form.errors.access" class="text-sm text-red-600">
@@ -654,8 +672,8 @@ function submit(): void {
                         v-model="form.kitchen_dining_room"
                         type="select"
                         name="kitchen_dining_room"
-                        label="Separate kitchen dining room"
-                        placeholder="Select option"
+                        :label="t('common.separateKitchenDiningRoom')"
+                        :placeholder="t('common.selectOption')"
                         :options="props.options.kitchen_dining_room"
                     />
                     <div
@@ -671,8 +689,8 @@ function submit(): void {
                         v-model="form.porch_garden"
                         type="select"
                         name="porch_garden"
-                        label="Porch/Garden"
-                        placeholder="Select option"
+                        :label="t('common.porchGarden')"
+                        :placeholder="t('common.selectOption')"
                         :options="props.options.porch_garden"
                     />
                     <div
@@ -688,8 +706,8 @@ function submit(): void {
                         v-model="form.air_conditioning"
                         type="select"
                         name="air_conditioning"
-                        label="Air conditioning"
-                        placeholder="Select option"
+                        :label="t('common.airConditioning')"
+                        :placeholder="t('common.selectOption')"
                         :options="props.options.air_conditioning"
                     />
                     <div
@@ -705,8 +723,8 @@ function submit(): void {
                         v-model="form.apartment_condition"
                         type="select"
                         name="apartment_condition"
-                        label="Apartment condition"
-                        placeholder="Select option"
+                        :label="t('common.apartmentCondition')"
+                        :placeholder="t('common.selectOption')"
                         :options="props.options.apartment_condition"
                     />
                     <div
@@ -720,14 +738,16 @@ function submit(): void {
         </Card>
 
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Notes</h2>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.notes') }}
+            </h2>
             <div class="grid gap-4 lg:grid-cols-2">
                 <div class="grid gap-2">
                     <FormKit
                         v-model="additionalInfoEnInput"
                         type="textarea"
                         name="additional_info_en"
-                        label="Additional info (English)"
+                        :label="t('common.additionalInfoEnglish')"
                         rows="4"
                     />
                     <div
@@ -743,7 +763,7 @@ function submit(): void {
                         v-model="additionalInfoHeInput"
                         type="textarea"
                         name="additional_info_he"
-                        label="Additional info (Hebrew)"
+                        :label="t('common.additionalInfoHebrew')"
                         rows="4"
                     />
                     <div
@@ -757,14 +777,16 @@ function submit(): void {
         </Card>
 
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Amenities</h2>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.amenities') }}
+            </h2>
             <div class="grid gap-3 sm:grid-cols-2">
                 <div class="grid gap-2">
                     <FormKit
                         v-model="form.succah_porch"
                         type="checkbox"
                         name="succah_porch"
-                        label="Succah porch"
+                        :label="t('common.succahPorch')"
                     />
                     <div
                         v-if="form.errors.succah_porch"
@@ -779,7 +801,7 @@ function submit(): void {
                         v-model="form.has_dud_shemesh"
                         type="checkbox"
                         name="has_dud_shemesh"
-                        label="Dud shemesh"
+                        :label="t('common.dudShemesh')"
                     />
                     <div
                         v-if="form.errors.has_dud_shemesh"
@@ -794,7 +816,7 @@ function submit(): void {
                         v-model="form.has_machsan"
                         type="checkbox"
                         name="has_machsan"
-                        label="Machsan"
+                        :label="t('common.machsan')"
                     />
                     <div
                         v-if="form.errors.has_machsan"
@@ -809,7 +831,7 @@ function submit(): void {
                         v-model="form.has_parking_spot"
                         type="checkbox"
                         name="has_parking_spot"
-                        label="Parking spot"
+                        :label="t('common.parkingSpot')"
                     />
                     <div
                         v-if="form.errors.has_parking_spot"
@@ -840,7 +862,7 @@ function submit(): void {
                 type="submit"
                 :disabled="form.processing || uploadingImages"
             >
-                Create
+                {{ t('common.create') }}
             </Button>
         </div>
     </FormKit>

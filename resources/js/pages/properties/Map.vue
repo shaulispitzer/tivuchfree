@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
 import L from 'leaflet';
 import type { DivIcon, LayerGroup, Map as LeafletMap } from 'leaflet';
 import type { PropType } from 'vue';
 import 'leaflet/dist/leaflet.css';
+import { useI18n } from 'vue-i18n';
 import PropertyFilters from '@/components/properties/PropertyFilters.vue';
-import { Button } from '@/components/ui/button';
 import { create, index, show } from '@/routes/properties';
-
+import IxMapAlt1 from '~icons/ix/map-alt-1';
+import PhListBold from '~icons/ph/list-bold';
+const { t } = useI18n();
 type Option = {
     value: string;
     label: string;
@@ -118,6 +119,7 @@ const activeView = ref<ViewModeValue>(ViewMode.Map);
 const mapContainer = ref<HTMLElement | null>(null);
 const mapInstance = shallowRef<LeafletMap | null>(null);
 const markerLayer = shallowRef<LayerGroup | null>(null);
+const lastCoordinateSignature = ref<string | null>(null);
 const propertiesWithCoordinates = computed(() =>
     props.properties.filter(
         (property) => property.lat !== null && property.lon !== null,
@@ -230,7 +232,29 @@ function ensureMapInitialized(): void {
     mapInstance.value.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
 }
 
-function renderMapMarkers(): void {
+function applyTooltipStackOrder(marker: L.Marker): void {
+    if (mapInstance.value === null) {
+        return;
+    }
+
+    const tooltipElement = marker.getTooltip()?.getElement();
+    if (!tooltipElement) {
+        return;
+    }
+
+    const markerPoint = mapInstance.value.latLngToLayerPoint(
+        marker.getLatLng(),
+    );
+    tooltipElement.style.zIndex = `${Math.round(1000 + markerPoint.y)}`;
+}
+
+function buildCoordinateSignature(): string {
+    return propertiesWithCoordinates.value
+        .map((property) => `${property.id}:${property.lat}:${property.lon}`)
+        .join('|');
+}
+
+function renderMapMarkers(shouldFitBounds: boolean): void {
     if (
         mapInstance.value === null ||
         markerLayer.value === null ||
@@ -242,7 +266,9 @@ function renderMapMarkers(): void {
     markerLayer.value.clearLayers();
 
     if (propertiesWithCoordinates.value.length === 0) {
-        mapInstance.value.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+        if (shouldFitBounds) {
+            mapInstance.value.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+        }
         return;
     }
 
@@ -256,28 +282,41 @@ function renderMapMarkers(): void {
         const marker = L.marker([property.lat, property.lon], {
             icon: markerIcon,
         });
-
         marker.bindTooltip(
             `
                 <div class="property-map-tooltip-content">
+                    <button
+                        type="button"
+                        class="property-map-tooltip-close"
+                        aria-label="Close tooltip"
+                        onmousedown="event.preventDefault(); event.stopPropagation();"
+                        ontouchstart="event.preventDefault(); event.stopPropagation();"
+                        onclick="event.stopPropagation(); this.closest('.leaflet-tooltip')?.remove();"
+                    >
+                        &times;
+                    </button>
                     <p>${formatMapBedrooms(property.bedrooms)}</p>
                     <p>${formatMapPrice(property.price)}</p>
                 </div>
             `,
             {
                 direction: 'top',
+                offset: [0, 0],
                 permanent: true,
+                interactive: true,
                 opacity: 1,
                 className: 'property-map-tooltip',
             },
         );
 
+        marker.on('tooltipopen', () => applyTooltipStackOrder(marker));
         marker.on('click', () => openPropertyModal(property.id));
         marker.addTo(markerLayer.value);
+        applyTooltipStackOrder(marker);
         bounds.extend([property.lat, property.lon]);
     }
 
-    if (bounds.isValid()) {
+    if (shouldFitBounds && bounds.isValid()) {
         mapInstance.value.fitBounds(bounds, {
             padding: [40, 40],
             maxZoom: 15,
@@ -286,8 +325,13 @@ function renderMapMarkers(): void {
 }
 
 function refreshMap(): void {
+    const coordinateSignature = buildCoordinateSignature();
+    const shouldFitBounds =
+        coordinateSignature !== lastCoordinateSignature.value;
+
+    lastCoordinateSignature.value = coordinateSignature;
     ensureMapInitialized();
-    renderMapMarkers();
+    renderMapMarkers(shouldFitBounds);
 }
 
 async function syncMapViewport(): Promise<void> {
@@ -351,32 +395,40 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <Head title="Properties Map" />
+    <Head :title="t('common.properties')" />
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-lg font-semibold">Properties</h1>
+        <h1 class="text-lg font-semibold">{{ t('common.properties') }}</h1>
         <div class="flex items-center gap-2">
-            <div class="inline-flex items-center rounded-md border border-input p-0.5">
+            <div
+                class="inline-flex items-center rounded-md border border-input p-0.5"
+            >
                 <Button
                     type="button"
                     size="sm"
-                    :variant="activeView === ViewMode.List ? 'secondary' : 'ghost'"
+                    :variant="
+                        activeView === ViewMode.List ? 'secondary' : 'ghost'
+                    "
                     @click="activeView = ViewMode.List"
                 >
-                    List view
+                    <PhListBold class="size-6 text-primary" />
+                    {{ t('common.listView') }}
                 </Button>
                 <Button
                     type="button"
                     size="sm"
-                    :variant="activeView === ViewMode.Map ? 'secondary' : 'ghost'"
+                    :variant="
+                        activeView === ViewMode.Map ? 'secondary' : 'ghost'
+                    "
                     @click="activeView = ViewMode.Map"
                 >
-                    Map view
+                    <IxMapAlt1 class="size-6 text-primary" />
+                    {{ t('common.mapView') }}
                 </Button>
             </div>
 
             <Button v-if="can_create" as-child>
-                <Link :href="create()">Add property</Link>
+                <Link :href="create()">{{ t('common.addProperty') }}</Link>
             </Button>
         </div>
     </div>
@@ -390,23 +442,29 @@ onBeforeUnmount(() => {
     />
 
     <div class="space-y-3">
-        <div v-if="properties.length === 0" class="text-sm text-muted-foreground">
-            No properties have been added yet.
+        <div
+            v-if="properties.length === 0"
+            class="text-sm text-muted-foreground"
+        >
+            {{ t('common.noPropertiesAddedYet') }}
         </div>
         <div
             v-else-if="propertiesWithCoordinates.length === 0"
             class="text-sm text-muted-foreground"
         >
-            No properties with map coordinates match these filters.
+            {{ t('common.noPropertiesWithMapCoordinatesMatchTheseFilters') }}
         </div>
 
         <div
             ref="mapContainer"
+            dir="ltr"
             class="h-[65vh] w-full overflow-hidden rounded-xl border border-input"
         />
 
         <p class="text-xs text-muted-foreground">
-            Property details are shown on each pin. Click a pin to open details.
+            {{
+                t('common.propertyDetailsShownOnEachPinClickAPinToOpenDetails')
+            }}
         </p>
     </div>
 </template>
@@ -431,9 +489,25 @@ onBeforeUnmount(() => {
 :deep(.property-map-tooltip) {
     border: 0;
     border-radius: 0.5rem;
-    background: rgb(15 23 42 / 0.92);
+    background: var(--primary);
     color: white;
     box-shadow: 0 8px 24px rgb(15 23 42 / 0.2);
+}
+
+:deep(.property-map-tooltip.leaflet-tooltip-top:before) {
+    border-top-color: var(--primary);
+}
+
+:deep(.property-map-tooltip.leaflet-tooltip-bottom:before) {
+    border-bottom-color: var(--primary);
+}
+
+:deep(.property-map-tooltip.leaflet-tooltip-left:before) {
+    border-left-color: var(--primary);
+}
+
+:deep(.property-map-tooltip.leaflet-tooltip-right:before) {
+    border-right-color: var(--primary);
 }
 
 :deep(.property-map-tooltip .leaflet-tooltip-content) {
@@ -441,13 +515,42 @@ onBeforeUnmount(() => {
 }
 
 :deep(.property-map-tooltip-content) {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
-    padding: 0.5rem 0.625rem;
+    padding: 0.5rem 2rem 0.5rem 0.625rem;
     font-size: 0.75rem;
     line-height: 1rem;
     white-space: nowrap;
+}
+
+:deep(.property-map-tooltip-close) {
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 0;
+    border-radius: 9999px;
+    background: rgb(255 255 255 / 0.2);
+    color: white;
+    font-size: 0.9rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+
+:deep(.property-map-tooltip-close:hover) {
+    background: rgb(255 255 255 / 0.35);
+}
+
+:deep(.property-map-tooltip-close:focus-visible) {
+    outline: 2px solid rgb(255 255 255 / 0.9);
+    outline-offset: 1px;
 }
 
 :deep(.property-map-tooltip-content p) {

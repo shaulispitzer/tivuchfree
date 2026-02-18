@@ -1,6 +1,6 @@
 <template>
     <TransitionRoot appear :show="asPage ? showPage : open" as="template">
-        <Dialog as="div" class="relative z-999999" @close="closeModal">
+        <Dialog as="div" class="relative z-999999" @close="handleDialogClose">
             <TransitionChild
                 @after-leave="
                     asPage
@@ -197,6 +197,10 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    closeOnBackdrop: {
+        type: Boolean,
+        default: true,
+    },
     processing: {
         type: Boolean,
         default: false,
@@ -214,5 +218,13 @@ function closeModal() {
         // return redirect()
     }
     emit('close');
+}
+
+function handleDialogClose() {
+    if (!props.closeOnBackdrop) {
+        return;
+    }
+
+    closeModal();
 }
 </script>

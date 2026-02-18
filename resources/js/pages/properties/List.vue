@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import type { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
 import PaginationNav from '@/components/PaginationNav.vue';
 import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import { Button } from '@/components/ui/button';
 import { create, index } from '@/routes/properties';
 import type { Paginator } from '@/types';
-
+import IxMapAlt1 from '~icons/ix/map-alt-1';
+import PhListBold from '~icons/ph/list-bold';
 type Option = {
     value: string;
     label: string;
@@ -72,6 +74,7 @@ const props = defineProps({
         required: true,
     },
 });
+const { t } = useI18n();
 
 const activeView = ref<ViewModeValue>(props.filters.view ?? ViewMode.List);
 
@@ -185,10 +188,10 @@ watch(activeView, () => {
 </script>
 
 <template>
-    <Head title="Properties" />
+    <Head :title="t('common.properties')" />
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-lg font-semibold">Properties</h1>
+        <h1 class="text-lg font-semibold">{{ t('common.properties') }}</h1>
         <div class="flex items-center gap-2">
             <div
                 class="inline-flex items-center rounded-md border border-input p-0.5"
@@ -201,7 +204,8 @@ watch(activeView, () => {
                     "
                     @click="activeView = ViewMode.List"
                 >
-                    List view
+                    <PhListBold class="size-6 text-primary" />
+                    {{ t('common.listView') }}
                 </Button>
                 <Button
                     type="button"
@@ -210,13 +214,13 @@ watch(activeView, () => {
                         activeView === ViewMode.Map ? 'secondary' : 'ghost'
                     "
                     @click="activeView = ViewMode.Map"
-                >
-                    Map view
+                    ><IxMapAlt1 class="size-6 text-primary" />
+                    {{ t('common.mapView') }}
                 </Button>
             </div>
 
             <Button v-if="can_create" as-child>
-                <Link :href="create()">Add property</Link>
+                <Link :href="create()">{{ t('common.addProperty') }}</Link>
             </Button>
         </div>
     </div>
@@ -233,7 +237,7 @@ watch(activeView, () => {
         v-if="properties.data.length === 0"
         class="text-sm text-muted-foreground"
     >
-        No properties have been added yet.
+        {{ t('common.noPropertiesAddedYet') }}
     </div>
 
     <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">

@@ -23,10 +23,32 @@ const localeToggleFlag = computed(() =>
 const localeToggleLabel = computed(() =>
     currentLocale.value === 'he' ? 'Switch to English' : 'Switch to Hebrew',
 );
-const handleNavClick = (label: string) => {
-    console.log(`${label} clicked`);
-};
 const logoHref = computed(() => (user.value ? dashboard() : home()));
+const shortTermModalOpen = ref(false);
+const handleNavClick = (action: string) => {
+    switch (action) {
+        case 'home':
+            router.visit(home().url);
+            return;
+        case 'listings-long-term':
+            router.visit('/properties?type=long_term');
+            return;
+        case 'listings-medium-term':
+            router.visit('/properties?type=medium_term');
+            return;
+        case 'listings-short-term':
+            shortTermModalOpen.value = true;
+            return;
+        case 'about-us':
+            router.visit('/about-us');
+            return;
+        default:
+            console.log(`${action} clicked`);
+    }
+};
+const closeShortTermModal = () => {
+    shortTermModalOpen.value = false;
+};
 const handleLocaleChange = () => {
     router.post(
         locale(),
@@ -195,5 +217,27 @@ const closeTivuchimNotice = () => {
                 </Button>
             </div>
         </div>
+        <Modal
+            :open="shortTermModalOpen"
+            title="Short Term Properties"
+            :actions="false"
+            :as-page="false"
+            @close="closeShortTermModal"
+        >
+            <div class="space-y-5">
+                <p class="text-sm leading-relaxed text-muted-foreground">
+                    Please note: Tivuch Free do not have a short term feature
+                    ourselves (yet). We endorse using this third party, minimal
+                    costing, platform.
+                </p>
+
+                <a
+                    href="https://www.heimishe.apartments"
+                    class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+                >
+                    go to Www.Heimishe.Apartments
+                </a>
+            </div>
+        </Modal>
     </div>
 </template>

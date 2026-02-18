@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('about-us', function () {
+    return Inertia::render('AboutUs');
+})->name('about-us');
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');

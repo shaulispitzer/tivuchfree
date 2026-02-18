@@ -6,12 +6,16 @@ const { t } = useI18n();
 type NavItem =
     | {
           type: 'link';
+          action: string;
           label: string;
       }
     | {
           type: 'dropdown';
           label: string;
-          items: string[];
+          items: Array<{
+              action: string;
+              label: string;
+          }>;
       };
 
 const props = defineProps<{
@@ -23,14 +27,18 @@ const props = defineProps<{
 }>();
 
 const navItems: NavItem[] = [
-    { type: 'link', label: t('common.home') },
+    { type: 'link', action: 'home', label: t('common.home') },
     {
         type: 'dropdown',
         label: 'Listings',
-        items: ['Long Term Rental', 'Medium Term Rental', 'Short Term Rental'],
+        items: [
+            { action: 'listings-long-term', label: 'Long Term Rental' },
+            { action: 'listings-medium-term', label: 'Medium Term Rental' },
+            { action: 'listings-short-term', label: 'Short Term Rental' },
+        ],
     },
-    { type: 'link', label: t('common.aboutUs') },
-    { type: 'link', label: t('common.contactUs') },
+    { type: 'link', action: 'about-us', label: t('common.aboutUs') },
+    { type: 'link', action: 'contact-us', label: t('common.contactUs') },
 ];
 </script>
 
@@ -42,7 +50,6 @@ const navItems: NavItem[] = [
                     <Button
                         variant="ghost"
                         :class="props.buttonClass"
-                        @click="props.onNavClick(item.label)"
                     >
                         {{ item.label }}
                         <ChevronDown class="ml-1 h-4 w-4" />
@@ -54,10 +61,10 @@ const navItems: NavItem[] = [
                 >
                     <DropdownMenuItem
                         v-for="entry in item.items"
-                        :key="entry"
-                        @click="props.onNavClick(entry)"
+                        :key="entry.action"
+                        @click="props.onNavClick(entry.action)"
                     >
-                        {{ entry }}
+                        {{ entry.label }}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -65,7 +72,7 @@ const navItems: NavItem[] = [
                 v-else
                 variant="ghost"
                 :class="props.buttonClass"
-                @click="props.onNavClick(item.label)"
+                @click="props.onNavClick(item.action)"
             >
                 {{ item.label }}
             </Button>

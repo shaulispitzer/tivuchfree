@@ -88,7 +88,7 @@ const neighbourhoodLabel = computed(() => {
             class="relative overflow-hidden rounded-xl border border-input bg-card shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40"
             :class="
                 property.taken === true
-                    ? 'pointer-events-none grayscale opacity-70'
+                    ? 'pointer-events-none opacity-80 grayscale-75'
                     : 'transition hover:-translate-y-0.5 hover:shadow-md'
             "
         >
