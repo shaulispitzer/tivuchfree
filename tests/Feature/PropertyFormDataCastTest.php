@@ -13,9 +13,17 @@ test('property store accepts empty image_media_ids', function () {
     /** @var User $user */
     $user = User::factory()->create();
 
-    $street = Street::factory()->create();
+    $street = Street::factory()->create([
+        'neighbourhood' => Neighbourhood::Sanhedria,
+    ]);
 
     $response = actingAs($user)->post(route('properties.store'), [
+        'contact_name' => 'Form Data Contact',
+        'contact_phone' => '0501234500',
+        'succah_porch' => false,
+        'has_dud_shemesh' => false,
+        'has_machsan' => false,
+        'has_parking_spot' => false,
         'neighbourhoods' => [Neighbourhood::Sanhedria->value],
         'street' => $street->id,
         'floor' => 2,

@@ -24,7 +24,7 @@ class UserData extends Data
     public static function fromModel(User $user): self
     {
         return new self(
-            id: $user->id,
+            id: (int) ($user->id ?? 0),
             name: $user->name,
             email: $user->email,
             is_admin: $user->is_admin,

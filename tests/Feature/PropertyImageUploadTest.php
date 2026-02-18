@@ -44,9 +44,17 @@ it('uploads images immediately and attaches them on property creation', function
         ->assertOk()
         ->json();
 
-    $street = Street::factory()->create();
+    $street = Street::factory()->create([
+        'neighbourhood' => Neighbourhood::Sanhedria,
+    ]);
 
     $payload = [
+        'contact_name' => 'Upload Contact',
+        'contact_phone' => '0501234568',
+        'succah_porch' => false,
+        'has_dud_shemesh' => false,
+        'has_machsan' => false,
+        'has_parking_spot' => false,
         'neighbourhoods' => [Neighbourhood::Sanhedria->value],
         'street' => $street->id,
         'floor' => 2,

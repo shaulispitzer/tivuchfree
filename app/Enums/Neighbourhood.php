@@ -12,7 +12,7 @@ enum Neighbourhood: string implements PropertyOptionLabel
     case BarIlan = 'Bar Ilan';
     case Gush80 = 'Gush 80';
     case Belz = 'Belz';
-    case Rommema = 'Romema';
+    case Romema = 'Romema';
     case Sorotzkin = 'Sorotzkin';
     case MekorBaruch = 'Mekor Baruch';
     case Geula = 'Geula';

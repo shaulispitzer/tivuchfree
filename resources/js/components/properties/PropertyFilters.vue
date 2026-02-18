@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Slider from '@vueform/slider';
 import '@vueform/slider/themes/default.css';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
     Popover,
@@ -14,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+
 import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
 type Option = {
@@ -31,7 +33,7 @@ export type PropertyFilterState = {
     available_to: string;
     sort: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
 };
-
+const { t } = useI18n();
 const LeaseType = {
     MediumTerm: 'medium_term',
 } as const;
@@ -43,12 +45,18 @@ const SortValue = {
     Oldest: 'oldest',
 } as const;
 
-const sortOptions: Option[] = [
-    { value: SortValue.PriceAsc, label: 'Price: lowest to highest' },
-    { value: SortValue.PriceDesc, label: 'Price: highest to lowest' },
-    { value: SortValue.Newest, label: 'Latest to oldest' },
-    { value: SortValue.Oldest, label: 'Oldest to latest' },
-];
+const sortOptions = computed<Option[]>(() => [
+    {
+        value: SortValue.PriceAsc,
+        label: t('propertyFilters.priceLowestToHighest'),
+    },
+    {
+        value: SortValue.PriceDesc,
+        label: t('propertyFilters.priceHighestToLowest'),
+    },
+    { value: SortValue.Newest, label: t('propertyFilters.latestToOldest') },
+    { value: SortValue.Oldest, label: t('propertyFilters.oldestToLatest') },
+]);
 
 const ALL_NEIGHBOURHOODS_VALUE = '__all_neighbourhoods__';
 const ALL_FURNISHED_VALUE = '__all_furnished__';
@@ -208,7 +216,9 @@ watch(
                 <SelectTrigger
                     class="group w-full hover:bg-accent data-[state=open]:bg-accent"
                 >
-                    <SelectValue placeholder="All neighbourhoods" />
+                    <SelectValue
+                        :placeholder="t('neighbourhoods.allNeighbourhoods')"
+                    />
                     <template #trigger-icon>
                         <ChevronDown16
                             class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
@@ -217,14 +227,18 @@ watch(
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem :value="ALL_NEIGHBOURHOODS_VALUE">
-                        All neighbourhoods
+                        {{ t('neighbourhoods.allNeighbourhoods') }}
                     </SelectItem>
                     <SelectItem
                         v-for="neighbourhood in neighbourhood_options"
                         :key="neighbourhood"
                         :value="neighbourhood"
                     >
-                        {{ neighbourhood }}
+                        {{
+                            t(
+                                `neighbourhoods.${neighbourhood.replaceAll(' ', '')}`,
+                            )
+                        }}
                     </SelectItem>
                 </SelectContent>
             </Select>
@@ -232,7 +246,9 @@ watch(
                 <SelectTrigger
                     class="group w-full hover:bg-accent data-[state=open]:bg-accent"
                 >
-                    <SelectValue placeholder="All furnished options" />
+                    <SelectValue
+                        :placeholder="t('propertyFilters.allFurnishedOptions')"
+                    />
                     <template #trigger-icon>
                         <ChevronDown16
                             class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
@@ -241,14 +257,14 @@ watch(
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem :value="ALL_FURNISHED_VALUE">
-                        All furnished options
+                        {{ t('propertyFilters.allFurnishedOptions') }}
                     </SelectItem>
                     <SelectItem
                         v-for="option in furnished_options"
                         :key="option.value"
                         :value="option.value"
                     >
-                        {{ option.label }}
+                        {{ t(`propertyFurnished.${option.value}`) }}
                     </SelectItem>
                 </SelectContent>
             </Select>
@@ -260,7 +276,9 @@ watch(
                             variant="outline"
                             class="group h-9 w-full justify-between border-input bg-transparent px-3 font-normal shadow-xs hover:bg-accent data-[state=open]:bg-accent"
                         >
-                            <span class="truncate">Bedrooms</span>
+                            <span class="truncate">{{
+                                t('propertyFilters.bedrooms')
+                            }}</span>
                             <span class="truncate text-muted-foreground">
                                 {{ formatBedroomsRange(bedroomsRangeDraft) }}
                             </span>
@@ -288,7 +306,7 @@ watch(
                 <SelectTrigger
                     class="group w-full hover:bg-accent data-[state=open]:bg-accent sm:col-span-2 sm:w-1/2 lg:col-span-1 lg:w-auto"
                 >
-                    <SelectValue placeholder="All types" />
+                    <SelectValue :placeholder="t('propertyFilters.allTypes')" />
                     <template #trigger-icon>
                         <ChevronDown16
                             class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
@@ -296,13 +314,15 @@ watch(
                     </template>
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem :value="ALL_TYPES_VALUE">All types</SelectItem>
+                    <SelectItem :value="ALL_TYPES_VALUE">
+                        {{ t('propertyFilters.allTypes') }}
+                    </SelectItem>
                     <SelectItem
                         v-for="option in type_options"
                         :key="option.value"
                         :value="option.value"
                     >
-                        {{ option.label }}
+                        {{ t(`propertyLeaseType.${option.value}`) }}
                     </SelectItem>
                 </SelectContent>
             </Select>
@@ -351,7 +371,7 @@ watch(
                     v-model="localFilters.hide_taken_properties"
                     class="h-4 w-4 rounded border-input"
                 />
-                Hide Taken Properties
+                {{ t('propertyFilters.hideTakenProperties') }}
             </label>
         </div>
     </form>

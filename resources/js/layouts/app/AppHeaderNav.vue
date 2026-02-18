@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ChevronDown } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 type NavItem =
     | {
@@ -21,14 +23,14 @@ const props = defineProps<{
 }>();
 
 const navItems: NavItem[] = [
-    { type: 'link', label: 'Home' },
+    { type: 'link', label: t('common.home') },
     {
         type: 'dropdown',
         label: 'Listings',
         items: ['Long Term Rental', 'Medium Term Rental', 'Short Term Rental'],
     },
-    { type: 'link', label: 'About Us' },
-    { type: 'link', label: 'Contact Us' },
+    { type: 'link', label: t('common.aboutUs') },
+    { type: 'link', label: t('common.contactUs') },
 ];
 </script>
 
