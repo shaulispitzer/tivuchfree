@@ -129,7 +129,6 @@ const toDateValue = (value?: string | null) =>
                 name="floor"
                 type="number"
                 step="0.1"
-                min="0"
                 required
                 :default-value="props.property?.floor ?? ''"
             />

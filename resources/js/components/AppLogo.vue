@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { home } from '@/routes';
 </script>
 
 <template>
-    <div class="h-full w-56">
+    <Link :href="home()" class="h-full w-56">
         <img src="@assets/transparent-logo.png" v-bind="$attrs" />
-    </div>
+    </Link>
 </template>

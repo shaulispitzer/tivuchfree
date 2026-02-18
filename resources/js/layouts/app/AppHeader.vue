@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { Menu } from 'lucide-vue-next';
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { dashboard, home, locale, login } from '@/routes';
 import AppHeaderNav from './AppHeaderNav.vue';
@@ -39,6 +38,25 @@ const handleLocaleChange = () => {
             preserveState: false,
         },
     );
+};
+
+const showTivuchimNotice = ref(false);
+let tivuchimNoticeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+onMounted(() => {
+    tivuchimNoticeTimeout = setTimeout(() => {
+        showTivuchimNotice.value = true;
+    }, 2000);
+});
+
+onBeforeUnmount(() => {
+    if (tivuchimNoticeTimeout) {
+        clearTimeout(tivuchimNoticeTimeout);
+    }
+});
+
+const closeTivuchimNotice = () => {
+    showTivuchimNotice.value = false;
 };
 </script>
 
@@ -150,6 +168,31 @@ const handleLocaleChange = () => {
                         </Button>
                     </template>
                 </div>
+            </div>
+        </div>
+        <div
+            class="bg-red-700 text-white transition-all duration-300 ease-out"
+            :class="
+                showTivuchimNotice
+                    ? 'max-h-24 translate-y-0 opacity-100'
+                    : 'max-h-0 -translate-y-3 overflow-hidden opacity-0'
+            "
+        >
+            <div
+                class="mx-auto flex min-h-10 flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm md:max-w-7xl xl:px-0"
+            >
+                <p class="font-medium">
+                    Note to Tivuchim: It is אסור (Forbidden) to take listings
+                    from this site!
+                </p>
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    class="h-8 border border-white/40 bg-white/15 px-3 text-xs text-white hover:bg-white/25"
+                    @click="closeTivuchimNotice"
+                >
+                    Accept T&C's
+                </Button>
             </div>
         </div>
     </div>

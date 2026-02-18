@@ -23,6 +23,8 @@ class PropertyData extends Data
     public function __construct(
         public int $id,
         public ?int $user_id,
+        public ?string $contact_name,
+        public ?string $contact_phone,
         public array $neighbourhoods,
         public ?float $price,
         public string $street,
@@ -61,6 +63,8 @@ class PropertyData extends Data
         return new self(
             id: $property->id,
             user_id: $property->user_id,
+            contact_name: $property->contact_name ?? null,
+            contact_phone: $property->contact_phone ?? null,
             neighbourhoods: $property->neighbourhoods ?? [],
             price: $property->price !== null ? (float) $property->price : null,
             street: $property->street,

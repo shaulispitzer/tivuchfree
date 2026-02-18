@@ -62,7 +62,9 @@ function createKey(): string {
 }
 
 function syncToParent(): void {
-    const ids = images.value.map((i) => i.id).filter((id): id is number => !!id);
+    const ids = images.value
+        .map((i) => i.id)
+        .filter((id): id is number => !!id);
 
     emit('update:mediaIds', ids);
 
@@ -217,7 +219,7 @@ async function onFileChange(event: Event): Promise<void> {
 </script>
 
 <template>
-    <div class="grid gap-2">
+    <div class="grid max-w-80 gap-2">
         <div class="flex items-start justify-between gap-4">
             <div class="grid gap-1">
                 <p class="text-sm font-medium">Images</p>
@@ -244,7 +246,7 @@ async function onFileChange(event: Event): Promise<void> {
 
         <button
             type="button"
-            class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="!canAddMore || isUploading"
             @click="openPicker"
         >
@@ -283,7 +285,7 @@ async function onFileChange(event: Event): Promise<void> {
                         Uploading…
                     </div>
 
-                    <div class="absolute left-2 top-2 flex items-center gap-2">
+                    <div class="absolute top-2 left-2 flex items-center gap-2">
                         <button
                             type="button"
                             class="inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-black/70"
@@ -310,7 +312,7 @@ async function onFileChange(event: Event): Promise<void> {
 
                     <button
                         type="button"
-                        class="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-black/60 text-white opacity-100 backdrop-blur-sm transition hover:bg-black/70 sm:opacity-0 sm:group-hover:opacity-100"
+                        class="absolute top-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-black/60 text-white opacity-100 backdrop-blur-sm transition hover:bg-black/70 sm:opacity-0 sm:group-hover:opacity-100"
                         :disabled="item.uploading"
                         @click="removeImage(item)"
                         aria-label="Remove image"

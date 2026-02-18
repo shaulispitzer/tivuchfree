@@ -96,7 +96,7 @@ onMounted(() => {
                         href="/properties?type=long_term"
                         class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                     >
-                        Long Term Properties
+                        Long Term Listings
                     </Link>
 
                     <Link
@@ -105,7 +105,7 @@ onMounted(() => {
                         href="/properties?type=medium_term"
                         class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                     >
-                        Medium Term Properties
+                        Medium Term Listings
                     </Link>
 
                     <button
@@ -113,7 +113,7 @@ onMounted(() => {
                         class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                         @click="openShortTermModal"
                     >
-                        Short Term Properties
+                        Short Term Listings
                     </button>
                 </div>
             </div>

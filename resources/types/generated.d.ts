@@ -5,6 +5,8 @@ locale: App.Enums.Locale;
 export type PropertyData = {
 id: number;
 user_id: number | null;
+contact_name: string | null;
+contact_phone: string | null;
 neighbourhoods: Array<any>;
 price: number | null;
 street: string;
@@ -59,15 +61,31 @@ created_at: string | null;
 }
 declare namespace App.Data.Forms {
 export type PropertyFormData = {
+contact_name: string | null;
+contact_phone: string;
+price: number | null;
 neighbourhoods: Array<any>;
 building_number: number | null;
 street: number;
 floor: number;
+square_meter: number | null;
 type: App.Enums.PropertyLeaseType;
 available_from: string;
 available_to: string | null;
 bedrooms: number;
+bathrooms: number | null;
 furnished: App.Enums.PropertyFurnished;
+access: App.Enums.PropertyAccess | null;
+kitchen_dining_room: App.Enums.PropertyKitchenDiningRoom | null;
+porch_garden: App.Enums.PropertyPorchGarden | null;
+succah_porch: boolean;
+air_conditioning: App.Enums.PropertyAirConditioning | null;
+apartment_condition: App.Enums.PropertyApartmentCondition | null;
+additional_info_en: string | null;
+additional_info_he: string | null;
+has_dud_shemesh: boolean;
+has_machsan: boolean;
+has_parking_spot: boolean;
 temp_upload_id: number | null;
 image_media_ids: Array<any> | null;
 main_image_media_id: number | null;

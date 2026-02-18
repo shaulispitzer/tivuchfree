@@ -33,6 +33,8 @@ class PropertyFactory extends Factory
 
         return [
             'user_id' => User::factory(),
+            'contact_name' => fake()->name(),
+            'contact_phone' => fake()->phoneNumber(),
             'neighbourhoods' => [
                 fake()->randomElement(Neighbourhood::values()),
             ],

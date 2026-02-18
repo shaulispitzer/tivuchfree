@@ -36,6 +36,9 @@ Route::middleware('auth')->group(function () {
     Route::get('properties/streets', [PropertyController::class, 'streets'])->name('properties.streets');
     Route::post('properties', [PropertyController::class, 'store'])->name('properties.store');
     Route::get('properties/{property}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
+    Route::get('properties/{property}/images', [PropertyController::class, 'images'])->name('properties.images.index');
+    Route::post('properties/{property}/images', [PropertyController::class, 'storeImage'])->name('properties.images.store');
+    Route::delete('properties/{property}/images/{media}', [PropertyController::class, 'destroyImage'])->name('properties.images.destroy');
     Route::put('properties/{property}', [PropertyController::class, 'update'])->name('properties.update');
 
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');

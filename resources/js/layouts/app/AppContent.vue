@@ -16,7 +16,7 @@ const className = computed(() => props.class);
 const contentClasses = computed(() =>
     isHomePage.value
         ? 'mx-auto flex h-full w-full max-w-none flex-1 flex-col gap-0 rounded-none px-0'
-        : 'mx-auto flex h-full w-full max-w-400 flex-1 flex-col gap-4 rounded-xl px-4',
+        : 'mx-auto flex h-full w-full max-w-400 flex-1 flex-col gap-4 rounded-xl px-4 mt-2',
 );
 </script>
 

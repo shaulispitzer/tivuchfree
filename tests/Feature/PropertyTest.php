@@ -18,6 +18,8 @@ use Mockery\MockInterface;
 function propertyPayload(array $overrides = []): array
 {
     return array_merge([
+        'contact_name' => 'Test Contact',
+        'contact_phone' => '0501234567',
         'neighbourhoods' => [Neighbourhood::Sanhedria->value],
         'price' => 12000,
         'street' => 'Jabotinsky',
@@ -172,6 +174,46 @@ test('property update still succeeds when geocoding fails', function () {
     $response->assertRedirect(route('properties.edit', $property));
     expect($property->fresh()->lat)->toBeNull();
     expect($property->fresh()->lon)->toBeNull();
+});
+
+test('property update succeeds without changing street selection', function () {
+    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('geocode')
+            ->once()
+            ->andReturn([
+                'lat' => 31.8123,
+                'lon' => 35.2012,
+            ]);
+    });
+
+    $owner = User::factory()->create();
+    $street = Street::factory()->create([
+        'name' => [
+            'en' => 'Bar Ilan Street',
+            'he' => 'בר אילן',
+        ],
+        'neighbourhood' => Neighbourhood::BarIlan,
+    ]);
+    $property = Property::factory()->create([
+        'user_id' => $owner->id,
+        'street' => $street->getTranslation('name', 'he'),
+        'neighbourhoods' => [Neighbourhood::BarIlan->value],
+    ]);
+
+    $payload = propertyPayload([
+        'neighbourhoods' => [Neighbourhood::BarIlan->value],
+        'building_number' => '18',
+        'contact_phone' => '0509999999',
+    ]);
+    unset($payload['street']);
+
+    $response = $this->actingAs($owner)->put(route('properties.update', $property), $payload);
+
+    $response->assertRedirect(route('properties.edit', $property));
+    expect($property->fresh()->street)->toBe($street->getTranslation('name', 'he'));
+    expect($property->fresh()->contact_phone)->toBe('0509999999');
+    expect($property->fresh()->lat)->toBe(31.8123);
+    expect($property->fresh()->lon)->toBe(35.2012);
 });
 
 test('property update rejects non-numeric floor values', function () {

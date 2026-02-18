@@ -13,20 +13,19 @@ use App\Enums\PropertyFurnished;
 use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
-use App\Http\Requests\PropertyUpdateRequest;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
 use App\Services\PropertyGeocoder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PropertyController extends Controller
 {
@@ -231,7 +230,7 @@ class PropertyController extends Controller
             'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
             'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
             'street' => ['required', 'integer', 'exists:streets,id'],
-            'floor' => ['required', 'numeric', 'decimal:0,1', 'min:0'],
+            'floor' => ['required', 'numeric', 'decimal:0,1'],
         ])->validate();
 
         $streetInHebrew = Street::query()
@@ -253,8 +252,15 @@ class PropertyController extends Controller
         );
 
         $property = DB::transaction(function () use ($data, $request, $streetInHebrew, $coordinates) {
+            $additionalInfo = array_filter([
+                'en' => $data->additional_info_en,
+                'he' => $data->additional_info_he,
+            ], fn (?string $value): bool => is_string($value) && $value !== '');
+
             $property = Property::create([
                 'user_id' => $request->user()->id,
+                'contact_name' => $data->contact_name,
+                'contact_phone' => $data->contact_phone,
                 'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
                 'building_number' => $data->building_number,
                 'street' => $streetInHebrew,
@@ -265,7 +271,19 @@ class PropertyController extends Controller
                 'available_from' => $data->available_from,
                 'available_to' => $data->available_to,
                 'bedrooms' => $data->bedrooms,
+                'square_meter' => $data->square_meter,
                 'furnished' => $data->furnished,
+                'bathrooms' => $data->bathrooms,
+                'access' => $data->access,
+                'kitchen_dining_room' => $data->kitchen_dining_room,
+                'porch_garden' => $data->porch_garden,
+                'succah_porch' => $data->succah_porch,
+                'air_conditioning' => $data->air_conditioning,
+                'apartment_condition' => $data->apartment_condition,
+                'additional_info' => $additionalInfo === [] ? null : $additionalInfo,
+                'has_dud_shemesh' => $data->has_dud_shemesh,
+                'has_machsan' => $data->has_machsan,
+                'has_parking_spot' => $data->has_parking_spot,
             ]);
 
             $mediaIds = $data->image_media_ids ? array_values(array_unique($data->image_media_ids)) : [];
@@ -378,42 +396,376 @@ class PropertyController extends Controller
         ])->baseRoute('properties.index', $isMapView ? ['view' => 'map'] : []);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(PropertyUpdateRequest $request, Property $property)
+    public function images(Property $property): JsonResponse
     {
         $this->authorize('update', $property);
 
-        $data = $request->validated();
+        return response()->json([
+            'images' => $this->propertyImagesPayload($property),
+        ]);
+    }
 
-        if ($data['type'] === PropertyLeaseType::LongTerm->value) {
-            $data['available_to'] = null;
+    public function storeImage(Request $request, Property $property): JsonResponse
+    {
+        $this->authorize('update', $property);
+
+        $validated = Validator::make($request->all(), [
+            'image' => ['required', 'image', 'max:10240'],
+        ])->validate();
+
+        $image = $validated['image'];
+
+        $currentCount = (int) ($property->getFirstMedia('main_image') ? 1 : 0)
+            + $property->getMedia('images')->count();
+
+        if ($currentCount >= 6) {
+            throw ValidationException::withMessages([
+                'image' => 'You can upload up to 6 images.',
+            ]);
         }
 
-        $coordinates = $this->propertyGeocoder->geocode(
-            $data['street'],
-            $data['building_number'] ?? null,
-        );
-
-        $data['lat'] = $coordinates['lat'] ?? null;
-        $data['lon'] = $coordinates['lon'] ?? null;
-
-        $property->update(Arr::except($data, ['main_image', 'images']));
-
-        if ($request->hasFile('main_image')) {
-            $property->clearMediaCollection('main_image');
-            $property->addMediaFromRequest('main_image')->toMediaCollection('main_image');
+        if ($property->getFirstMedia('main_image')) {
+            $property->addMedia($image)->toMediaCollection('images');
+        } else {
+            $property->addMedia($image)->toMediaCollection('main_image');
         }
 
-        if ($request->hasFile('images')) {
-            $property->clearMediaCollection('images');
-            foreach ($request->file('images', []) as $image) {
-                $property->addMedia($image)->toMediaCollection('images');
+        return response()->json([
+            'images' => $this->propertyImagesPayload($property),
+        ]);
+    }
+
+    public function destroyImage(Property $property, Media $media): JsonResponse
+    {
+        $this->authorize('update', $property);
+
+        $belongsToProperty = $media->model_type === $property->getMorphClass()
+            && (string) $media->model_id === (string) $property->getKey()
+            && in_array($media->collection_name, ['main_image', 'images'], true);
+
+        if (! $belongsToProperty) {
+            abort(404);
+        }
+
+        $wasMainImage = $media->collection_name === 'main_image';
+
+        $media->delete();
+
+        if ($wasMainImage) {
+            $nextMain = $property->media()
+                ->where('collection_name', 'images')
+                ->orderBy('order_column')
+                ->orderBy('id')
+                ->first();
+
+            if ($nextMain) {
+                $nextMain->move($property, 'main_image');
             }
         }
 
-        return redirect()->route('properties.edit', $property);
+        return response()->json([
+            'images' => $this->propertyImagesPayload($property),
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Property $property)
+    {
+        $this->authorize('update', $property);
+
+        $resolvedStreetId = $this->resolveStreetIdForUpdate($request, $property);
+
+        if ($resolvedStreetId !== null) {
+            $request->merge([
+                'street' => $resolvedStreetId,
+            ]);
+        }
+
+        if (is_numeric($request->input('street'))) {
+            $data = PropertyFormData::validateAndCreate($request);
+
+            Validator::make([
+                'neighbourhoods' => $data->neighbourhoods,
+                'street' => $data->street,
+                'floor' => $data->floor,
+            ], [
+                'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
+                'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+                'street' => ['required', 'integer', 'exists:streets,id'],
+                'floor' => ['required', 'numeric', 'decimal:0,1'],
+            ])->validate();
+
+            $streetInHebrew = Street::query()
+                ->find($data->street)
+                ?->getTranslation('name', 'he');
+
+            if (! is_string($streetInHebrew) || $streetInHebrew === '') {
+                throw ValidationException::withMessages([
+                    'street' => 'Please select a valid street.',
+                ]);
+            }
+
+            if ($data->type === PropertyLeaseType::LongTerm) {
+                $data->available_to = null;
+            }
+
+            $coordinates = $this->propertyGeocoder->geocode(
+                $streetInHebrew,
+                $data->building_number !== null ? (string) $data->building_number : null,
+            );
+
+            DB::transaction(function () use ($coordinates, $data, $property, $request, $streetInHebrew): void {
+                $additionalInfo = array_filter([
+                    'en' => $data->additional_info_en,
+                    'he' => $data->additional_info_he,
+                ], fn (?string $value): bool => is_string($value) && $value !== '');
+
+                $property->update([
+                    'contact_name' => $data->contact_name,
+                    'contact_phone' => $data->contact_phone,
+                    'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
+                    'building_number' => $data->building_number,
+                    'street' => $streetInHebrew,
+                    'lat' => $coordinates['lat'] ?? null,
+                    'lon' => $coordinates['lon'] ?? null,
+                    'floor' => $data->floor,
+                    'type' => $data->type,
+                    'available_from' => $data->available_from,
+                    'available_to' => $data->available_to,
+                    'bedrooms' => $data->bedrooms,
+                    'square_meter' => $data->square_meter,
+                    'furnished' => $data->furnished,
+                    'bathrooms' => $data->bathrooms,
+                    'access' => $data->access,
+                    'kitchen_dining_room' => $data->kitchen_dining_room,
+                    'porch_garden' => $data->porch_garden,
+                    'succah_porch' => $data->succah_porch,
+                    'air_conditioning' => $data->air_conditioning,
+                    'apartment_condition' => $data->apartment_condition,
+                    'additional_info' => $additionalInfo === [] ? null : $additionalInfo,
+                    'has_dud_shemesh' => $data->has_dud_shemesh,
+                    'has_machsan' => $data->has_machsan,
+                    'has_parking_spot' => $data->has_parking_spot,
+                ]);
+
+                $this->syncUploadedImages(
+                    property: $property,
+                    userId: $request->user()->id,
+                    tempUploadId: $data->temp_upload_id,
+                    imageMediaIds: $data->image_media_ids,
+                    mainImageMediaId: $data->main_image_media_id,
+                );
+            });
+
+            return redirect()->route('properties.edit', $property)->success('Property updated successfully');
+        }
+
+        $validated = Validator::make($request->all(), [
+            'contact_name' => ['nullable', 'string', 'max:255'],
+            'contact_phone' => ['required', 'string', 'max:255'],
+            'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
+            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'street' => ['required', 'string', 'max:255'],
+            'building_number' => ['nullable'],
+            'floor' => ['required', 'numeric', 'decimal:0,1'],
+            'type' => ['required', Rule::enum(PropertyLeaseType::class)],
+            'available_from' => ['required', 'date'],
+            'available_to' => ['nullable', 'date', 'after_or_equal:available_from'],
+            'bedrooms' => ['required', 'numeric', 'min:0', 'max:10'],
+            'square_meter' => ['nullable', 'numeric', 'min:0'],
+            'furnished' => ['required', Rule::enum(PropertyFurnished::class)],
+            'bathrooms' => ['nullable', 'numeric', 'min:0'],
+            'access' => ['nullable', Rule::enum(PropertyAccess::class)],
+            'kitchen_dining_room' => ['nullable', Rule::enum(PropertyKitchenDiningRoom::class)],
+            'porch_garden' => ['nullable', Rule::enum(PropertyPorchGarden::class)],
+            'succah_porch' => ['boolean'],
+            'air_conditioning' => ['nullable', Rule::enum(PropertyAirConditioning::class)],
+            'apartment_condition' => ['nullable', Rule::enum(PropertyApartmentCondition::class)],
+            'additional_info' => ['nullable', 'string'],
+            'has_dud_shemesh' => ['boolean'],
+            'has_machsan' => ['boolean'],
+            'has_parking_spot' => ['boolean'],
+        ])->validate();
+
+        if ($validated['type'] === PropertyLeaseType::LongTerm->value) {
+            $validated['available_to'] = null;
+        }
+
+        $coordinates = $this->propertyGeocoder->geocode(
+            $validated['street'],
+            isset($validated['building_number']) ? (string) $validated['building_number'] : null,
+        );
+
+        DB::transaction(function () use ($coordinates, $property, $validated): void {
+            $additionalInfo = array_filter([
+                'en' => $validated['additional_info'] ?? null,
+                'he' => $validated['additional_info'] ?? null,
+            ], fn (?string $value): bool => is_string($value) && $value !== '');
+
+            $property->update([
+                'contact_name' => $validated['contact_name'] ?? null,
+                'contact_phone' => $validated['contact_phone'],
+                'neighbourhoods' => array_values(array_unique($validated['neighbourhoods'])),
+                'price' => $validated['price'] ?? null,
+                'street' => $validated['street'],
+                'building_number' => $validated['building_number'] ?? null,
+                'lat' => $coordinates['lat'] ?? null,
+                'lon' => $coordinates['lon'] ?? null,
+                'floor' => (float) $validated['floor'],
+                'type' => $validated['type'],
+                'available_from' => $validated['available_from'],
+                'available_to' => $validated['available_to'],
+                'bedrooms' => (float) $validated['bedrooms'],
+                'square_meter' => $validated['square_meter'] ?? null,
+                'furnished' => $validated['furnished'],
+                'bathrooms' => $validated['bathrooms'] ?? null,
+                'access' => $validated['access'] ?? null,
+                'kitchen_dining_room' => $validated['kitchen_dining_room'] ?? null,
+                'porch_garden' => $validated['porch_garden'] ?? null,
+                'succah_porch' => (bool) ($validated['succah_porch'] ?? false),
+                'air_conditioning' => $validated['air_conditioning'] ?? null,
+                'apartment_condition' => $validated['apartment_condition'] ?? null,
+                'additional_info' => $additionalInfo === [] ? null : $additionalInfo,
+                'has_dud_shemesh' => (bool) ($validated['has_dud_shemesh'] ?? false),
+                'has_machsan' => (bool) ($validated['has_machsan'] ?? false),
+                'has_parking_spot' => (bool) ($validated['has_parking_spot'] ?? false),
+            ]);
+        });
+
+        return redirect()->route('properties.edit', $property)->success('Property updated successfully');
+    }
+
+    protected function resolveStreetIdForUpdate(Request $request, Property $property): ?int
+    {
+        $streetInput = $request->input('street');
+
+        if (is_numeric($streetInput)) {
+            return (int) $streetInput;
+        }
+
+        $streetName = null;
+
+        if (is_string($streetInput) && $streetInput !== '') {
+            $streetName = $streetInput;
+        } elseif ($property->street !== '') {
+            $streetName = $property->street;
+        }
+
+        if (! is_string($streetName) || $streetName === '') {
+            return null;
+        }
+
+        $requestedNeighbourhoods = $request->input('neighbourhoods');
+        $neighbourhoods = is_array($requestedNeighbourhoods)
+            ? array_values(array_filter($requestedNeighbourhoods, static fn (mixed $value): bool => is_string($value) && $value !== ''))
+            : [];
+
+        if ($neighbourhoods === []) {
+            $neighbourhoods = is_array($property->neighbourhoods)
+                ? array_values(array_filter($property->neighbourhoods, static fn (mixed $value): bool => is_string($value) && $value !== ''))
+                : [];
+        }
+
+        return Street::query()
+            ->when($neighbourhoods !== [], static fn ($query) => $query->whereIn('neighbourhood', $neighbourhoods))
+            ->where(function ($query) use ($streetName): void {
+                $query
+                    ->where('name->he', $streetName)
+                    ->orWhere('name->en', $streetName);
+            })
+            ->value('id');
+    }
+
+    /**
+     * @param  array<int, mixed>|null  $imageMediaIds
+     */
+    protected function syncUploadedImages(
+        Property $property,
+        int $userId,
+        ?int $tempUploadId,
+        ?array $imageMediaIds,
+        ?int $mainImageMediaId,
+    ): void {
+        $mediaIds = collect($imageMediaIds ?? [])
+            ->map(static fn (mixed $mediaId): int => (int) $mediaId)
+            ->filter(static fn (int $mediaId): bool => $mediaId > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (! $tempUploadId || $mediaIds === []) {
+            return;
+        }
+
+        $tempUpload = TempUpload::query()
+            ->whereKey($tempUploadId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (! $tempUpload) {
+            throw ValidationException::withMessages([
+                'temp_upload_id' => 'Invalid upload session.',
+            ]);
+        }
+
+        $mediaItems = $tempUpload->media()
+            ->where('collection_name', 'images')
+            ->whereIn('id', $mediaIds)
+            ->get()
+            ->keyBy('id');
+
+        if ($mediaItems->count() !== count($mediaIds)) {
+            throw ValidationException::withMessages([
+                'image_media_ids' => 'One or more images are missing.',
+            ]);
+        }
+
+        $mainId = $mainImageMediaId ? (int) $mainImageMediaId : $mediaIds[0];
+
+        if (! in_array($mainId, $mediaIds, true)) {
+            throw ValidationException::withMessages([
+                'main_image_media_id' => 'Main image must be one of the uploaded images.',
+            ]);
+        }
+
+        $mainMedia = $mediaItems->get($mainId);
+
+        if (! $mainMedia) {
+            throw ValidationException::withMessages([
+                'main_image_media_id' => 'Main image is missing.',
+            ]);
+        }
+
+        $property->clearMediaCollection('main_image');
+        $property->clearMediaCollection('images');
+
+        $mainMedia->move($property, 'main_image');
+
+        $order = 1;
+        foreach ($mediaIds as $mediaId) {
+            if ($mediaId === $mainId) {
+                continue;
+            }
+
+            $media = $mediaItems->get($mediaId);
+
+            if (! $media) {
+                continue;
+            }
+
+            $moved = $media->move($property, 'images');
+
+            $moved->update([
+                'order_column' => $order,
+            ]);
+
+            $order++;
+        }
+
+        $tempUpload->delete();
     }
 
     protected function formOptions(): PropertyFormOptionsData
@@ -428,6 +780,42 @@ class PropertyController extends Controller
             PropertyAirConditioning::cases(),
             PropertyApartmentCondition::cases(),
         );
+    }
+
+    /**
+     * @return array<int, array{id: int, name: string, url: string, is_main: bool}>
+     */
+    protected function propertyImagesPayload(Property $property): array
+    {
+        $property->load('media');
+
+        $payload = [];
+
+        $mainImage = $property->getFirstMedia('main_image');
+
+        if ($mainImage) {
+            $payload[] = [
+                'id' => $mainImage->id,
+                'name' => $mainImage->name,
+                'url' => $mainImage->getUrl(),
+                'is_main' => true,
+            ];
+        }
+
+        $additionalImages = $property->getMedia('images')
+            ->sortBy('order_column')
+            ->values();
+
+        foreach ($additionalImages as $image) {
+            $payload[] = [
+                'id' => $image->id,
+                'name' => $image->name,
+                'url' => $image->getUrl(),
+                'is_main' => false,
+            ];
+        }
+
+        return $payload;
     }
 
     /**
