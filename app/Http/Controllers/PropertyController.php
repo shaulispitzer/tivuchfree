@@ -18,6 +18,7 @@ use App\Models\Street;
 use App\Models\TempUpload;
 use App\Services\PropertyGeocoder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -381,6 +382,47 @@ class PropertyController extends Controller
             'property' => PropertyData::fromModel($property),
             'options' => $this->formOptions(),
         ]);
+    }
+
+    public function myProperties(Request $request)
+    {
+
+        if (! $request->user()) {
+            return redirect()->route('login');
+        }
+        $properties = Property::query()
+            ->where('user_id', $request->user()->id)
+            ->latest('id')
+            ->get()
+            ->map(fn (Property $property) => [
+                'id' => $property->id,
+                'street' => $property->street,
+                'building_number' => $property->building_number,
+                'floor' => $property->floor,
+                'bedrooms' => $property->bedrooms,
+                'type' => $property->type?->value,
+                'taken' => $property->taken,
+                'created_at' => $property->created_at?->toDateTimeString(),
+            ]);
+
+        return Inertia::render('properties/MyProperties', [
+            'properties' => $properties,
+        ]);
+    }
+
+    public function markAsTaken(Request $request, Property $property): RedirectResponse
+    {
+        if ($property->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if (! $property->taken) {
+            $property->update([
+                'taken' => true,
+            ]);
+        }
+
+        return back()->success('Property marked as taken');
     }
 
     public function show(Request $request, Property $property)

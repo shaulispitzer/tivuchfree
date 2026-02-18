@@ -52,11 +52,11 @@ value: string;
 label: string;
 };
 export type UserData = {
-id: number | null;
+id: number;
 name: string;
 email: string;
-is_admin: boolean | null;
-created_at: string | null;
+is_admin: boolean;
+created_at: string;
 };
 }
 declare namespace App.Data.Forms {

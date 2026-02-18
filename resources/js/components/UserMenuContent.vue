@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { LayoutDashboard, LogOut, Settings } from 'lucide-vue-next';
+import {
+    Building2,
+    LayoutDashboard,
+    LogOut,
+    Settings,
+    Users,
+} from 'lucide-vue-next';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -10,11 +16,12 @@ import {
 import UserInfo from '@/components/UserInfo.vue';
 import { logout } from '@/routes';
 import { index as adminPropertiesIndex } from '@/routes/admin/properties';
+import { index as adminUsersIndex } from '@/routes/admin/users';
+import { index as myPropertiesIndex } from '@/routes/my-properties';
 import { edit } from '@/routes/profile';
-import type { User } from '@/types';
 
 type Props = {
-    user: User;
+    user: App.Data.UserData;
 };
 
 const handleLogout = () => {
@@ -32,6 +39,16 @@ defineProps<Props>();
     </DropdownMenuLabel>
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
+        <DropdownMenuItem :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="myPropertiesIndex()"
+                prefetch
+            >
+                <Building2 class="mr-2 h-4 w-4" />
+                My Properties
+            </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem v-if="user.is_admin" :as-child="true">
             <Link
                 class="block w-full cursor-pointer"
@@ -40,6 +57,16 @@ defineProps<Props>();
             >
                 <LayoutDashboard class="mr-2 h-4 w-4" />
                 Admin - Properties
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="adminUsersIndex()"
+                prefetch
+            >
+                <Users class="mr-2 h-4 w-4" />
+                Admin - Users
             </Link>
         </DropdownMenuItem>
         <DropdownMenuItem :as-child="true">

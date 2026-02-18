@@ -3,6 +3,7 @@
 namespace App\Data;
 
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Spatie\LaravelData\Data;
 
@@ -10,13 +11,13 @@ use Spatie\LaravelData\Data;
 class UserData extends Data
 {
     public function __construct(
-        public ?int $id,
+        public int $id,
         public string $name,
         public string $email,
 
-        public ?bool $is_admin,
+        public bool $is_admin,
 
-        public ?CarbonInterface $created_at,
+        public CarbonInterface $created_at,
         // public $class = 'User',
     ) {}
 
@@ -35,11 +36,11 @@ class UserData extends Data
     public static function fromArray(array $userData): self
     {
         return new self(
-            id: null,
+            id: 0,
             name: data_get($userData, 'name'),
             email: data_get($userData, 'email'),
             is_admin: false,
-            created_at: null,
+            created_at: CarbonImmutable::now(),
         );
     }
 }

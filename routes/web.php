@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PlaygroundController;
@@ -24,6 +25,9 @@ Route::get('properties', [PropertyController::class, 'index'])->name('properties
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('properties', [AdminPropertyController::class, 'index'])->name('properties.index');
     Route::delete('properties/{property}', [AdminPropertyController::class, 'destroy'])->name('properties.destroy');
+    Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::patch('users/{user}/make-admin', [AdminUserController::class, 'makeAdmin'])->name('users.make-admin');
+    Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 });
 
 Route::middleware('auth')->group(function () {
@@ -40,6 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::post('properties/{property}/images', [PropertyController::class, 'storeImage'])->name('properties.images.store');
     Route::delete('properties/{property}/images/{media}', [PropertyController::class, 'destroyImage'])->name('properties.images.destroy');
     Route::put('properties/{property}', [PropertyController::class, 'update'])->name('properties.update');
+    Route::get('my-properties', [PropertyController::class, 'myProperties'])->name('my-properties.index');
+    Route::patch('my-properties/{property}/mark-as-taken', [PropertyController::class, 'markAsTaken'])
+        ->name('my-properties.mark-as-taken');
 
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
