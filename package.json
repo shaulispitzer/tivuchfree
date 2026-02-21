@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "php artisan wayfinder:generate --with-form --no-interaction && && vite build",
+        "build": "php artisan wayfinder:generate --with-form --no-interaction && vite build",
         "build:ssr": "php artisan wayfinder:generate --with-form --no-interaction && vite build && vite build --ssr",
         "dev": "php artisan wayfinder:generate --with-form --no-interaction && vite",
         "format": "prettier --write resources/",
