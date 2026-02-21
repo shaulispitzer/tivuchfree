@@ -91,10 +91,10 @@ export default defineConfig({
             pattern: 'app/{Data,Enums}/**/*.php',
             command: 'php artisan typescript:transform',
         }),
-        watch({
-            pattern: 'routes/*.php',
-            command: 'php artisan trail:generate',
-        }),
+        // watch({
+        //     pattern: 'routes/*.php',
+        //     command: 'php artisan trail:generate',
+        // }),
 
         laravel({
             input: 'resources/js/app.ts',

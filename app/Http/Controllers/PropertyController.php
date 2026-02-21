@@ -386,10 +386,8 @@ class PropertyController extends Controller
 
     public function myProperties(Request $request)
     {
+        abort_if(! Auth::check(), 404);
 
-        if (! $request->user()) {
-            return redirect()->route('login');
-        }
         $properties = Property::query()
             ->where('user_id', $request->user()->id)
             ->latest('id')

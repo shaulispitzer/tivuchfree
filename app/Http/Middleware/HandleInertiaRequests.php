@@ -41,6 +41,6 @@ class HandleInertiaRequests extends Middleware
             user: fn () => UserData::optional($request->user()),
         );
 
-        return $state->toArray();
+        return array_merge(parent::share($request), $state->toArray());
     }
 }

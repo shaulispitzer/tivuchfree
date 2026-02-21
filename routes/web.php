@@ -33,7 +33,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth', 'verified')->group(function () {
     Route::post('property-image-uploads', [PropertyImageUploadController::class, 'store'])
         ->name('property-image-uploads.store');
     Route::delete('property-image-uploads/{tempUpload}/media/{media}', [PropertyImageUploadController::class, 'destroy'])
@@ -60,7 +60,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
-// modale route
+
+// modale route PLAYGROUND
 Route::get('sample-modale', function () {
     return Inertia::render('SampleModale');
 })->name('sample-modale');
