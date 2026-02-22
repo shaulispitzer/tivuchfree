@@ -496,13 +496,13 @@ test('properties index returns paginated data', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('properties/List')
-            ->has('properties.data', 5)
+            ->has('properties.data', 13)
             ->where('properties.total', 13)
-            ->where('properties.per_page', 5)
+            ->where('properties.per_page', 15)
             ->where('properties.current_page', 1)
-            ->where('properties.last_page', 3)
+            ->where('properties.last_page', 1)
             ->where('properties.from', 1)
-            ->where('properties.to', 5)
+            ->where('properties.to', 13)
         );
 });
 

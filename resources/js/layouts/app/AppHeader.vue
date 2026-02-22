@@ -3,6 +3,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { Menu } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { dashboard, home, locale, login } from '@/routes';
+import { create as propertiesCreate } from '@/routes/properties';
 import AppHeaderNav from './AppHeaderNav.vue';
 const { t } = useI18n();
 
@@ -189,7 +190,9 @@ const closeTivuchimNotice = () => {
                             <Link :href="login()">{{ t('auth.login') }}</Link>
                         </Button>
                         <Button as-child>
-                            <Link>{{ t('common.addListing') }}</Link>
+                            <Link :href="propertiesCreate()">{{
+                                t('common.addListing')
+                            }}</Link>
                         </Button>
                     </template>
                 </div>
