@@ -103,6 +103,55 @@ let streetsFetchTimeout: ReturnType<typeof setTimeout> | undefined;
 let streetsRequestId = 0;
 
 const isMediumTerm = computed(() => form.type === 'medium_term');
+
+const translatedLeaseTypes = computed(() =>
+    props.options.lease_types.map((option) => ({
+        value: option.value,
+        label: t(`propertyLeaseType.${option.value}`),
+    })),
+);
+
+const translatedFurnished = computed(() =>
+    props.options.furnished.map((option) => ({
+        value: option.value,
+        label: t(`propertyFurnished.${option.value}`),
+    })),
+);
+
+const translatedAccess = computed(() =>
+    props.options.access.map((option) => ({
+        value: option.value,
+        label: t(`propertyAccess.${option.value}`),
+    })),
+);
+
+const translatedKitchenDiningRoom = computed(() =>
+    props.options.kitchen_dining_room.map((option) => ({
+        value: option.value,
+        label: t(`propertyKitchenDiningRoom.${option.value}`),
+    })),
+);
+
+const translatedPorchGarden = computed(() =>
+    props.options.porch_garden.map((option) => ({
+        value: option.value,
+        label: t(`propertyPorchGarden.${option.value}`),
+    })),
+);
+
+const translatedAirConditioning = computed(() =>
+    props.options.air_conditioning.map((option) => ({
+        value: option.value,
+        label: t(`propertyAirConditioning.${option.value}`),
+    })),
+);
+
+const translatedApartmentCondition = computed(() =>
+    props.options.apartment_condition.map((option) => ({
+        value: option.value,
+        label: t(`propertyApartmentCondition.${option.value}`),
+    })),
+);
 const neighbourhoodClientError = computed(() => {
     if (form.neighbourhoods.length === 0) {
         return t('common.selectAtLeastOneNeighbourhood');
@@ -536,7 +585,7 @@ function submit(): void {
                         name="type"
                         :label="t('common.type')"
                         :placeholder="t('common.selectType')"
-                        :options="props.options.lease_types"
+                        :options="translatedLeaseTypes"
                         validation="required"
                         label-class="required-asterisk"
                     />
@@ -641,7 +690,7 @@ function submit(): void {
                         name="furnished"
                         :label="t('common.furnished')"
                         :placeholder="t('common.selectFurnishedStatus')"
-                        :options="props.options.furnished"
+                        :options="translatedFurnished"
                         validation="required"
                         label-class="required-asterisk"
                     />
@@ -660,7 +709,7 @@ function submit(): void {
                         name="access"
                         :label="t('common.access')"
                         :placeholder="t('common.selectAccess')"
-                        :options="props.options.access"
+                        :options="translatedAccess"
                     />
                     <div v-if="form.errors.access" class="text-sm text-red-600">
                         {{ form.errors.access }}
@@ -674,7 +723,7 @@ function submit(): void {
                         name="kitchen_dining_room"
                         :label="t('common.separateKitchenDiningRoom')"
                         :placeholder="t('common.selectOption')"
-                        :options="props.options.kitchen_dining_room"
+                        :options="translatedKitchenDiningRoom"
                     />
                     <div
                         v-if="form.errors.kitchen_dining_room"
@@ -691,7 +740,7 @@ function submit(): void {
                         name="porch_garden"
                         :label="t('common.porchGarden')"
                         :placeholder="t('common.selectOption')"
-                        :options="props.options.porch_garden"
+                        :options="translatedPorchGarden"
                     />
                     <div
                         v-if="form.errors.porch_garden"
@@ -708,7 +757,7 @@ function submit(): void {
                         name="air_conditioning"
                         :label="t('common.airConditioning')"
                         :placeholder="t('common.selectOption')"
-                        :options="props.options.air_conditioning"
+                        :options="translatedAirConditioning"
                     />
                     <div
                         v-if="form.errors.air_conditioning"
@@ -725,7 +774,7 @@ function submit(): void {
                         name="apartment_condition"
                         :label="t('common.apartmentCondition')"
                         :placeholder="t('common.selectOption')"
-                        :options="props.options.apartment_condition"
+                        :options="translatedApartmentCondition"
                     />
                     <div
                         v-if="form.errors.apartment_condition"

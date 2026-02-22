@@ -17,6 +17,6 @@ class LocaleController extends Controller
 
         app(UserSettings::class)->_setLocale($locale);
 
-        return back()->success(__('message.locale_changed_successfully'));
+        return back();
     }
 }

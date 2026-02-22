@@ -30,11 +30,17 @@ const navItems: NavItem[] = [
     { type: 'link', action: 'home', label: t('common.home') },
     {
         type: 'dropdown',
-        label: 'Listings',
+        label: t('common.listings'),
         items: [
-            { action: 'listings-long-term', label: 'Long Term Rental' },
-            { action: 'listings-medium-term', label: 'Medium Term Rental' },
-            { action: 'listings-short-term', label: 'Short Term Rental' },
+            { action: 'listings-long-term', label: t('common.longTermRental') },
+            {
+                action: 'listings-medium-term',
+                label: t('common.mediumTermRental'),
+            },
+            {
+                action: 'listings-short-term',
+                label: t('common.shortTermRental'),
+            },
         ],
     },
     { type: 'link', action: 'about-us', label: t('common.aboutUs') },
@@ -47,10 +53,7 @@ const navItems: NavItem[] = [
         <template v-for="item in navItems" :key="item.label">
             <DropdownMenu v-if="item.type === 'dropdown'">
                 <DropdownMenuTrigger :as-child="true">
-                    <Button
-                        variant="ghost"
-                        :class="props.buttonClass"
-                    >
+                    <Button variant="ghost" :class="props.buttonClass">
                         {{ item.label }}
                         <ChevronDown class="ml-1 h-4 w-4" />
                     </Button>

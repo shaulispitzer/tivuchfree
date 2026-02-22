@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Check, ChevronsUpDown, ImagePlus, Star, Trash2 } from 'lucide-vue-next';
+import { Check, ChevronsUpDown, Clock, ImagePlus, Star, Trash2 } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useToast } from 'vue-toastification';
@@ -36,6 +36,14 @@ type EditableImage = {
     is_main: boolean;
 };
 
+type LifecycleInfo = {
+    posted_at: string;
+    taken: boolean;
+    next_action: 'deletion' | 'marked_as_taken';
+    next_action_date: string;
+    days_remaining: number;
+};
+
 const props = defineProps({
     property: {
         type: Object as PropType<App.Data.PropertyData>,
@@ -43,6 +51,10 @@ const props = defineProps({
     },
     options: {
         type: Object as PropType<App.Data.PropertyFormOptionsData>,
+        required: true,
+    },
+    lifecycle: {
+        type: Object as PropType<LifecycleInfo>,
         required: true,
     },
 });
@@ -443,6 +455,39 @@ function submit(): void {
         <Button as-child>
             <Link :href="index()">Back to list</Link>
         </Button>
+    </div>
+
+    <div
+        class="mt-4 rounded-lg border px-4 py-3 text-sm"
+        :class="
+            lifecycle.taken
+                ? 'border-red-200 bg-red-50 text-red-800'
+                : lifecycle.days_remaining <= 3
+                  ? 'border-amber-200 bg-amber-50 text-amber-800'
+                  : 'border-blue-200 bg-blue-50 text-blue-800'
+        "
+    >
+        <div class="flex items-start gap-3">
+            <Clock class="mt-0.5 size-4 shrink-0" />
+            <div class="space-y-1">
+                <p>
+                    <span class="font-medium">Posted:</span>
+                    {{ new Date(lifecycle.posted_at).toLocaleDateString() }}
+                </p>
+                <p v-if="lifecycle.next_action === 'marked_as_taken'">
+                    <span class="font-medium">Next:</span>
+                    This listing will be automatically marked as taken in
+                    <span class="font-semibold">{{ lifecycle.days_remaining }}</span>
+                    {{ lifecycle.days_remaining === 1 ? 'day' : 'days' }}.
+                </p>
+                <p v-else>
+                    <span class="font-medium">Next:</span>
+                    This listing is marked as taken and will be deleted in
+                    <span class="font-semibold">{{ lifecycle.days_remaining }}</span>
+                    {{ lifecycle.days_remaining === 1 ? 'day' : 'days' }}.
+                </p>
+            </div>
+        </div>
     </div>
 
     <FormKit

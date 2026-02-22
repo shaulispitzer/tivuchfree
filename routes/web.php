@@ -50,6 +50,10 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::get('my-properties', [PropertyController::class, 'myProperties'])->name('my-properties.index');
     Route::patch('my-properties/{property}/mark-as-taken', [PropertyController::class, 'markAsTaken'])
         ->name('my-properties.mark-as-taken');
+    Route::patch('my-properties/{property}/repost', [PropertyController::class, 'repost'])
+        ->name('my-properties.repost');
+    Route::delete('my-properties/{property}', [PropertyController::class, 'destroyMyProperty'])
+        ->name('my-properties.destroy');
 
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
@@ -60,6 +64,17 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::delete('streets/{street}', [StreetController::class, 'destroy'])->name('streets.destroy');
 });
 
+// mails routes
+Route::get('/mailable', function () {
+    $property = \App\Models\Property::findOrFail(34);
+
+    return new \App\Mail\NewListing($property);
+});
+Route::get('/mailable-taken-warning', function () {
+    $property = \App\Models\Property::findOrFail(34);
+
+    return new \App\Mail\PropertyTakenWarning($property);
+});
 Route::get('properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
 
 // modale route PLAYGROUND

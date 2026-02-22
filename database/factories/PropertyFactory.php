@@ -63,4 +63,12 @@ class PropertyFactory extends Factory
             'has_parking_spot' => fake()->boolean(),
         ];
     }
+
+    public function taken(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'taken' => true,
+            'taken_at' => now(),
+        ]);
+    }
 }

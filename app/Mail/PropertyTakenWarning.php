@@ -9,43 +9,31 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewListing extends Mailable
+class PropertyTakenWarning extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Property $property;
+    public function __construct(public Property $property) {}
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(Property $property)
-    {
-        $this->property = $property;
-    }
-
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Listing',
+            subject: 'Your property listing will be marked as taken soon',
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.listing.subscription.newListing',
+            markdown: 'mail.property.taken-warning',
+            with: [
+                'property' => $this->property,
+                'daysUntilTaken' => 3,
+            ],
         );
     }
 
     /**
-     * Get the attachments for the message.
-     *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array

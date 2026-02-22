@@ -2,25 +2,22 @@
 
 namespace App\Mail;
 
-use App\Models\Property;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewListing extends Mailable
+class YourPropertyWasListed extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public Property $property;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Property $property)
+    public function __construct()
     {
-        $this->property = $property;
+        //
     }
 
     /**
@@ -29,7 +26,7 @@ class NewListing extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Listing',
+            subject: 'Your Property Was Listed',
         );
     }
 
@@ -39,7 +36,7 @@ class NewListing extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.listing.subscription.newListing',
+            markdown: 'mail.listing.yourProperty.successfullyListed.php',
         );
     }
 

@@ -381,7 +381,40 @@ class PropertyController extends Controller
         return Inertia::render('properties/Edit', [
             'property' => PropertyData::fromModel($property),
             'options' => $this->formOptions(),
+            'lifecycle' => $this->propertyLifecycleInfo($property),
         ]);
+    }
+
+    /**
+     * @return array{posted_at: string, taken: bool, next_action: string, next_action_date: string, days_remaining: int}
+     */
+    protected function propertyLifecycleInfo(Property $property): array
+    {
+        $today = now()->startOfDay();
+
+        if ($property->taken && $property->taken_at) {
+            $deletionDate = $property->taken_at->copy()->addDays(14)->startOfDay();
+            $daysRemaining = max(0, (int) $today->diffInDays($deletionDate, false));
+
+            return [
+                'posted_at' => $property->created_at->toDateTimeString(),
+                'taken' => true,
+                'next_action' => 'deletion',
+                'next_action_date' => $deletionDate->toDateTimeString(),
+                'days_remaining' => $daysRemaining,
+            ];
+        }
+
+        $takenDate = $property->created_at->copy()->addDays(30)->startOfDay();
+        $daysRemaining = max(0, (int) $today->diffInDays($takenDate, false));
+
+        return [
+            'posted_at' => $property->created_at->toDateTimeString(),
+            'taken' => false,
+            'next_action' => 'marked_as_taken',
+            'next_action_date' => $takenDate->toDateTimeString(),
+            'days_remaining' => $daysRemaining,
+        ];
     }
 
     public function myProperties(Request $request)
@@ -400,6 +433,7 @@ class PropertyController extends Controller
                 'bedrooms' => $property->bedrooms,
                 'type' => $property->type?->value,
                 'taken' => $property->taken,
+                'taken_at' => $property->taken_at?->toDateTimeString(),
                 'created_at' => $property->created_at?->toDateTimeString(),
             ]);
 
@@ -417,10 +451,40 @@ class PropertyController extends Controller
         if (! $property->taken) {
             $property->update([
                 'taken' => true,
+                'taken_at' => now(),
             ]);
         }
 
         return back()->success('Property marked as taken');
+    }
+
+    public function repost(Request $request, Property $property): RedirectResponse
+    {
+        if ($property->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($property->taken) {
+            $property->forceFill([
+                'taken' => false,
+                'taken_at' => null,
+                'taken_warning_sent_at' => null,
+                'created_at' => now(),
+            ])->save();
+        }
+
+        return back()->success('Property reposted successfully');
+    }
+
+    public function destroyMyProperty(Request $request, Property $property): RedirectResponse
+    {
+        if ($property->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $property->delete();
+
+        return redirect()->route('my-properties.index')->success(__('message.propertyDeletedSuccessfully'));
     }
 
     public function show(Request $request, Property $property)

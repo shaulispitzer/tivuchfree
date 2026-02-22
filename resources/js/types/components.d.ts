@@ -45,6 +45,7 @@ declare module 'vue' {
     Collapsible: typeof import('./../components/ui/collapsible/Collapsible.vue')['default']
     CollapsibleContent: typeof import('./../components/ui/collapsible/CollapsibleContent.vue')['default']
     CollapsibleTrigger: typeof import('./../components/ui/collapsible/CollapsibleTrigger.vue')['default']
+    ConfirmableButton: typeof import('./../components/ConfirmableButton.vue')['default']
     DeleteUser: typeof import('./../components/DeleteUser.vue')['default']
     DropdownMenu: typeof import('./../components/ui/dropdown-menu/DropdownMenu.vue')['default']
     DropdownMenuCheckboxItem: typeof import('./../components/ui/dropdown-menu/DropdownMenuCheckboxItem.vue')['default']

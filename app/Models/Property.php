@@ -46,6 +46,8 @@ class Property extends Model implements HasMedia
         'views',
         'furnished',
         'taken',
+        'taken_at',
+        'taken_warning_sent_at',
         'bathrooms',
         'access',
         'kitchen_dining_room',
@@ -69,29 +71,34 @@ class Property extends Model implements HasMedia
     /**
      * @return array<string, string>
      */
-    protected $casts = [
-        'neighbourhoods' => 'array',
-        'price' => 'decimal:2',
-        'lat' => 'float',
-        'lon' => 'float',
-        'available_from' => 'date',
-        'available_to' => 'date',
-        'floor' => 'float',
-        'bedrooms' => 'float',
-        'views' => 'integer',
-        'taken' => 'boolean',
-        'succah_porch' => 'boolean',
-        'has_dud_shemesh' => 'boolean',
-        'has_machsan' => 'boolean',
-        'has_parking_spot' => 'boolean',
-        'type' => PropertyLeaseType::class,
-        'furnished' => PropertyFurnished::class,
-        'access' => PropertyAccess::class,
-        'kitchen_dining_room' => PropertyKitchenDiningRoom::class,
-        'porch_garden' => PropertyPorchGarden::class,
-        'air_conditioning' => PropertyAirConditioning::class,
-        'apartment_condition' => PropertyApartmentCondition::class,
-    ];
+    protected function casts(): array
+    {
+        return [
+            'neighbourhoods' => 'array',
+            'price' => 'decimal:2',
+            'lat' => 'float',
+            'lon' => 'float',
+            'available_from' => 'date',
+            'available_to' => 'date',
+            'floor' => 'float',
+            'bedrooms' => 'float',
+            'views' => 'integer',
+            'taken' => 'boolean',
+            'taken_at' => 'datetime',
+            'taken_warning_sent_at' => 'datetime',
+            'succah_porch' => 'boolean',
+            'has_dud_shemesh' => 'boolean',
+            'has_machsan' => 'boolean',
+            'has_parking_spot' => 'boolean',
+            'type' => PropertyLeaseType::class,
+            'furnished' => PropertyFurnished::class,
+            'access' => PropertyAccess::class,
+            'kitchen_dining_room' => PropertyKitchenDiningRoom::class,
+            'porch_garden' => PropertyPorchGarden::class,
+            'air_conditioning' => PropertyAirConditioning::class,
+            'apartment_condition' => PropertyApartmentCondition::class,
+        ];
+    }
 
     public function registerMediaCollections(): void
     {
