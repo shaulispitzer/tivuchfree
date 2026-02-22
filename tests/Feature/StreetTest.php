@@ -3,6 +3,7 @@
 use App\Enums\Neighbourhood;
 use App\Models\Street;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 
 test('admins can manage streets', function () {
     $admin = User::factory()->admin()->create();
@@ -59,4 +60,43 @@ test('non admins cannot manage streets', function () {
 
     $this->actingAs($user)->delete(route('streets.destroy', $street))
         ->assertForbidden();
+});
+
+test('admins can import streets from csv', function () {
+    $admin = User::factory()->admin()->create();
+
+    $csv = "neighbourhood,name_en,name_he\n".
+        "Bar Ilan,Eli HaCohen,עלי הכהן\n".
+        "Geula,Malchei Yisrael,מלכי ישראל";
+
+    $file = UploadedFile::fake()->createWithContent('streets.csv', $csv);
+
+    $response = $this->actingAs($admin)->post(route('streets.import'), [
+        'file' => $file,
+    ]);
+
+    $response->assertRedirect(route('streets.index'));
+
+    expect(Street::count())->toBe(2);
+
+    $street1 = Street::query()->where('neighbourhood', Neighbourhood::BarIlan)->first();
+    expect($street1)->not->toBeNull();
+    expect($street1->getTranslation('name', 'en'))->toBe('Eli HaCohen');
+    expect($street1->getTranslation('name', 'he'))->toBe('עלי הכהן');
+
+    $street2 = Street::query()->where('neighbourhood', Neighbourhood::Geula)->first();
+    expect($street2)->not->toBeNull();
+    expect($street2->getTranslation('name', 'en'))->toBe('Malchei Yisrael');
+});
+
+test('non admins cannot import streets', function () {
+    $user = User::factory()->create();
+
+    $csv = "neighbourhood,name_en,name_he\nBar Ilan,Test,מבחן";
+    $file = UploadedFile::fake()->createWithContent('streets.csv', $csv);
+
+    $this->actingAs($user)->post(route('streets.import'), ['file' => $file])
+        ->assertForbidden();
+
+    expect(Street::count())->toBe(0);
 });

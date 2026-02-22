@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import type { PropType } from 'vue';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { create, destroy, edit } from '@/routes/streets';
+import { create, destroy, edit, importMethod } from '@/routes/streets';
 
 type Street = {
     id: number;
@@ -14,25 +15,46 @@ type Street = {
     translatedName: string;
 };
 
-const props = defineProps({
+defineProps({
     streets: {
         type: Array as PropType<Street[]>,
         required: true,
     },
-});
-onMounted(() => {
-    console.log(props.streets);
 });
 </script>
 
 <template>
     <Head title="Streets" />
 
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-4">
         <h1 class="text-lg font-semibold">Streets</h1>
-        <Button as-child>
-            <Link :href="create()">Add street</Link>
-        </Button>
+        <div class="flex items-center gap-2">
+            <Form
+                v-bind="importMethod.form()"
+                class="flex items-center gap-2"
+                enctype="multipart/form-data"
+                v-slot="{ errors, processing }"
+            >
+                <input
+                    type="file"
+                    name="file"
+                    accept=".xlsx,.csv"
+                    required
+                    class="text-sm file:mr-2 file:rounded-md file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-medium file:text-secondary-foreground hover:file:bg-secondary/80"
+                />
+                <Button
+                    type="submit"
+                    variant="secondary"
+                    :disabled="processing"
+                >
+                    Import Streets
+                </Button>
+                <InputError :message="errors.file" />
+            </Form>
+            <Button as-child>
+                <Link :href="create()">Add street</Link>
+            </Button>
+        </div>
     </div>
 
     <div v-if="streets.length === 0" class="mt-6 text-sm text-muted-foreground">

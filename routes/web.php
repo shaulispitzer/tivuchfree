@@ -54,6 +54,7 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
     Route::post('streets', [StreetController::class, 'store'])->name('streets.store');
+    Route::post('streets/import', [StreetController::class, 'import'])->name('streets.import');
     Route::get('streets/{street}/edit', [StreetController::class, 'edit'])->name('streets.edit');
     Route::put('streets/{street}', [StreetController::class, 'update'])->name('streets.update');
     Route::delete('streets/{street}', [StreetController::class, 'destroy'])->name('streets.destroy');
