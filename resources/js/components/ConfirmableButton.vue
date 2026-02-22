@@ -13,6 +13,8 @@ interface Props {
     processing?: boolean;
 }
 
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(defineProps<Props>(), {
     title: 'Are you sure?',
     message: 'This action cannot be undone.',
@@ -40,6 +42,7 @@ function handleConfirm() {
 
 <template>
     <Button
+        v-bind="$attrs"
         :variant="variant"
         :size="size"
         :class="props.class"
