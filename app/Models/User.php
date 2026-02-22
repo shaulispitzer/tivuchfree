@@ -25,6 +25,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'is_admin',
+        'google_id',
+        'google_avatar',
     ];
 
     /**
@@ -37,6 +39,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_secret',
         'two_factor_recovery_codes',
         'remember_token',
+        'google_id',
+        'google_avatar',
     ];
 
     /**

@@ -2,6 +2,7 @@
 import heroImage from '@assets/jerusalem-night-view.jpg';
 import { Head, Link } from '@inertiajs/vue3';
 
+const { t } = useI18n();
 const shortTermModalOpen = ref(false);
 const targetSavings = 8_787_876_786;
 const displayedSavings = ref(0);
@@ -60,7 +61,7 @@ onMounted(() => {
 
 <template>
     <div class="overflow-hidden">
-        <Head title="Home" />
+        <Head :title="t('common.home')" />
 
         <section class="relative isolate min-h-[78vh] overflow-hidden">
             <img
@@ -76,11 +77,11 @@ onMounted(() => {
                 <h1
                     class="text-3xl font-bold tracking-tight text-balance sm:text-5xl"
                 >
-                    Free to list. Free to Find.
+                    {{ t('common.freeToListFreeToFind') }}
                 </h1>
 
                 <p class="text-lg font-medium text-white/90">
-                    Save money. Connect directly. Move smarter.
+                    {{ t('common.saveMoneyConnectDirectlyMoveSmarter') }}
                 </p>
 
                 <p class="text-xl font-semibold text-amber-200" dir="rtl">
@@ -96,7 +97,7 @@ onMounted(() => {
                         href="/properties?type=long_term"
                         class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                     >
-                        Long Term Listings
+                        {{ t('common.longTermListings') }}
                     </Link>
 
                     <Link
@@ -105,7 +106,7 @@ onMounted(() => {
                         href="/properties?type=medium_term"
                         class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                     >
-                        Medium Term Listings
+                        {{ t('common.mediumTermListings') }}
                     </Link>
 
                     <button
@@ -113,7 +114,7 @@ onMounted(() => {
                         class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                         @click="openShortTermModal"
                     >
-                        Short Term Listings
+                        {{ t('common.shortTermListings') }}
                     </button>
                 </div>
             </div>
@@ -127,10 +128,10 @@ onMounted(() => {
                     <p
                         class="text-sm font-semibold tracking-wider text-muted-foreground uppercase"
                     >
-                        Money Saved by Our Community
+                        {{ t('common.moneySavedByOurCommunity') }}
                     </p>
                     <p class="mt-3 text-3xl font-bold text-primary sm:text-5xl">
-                        ₪{{ formattedSavings }} shekel
+                        ₪{{ formattedSavings }}
                     </p>
                 </div>
             </div>
@@ -139,12 +140,14 @@ onMounted(() => {
         <section class="bg-muted/40 py-14">
             <div class="mx-auto max-w-7xl px-6">
                 <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h2 class="text-2xl font-bold sm:text-3xl">Testimonials</h2>
+                    <h2 class="text-2xl font-bold sm:text-3xl">
+                        {{ t('common.testimonials') }}
+                    </h2>
                     <button
                         type="button"
                         class="rounded-full border border-primary/40 bg-background px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10"
                     >
-                        Leave a review
+                        {{ t('common.leaveAReview') }}
                     </button>
                 </div>
 
@@ -170,23 +173,21 @@ onMounted(() => {
 
         <Modal
             :open="shortTermModalOpen"
-            title="Short Term Properties"
+            :title="t('common.shortTermProperties')"
             :actions="false"
             :as-page="false"
             @close="closeShortTermModal"
         >
             <div class="space-y-5">
                 <p class="text-sm leading-relaxed text-muted-foreground">
-                    Please note: Tivuch Free do not have a short term feature
-                    ourselves (yet). We endorse using this third party, minimal
-                    costing, platform.
+                    {{ t('common.pleaseNoteTivuchFreeDoesNotHave') }}
                 </p>
 
                 <a
                     href="https://www.heimishe.apartments"
                     class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
                 >
-                    go to Www.Heimishe.Apartments
+                    {{ t('common.goToWwwHeimisheApartments') }}
                 </a>
             </div>
         </Modal>

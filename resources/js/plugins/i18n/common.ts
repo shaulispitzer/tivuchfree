@@ -163,7 +163,8 @@ export default {
                 'You can select up to 3 neighbourhoods. Please remove at least one neighbourhood.',
             neighbourhoodUnique:
                 'Each neighbourhood can only be selected once.',
-            properties: 'Properties',
+            properties: 'Property | Properties',
+            property: 'Property | Properties',
             listView: 'List view',
             mapView: 'Map view',
             addProperty: 'Add property',
@@ -187,11 +188,24 @@ export default {
             actions: 'Actions',
             repost: 'Repost',
             markAsTaken: 'Mark as taken',
-            markAsTakenBeforeDelete:
-                'First mark as taken, then you can delete',
+            markAsTakenBeforeDelete: 'First mark as taken, then you can delete',
             howWasListingTaken: 'How was your listing taken?',
             howWasListingTakenSource: 'Where was the listing taken from?',
             finalPrice: 'Final price',
+            freeToListFreeToFind: 'Free to list. Free to Find.',
+            saveMoneyConnectDirectlyMoveSmarter:
+                'Save money. Connect directly. Move smarter.',
+            longTermListings: 'Long Term Listings',
+            mediumTermListings: 'Medium Term Listings',
+            shortTermListings: 'Short Term Listings',
+            moneySavedByOurCommunity: 'Money Saved by Our Community',
+            testimonials: 'Testimonials',
+            leaveAReview: 'Leave a review',
+            shortTermProperties: 'Short Term Properties',
+            pleaseNoteTivuchFreeDoesNotHave:
+                'Please note: Tivuch Free do not have a short term feature',
+            goToWwwHeimisheApartments: 'go to Www.Heimishe.Apartments',
+            logout: 'Logout',
         },
     },
     he: {
@@ -353,7 +367,8 @@ export default {
             upToThreeNeighbourhoods:
                 'ניתן לבחור עד 3 שכונות. נא להסיר לפחות שכונה אחת.',
             neighbourhoodUnique: 'לא ניתן לבחור את אותה שכונה יותר מפעם אחת.',
-            properties: 'נכסים',
+            properties: 'נכס | נכסים',
+            property: 'נכס | נכסים',
             listView: 'תצוגת רשימה',
             mapView: 'תצוגת מפה',
             addProperty: 'הוסף נכס',
@@ -378,6 +393,20 @@ export default {
             howWasListingTaken: 'איך המודעה נתפסה?',
             howWasListingTakenSource: 'מאיפה נלקחה המודעה?',
             finalPrice: 'מחיר סופי',
+            freeToListFreeToFind: 'חופשי לרשום. חופשי למצוא.',
+            saveMoneyConnectDirectlyMoveSmarter:
+                'חסכנו כסף. חיבור ישיר. זכיר יותר.',
+            longTermListings: 'רשימות טווח ארוך',
+            mediumTermListings: 'רשימות טווח בינוני',
+            shortTermListings: 'רשימות טווח קצר',
+            moneySavedByOurCommunity: 'כספים שחסכנו על ידי הקהילה שלנו',
+            testimonials: 'משובים',
+            leaveAReview: 'צור משוב',
+            shortTermProperties: 'רשימות טווח קצר',
+            pleaseNoteTivuchFreeDoesNotHave:
+                'שים לב: Tivuch Free אינו מציע טווח קצר',
+            goToWwwHeimisheApartments: 'עבור ל Www.Heimishe.Apartments',
+            logout: 'התנתקות',
         },
     },
 };

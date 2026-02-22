@@ -240,7 +240,9 @@ watch(activeView, () => {
         {{ t('common.noPropertiesAddedYet') }}
     </div>
 
-    <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+    <div
+        class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    >
         <PropertyCard
             v-for="property in properties.data"
             :key="property.id"

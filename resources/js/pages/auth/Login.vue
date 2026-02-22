@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
+import { redirect as googleRedirect } from '@/routes/auth/google';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import MaterialIconThemeGoogle from '~icons/material-icon-theme/google';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -31,6 +35,23 @@ defineProps<{
             class="mb-4 text-center text-sm font-medium text-green-600"
         >
             {{ status }}
+        </div>
+        <Button variant="outline" class="w-full" as-child>
+            <Link :href="googleRedirect()">
+                <MaterialIconThemeGoogle class="h-5 w-5" />
+                {{ t('auth.google') }}
+            </Link>
+        </Button>
+
+        <div class="relative my-2">
+            <div class="absolute inset-0 flex items-center">
+                <span class="w-full border-t" />
+            </div>
+            <div class="relative flex justify-center text-xs uppercase">
+                <span class="bg-background px-2 text-muted-foreground">
+                    {{ t('common.or') }}
+                </span>
+            </div>
         </div>
 
         <Form

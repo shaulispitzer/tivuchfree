@@ -433,13 +433,15 @@ onBeforeUnmount(() => {
         </div>
     </div>
 
-    <PropertyFilters
-        :filters="filters"
-        :neighbourhood_options="neighbourhood_options"
-        :furnished_options="furnished_options"
-        :type_options="type_options"
-        @update:filters="updateFilters"
-    />
+    <div class="relative z-10">
+        <PropertyFilters
+            :filters="filters"
+            :neighbourhood_options="neighbourhood_options"
+            :furnished_options="furnished_options"
+            :type_options="type_options"
+            @update:filters="updateFilters"
+        />
+    </div>
 
     <div class="space-y-3">
         <div
@@ -458,7 +460,7 @@ onBeforeUnmount(() => {
         <div
             ref="mapContainer"
             dir="ltr"
-            class="h-[65vh] w-full overflow-hidden rounded-xl border border-input"
+            class="isolate h-[65vh] w-full overflow-hidden rounded-xl border border-input"
         />
 
         <p class="text-xs text-muted-foreground">

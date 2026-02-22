@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PlaygroundController;
@@ -65,15 +66,24 @@ Route::middleware('auth', 'verified')->group(function () {
 });
 
 // mails routes
-Route::get('/mailable', function () {
-    $property = \App\Models\Property::findOrFail(34);
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/mailable', function () {
+        $property = \App\Models\Property::findOrFail(34);
 
-    return new \App\Mail\NewListing($property);
+        return new \App\Mail\NewListing($property);
+    });
+    Route::get('/mailable-taken-warning', function () {
+        $property = \App\Models\Property::findOrFail(34);
+
+        return new \App\Mail\PropertyTakenWarning($property);
+    });
+    Route::get('/mailable-welcome', function () {
+        return new \App\Mail\WelcomeEmail(\App\Models\User::firstOrFail());
+    });
 });
-Route::get('/mailable-taken-warning', function () {
-    $property = \App\Models\Property::findOrFail(34);
-
-    return new \App\Mail\PropertyTakenWarning($property);
+Route::middleware('guest')->group(function () {
+    Route::get('auth/google/redirect', [SocialiteController::class, 'create'])->name('auth.google.redirect');
+    Route::get('auth/google/callback', [SocialiteController::class, 'store'])->name('auth.google.callback');
 });
 Route::get('properties/{property}', [PropertyController::class, 'show'])->name('properties.show');
 

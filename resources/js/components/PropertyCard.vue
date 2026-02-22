@@ -78,17 +78,17 @@ const neighbourhoodLabel = computed(() => {
     <Link
         :href="show(property.id)"
         preserve-scroll
-        as="button"
         preserve-state
         class="block focus-visible:outline-none"
-        :class="property.taken === true ? 'cursor-default' : 'cursor-pointer'"
-        :disabled="property.taken === true"
+        :class="property.taken === true ? 'pointer-events-none cursor-default' : 'cursor-pointer'"
+        :tabindex="property.taken === true ? -1 : undefined"
+        :aria-disabled="property.taken === true || undefined"
     >
         <article
             class="relative overflow-hidden rounded-xl border border-input bg-card shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40"
             :class="
                 property.taken === true
-                    ? 'pointer-events-none opacity-80 grayscale-75'
+                    ? 'opacity-80 grayscale-75'
                     : 'transition hover:-translate-y-0.5 hover:shadow-md'
             "
         >

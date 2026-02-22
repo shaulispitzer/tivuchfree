@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Check, ChevronsUpDown, Clock, ImagePlus, Star, Trash2 } from 'lucide-vue-next';
+import {
+    Check,
+    ChevronsUpDown,
+    Clock,
+    ImagePlus,
+    Star,
+    Trash2,
+} from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
+
 import { useToast } from 'vue-toastification';
 
 import { Button } from '@/components/ui/button';
@@ -23,7 +31,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { index, update } from '@/routes/properties';
-
+const { t } = useI18n();
 type StreetOption = {
     id: number;
     name: string;
@@ -371,7 +379,8 @@ async function deleteImage(image: EditableImage): Promise<void> {
     } catch (error) {
         if (axios.isAxiosError(error)) {
             imageUploadError.value =
-                error.response?.data?.message ?? 'Delete failed. Please try again.';
+                error.response?.data?.message ??
+                'Delete failed. Please try again.';
         } else {
             imageUploadError.value = 'Delete failed. Please try again.';
         }
@@ -448,12 +457,12 @@ function submit(): void {
 </script>
 
 <template>
-    <Head title="Edit property" />
+    <Head :title="t('common.editProperty')" />
 
     <div class="flex items-center justify-between">
-        <h1 class="text-lg font-semibold">Edit property</h1>
+        <h1 class="text-lg font-semibold">{{ t('common.editProperty') }}</h1>
         <Button as-child>
-            <Link :href="index()">Back to list</Link>
+            <Link :href="index()">{{ t('common.backToList') }}</Link>
         </Button>
     </div>
 
@@ -471,19 +480,23 @@ function submit(): void {
             <Clock class="mt-0.5 size-4 shrink-0" />
             <div class="space-y-1">
                 <p>
-                    <span class="font-medium">Posted:</span>
+                    <span class="font-medium">{{ t('common.posted') }}:</span>
                     {{ new Date(lifecycle.posted_at).toLocaleDateString() }}
                 </p>
                 <p v-if="lifecycle.next_action === 'marked_as_taken'">
-                    <span class="font-medium">Next:</span>
+                    <span class="font-medium">{{ t('common.next') }}:</span>
                     This listing will be automatically marked as taken in
-                    <span class="font-semibold">{{ lifecycle.days_remaining }}</span>
+                    <span class="font-semibold">{{
+                        lifecycle.days_remaining
+                    }}</span>
                     {{ lifecycle.days_remaining === 1 ? 'day' : 'days' }}.
                 </p>
                 <p v-else>
-                    <span class="font-medium">Next:</span>
+                    <span class="font-medium">{{ t('common.next') }}:</span>
                     This listing is marked as taken and will be deleted in
-                    <span class="font-semibold">{{ lifecycle.days_remaining }}</span>
+                    <span class="font-semibold">{{
+                        lifecycle.days_remaining
+                    }}</span>
                     {{ lifecycle.days_remaining === 1 ? 'day' : 'days' }}.
                 </p>
             </div>
@@ -1045,7 +1058,9 @@ function submit(): void {
                     <ImagePlus class="h-4 w-4" />
                     <span v-if="uploadingImages">Uploading...</span>
                     <span v-else-if="!propertyImages.length">Upload image</span>
-                    <span v-else-if="canAddMoreImages">Upload another image</span>
+                    <span v-else-if="canAddMoreImages"
+                        >Upload another image</span
+                    >
                     <span v-else>Maximum images reached</span>
                 </span>
                 <span class="text-xs text-muted-foreground">Browse</span>
