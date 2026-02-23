@@ -56,7 +56,7 @@ class StreetController extends Controller
     {
         $street = Street::create($request->validated());
 
-        return redirect()->route('streets.edit', $street);
+        return redirect()->route('admin.streets.edit', $street);
     }
 
     /**
@@ -92,7 +92,7 @@ class StreetController extends Controller
                 }
             });
 
-        return redirect()->route('streets.index')
+        return redirect()->route('admin.streets.index')
             ->success('Streets imported successfully.');
     }
 
@@ -150,7 +150,7 @@ class StreetController extends Controller
     {
         $street->update($request->validated());
 
-        return redirect()->route('streets.edit', $street);
+        return redirect()->route('admin.streets.edit', $street);
     }
 
     /**
@@ -162,7 +162,7 @@ class StreetController extends Controller
 
         $street->delete();
 
-        return redirect()->route('streets.index');
+        return redirect()->route('admin.streets.index');
     }
 
     /**

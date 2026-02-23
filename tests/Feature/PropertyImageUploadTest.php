@@ -51,6 +51,11 @@ it('uploads images immediately and attaches them on property creation', function
     $payload = [
         'contact_name' => 'Upload Contact',
         'contact_phone' => '0501234568',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
         'succah_porch' => false,
         'has_dud_shemesh' => false,
         'has_machsan' => false,

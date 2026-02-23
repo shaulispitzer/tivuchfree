@@ -3,7 +3,7 @@ import { Form, Head, Link } from '@inertiajs/vue3';
 import type { PropType } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { create, destroy, edit, importMethod } from '@/routes/streets';
+import { create, destroy, edit, importMethod } from '@/routes/admin/streets';
 
 type Street = {
     id: number;

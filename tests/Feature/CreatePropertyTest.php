@@ -12,11 +12,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\mock;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+    mock(PropertyGeocoder::class, function (MockInterface $mock): void {
         $mock->shouldReceive('geocode')->andReturn(null);
     });
 });
@@ -33,7 +34,7 @@ function streetIdForNeighbourhood(Neighbourhood $neighbourhood): int
 }
 
 it('creates a property without images', function () {
-    $this->mock(PropertyGeocoder::class, function (MockInterface $mock): void {
+    mock(PropertyGeocoder::class, function (MockInterface $mock): void {
         $mock->shouldReceive('geocode')
             ->once()
             ->andReturn([
@@ -48,6 +49,11 @@ it('creates a property without images', function () {
     $response = actingAs($user)->post(route('properties.store'), [
         'contact_name' => 'Test Contact',
         'contact_phone' => '0501234567',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
         'succah_porch' => false,
         'has_dud_shemesh' => false,
         'has_machsan' => false,
@@ -83,6 +89,11 @@ it('still creates a property when geocoding fails', function () {
     $response = actingAs($user)->post(route('properties.store'), [
         'contact_name' => 'Fallback Contact',
         'contact_phone' => '0500000001',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
         'succah_porch' => false,
         'has_dud_shemesh' => false,
         'has_machsan' => false,
@@ -111,6 +122,11 @@ it('stores bedrooms with one decimal place', function () {
     $response = actingAs($user)->post(route('properties.store'), [
         'contact_name' => 'Decimal Contact',
         'contact_phone' => '0500000002',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
         'succah_porch' => false,
         'has_dud_shemesh' => false,
         'has_machsan' => false,
@@ -140,6 +156,11 @@ it('allows creating a property with a negative floor', function () {
     $response = actingAs($user)->post(route('properties.store'), [
         'contact_name' => 'Basement Contact',
         'contact_phone' => '0500000005',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
         'succah_porch' => false,
         'has_dud_shemesh' => false,
         'has_machsan' => false,
@@ -170,6 +191,11 @@ it('rejects non-numeric floor values', function () {
         ->post(route('properties.store'), [
             'contact_name' => 'Validation Contact',
             'contact_phone' => '0500000003',
+            'access' => 'steps_only',
+            'kitchen_dining_room' => 'separate',
+            'porch_garden' => 'no',
+            'air_conditioning' => 'not_airconditioned',
+            'apartment_condition' => 'good',
             'succah_porch' => false,
             'has_dud_shemesh' => false,
             'has_machsan' => false,
@@ -197,6 +223,11 @@ it('validates that no more than three neighbourhoods can be selected', function 
         ->post(route('properties.store'), [
             'contact_name' => 'Neighbourhood Validation Contact',
             'contact_phone' => '0500000004',
+            'access' => 'steps_only',
+            'kitchen_dining_room' => 'separate',
+            'porch_garden' => 'no',
+            'air_conditioning' => 'not_airconditioned',
+            'apartment_condition' => 'good',
             'succah_porch' => false,
             'has_dud_shemesh' => false,
             'has_machsan' => false,

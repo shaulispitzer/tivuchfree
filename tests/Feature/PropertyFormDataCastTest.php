@@ -20,6 +20,11 @@ test('property store accepts empty image_media_ids', function () {
     $response = actingAs($user)->post(route('properties.store'), [
         'contact_name' => 'Form Data Contact',
         'contact_phone' => '0501234500',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
         'succah_porch' => false,
         'has_dud_shemesh' => false,
         'has_machsan' => false,
