@@ -4,6 +4,47 @@ import AppContent from './AppContent.vue';
 import AppFooter from './AppFooter.vue';
 import AppHeader from './AppHeader.vue';
 
+const { t } = useI18n();
+
+const TIVUCHIM_NOTICE_STORAGE_KEY = 'tivuchfree:tivuchim-notice-dismissed-at';
+const TIVUCHIM_NOTICE_DELAY_MS = 2000;
+const TIVUCHIM_NOTICE_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+
+const showTivuchimNoticeModal = ref(false);
+let tivuchimNoticeTimerId: number | undefined;
+
+function isTivuchimNoticeInCooldown(): boolean {
+    try {
+        const storedTimestamp = window.localStorage.getItem(TIVUCHIM_NOTICE_STORAGE_KEY);
+
+        if (!storedTimestamp) {
+            return false;
+        }
+
+        const lastDismissedAt = Number.parseInt(storedTimestamp, 10);
+        if (Number.isNaN(lastDismissedAt)) {
+            return false;
+        }
+
+        return Date.now() - lastDismissedAt < TIVUCHIM_NOTICE_COOLDOWN_MS;
+    } catch {
+        return false;
+    }
+}
+
+function rememberTivuchimNoticeDismissed(): void {
+    try {
+        window.localStorage.setItem(TIVUCHIM_NOTICE_STORAGE_KEY, Date.now().toString());
+    } catch {
+        // Intentionally no-op if storage is unavailable.
+    }
+}
+
+function handleTivuchimNoticeAccept(): void {
+    rememberTivuchimNoticeDismissed();
+    showTivuchimNoticeModal.value = false;
+}
+
 const DONATION_MODAL_STORAGE_KEY = 'tivuchfree:donation-modal-response-at';
 const DONATION_MODAL_DELAY_MS = 30000;
 const DONATION_MODAL_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
@@ -57,6 +98,12 @@ function handleDonateNowClick(): void {
 }
 
 onMounted(() => {
+    if (!isTivuchimNoticeInCooldown()) {
+        tivuchimNoticeTimerId = window.setTimeout(() => {
+            showTivuchimNoticeModal.value = true;
+        }, TIVUCHIM_NOTICE_DELAY_MS);
+    }
+
     if (isDonationModalInCooldown()) {
         return;
     }
@@ -67,6 +114,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    if (typeof tivuchimNoticeTimerId === 'number') {
+        window.clearTimeout(tivuchimNoticeTimerId);
+    }
+
     if (typeof donationModalTimerId === 'number') {
         window.clearTimeout(donationModalTimerId);
     }
@@ -84,6 +135,31 @@ onUnmounted(() => {
 
         <AppFooter />
         <InertiaModal />
+
+        <Modal
+            :open="showTivuchimNoticeModal"
+            :title="t('common.pleaseNote')"
+            :actions="false"
+            :closable="false"
+            :close-on-backdrop="false"
+            width="max-w-2xl"
+        >
+            <div class="space-y-5">
+                <p class="text-base leading-relaxed text-foreground">
+                    {{ t('common.tivuchnotice') }}
+                </p>
+
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-md bg-primary px-7 py-3 text-base font-bold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                        @click="handleTivuchimNoticeAccept"
+                    >
+                        {{ t('common.acceptTc') }}
+                    </button>
+                </div>
+            </div>
+        </Modal>
 
         <Modal
             :open="showDonationModal"

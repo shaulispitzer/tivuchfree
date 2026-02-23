@@ -5,6 +5,8 @@ import { useI18n } from 'vue-i18n';
 import { dashboard, home, locale, login } from '@/routes';
 import { create as propertiesCreate } from '@/routes/properties';
 import AppHeaderNav from './AppHeaderNav.vue';
+import FxemojiGreatbritainflag from '~icons/fxemoji/greatbritainflag';
+import TwemojiFlagIsrael from '~icons/twemoji/flag-israel';
 const { t } = useI18n();
 
 // type Props = {
@@ -19,7 +21,7 @@ const page = usePage();
 const user = computed(() => page.props.user ?? null);
 const currentLocale = computed(() => page.props.locale ?? 'en');
 const localeToggleFlag = computed(() =>
-    currentLocale.value === 'he' ? '🇬🇧' : '🇮🇱',
+    currentLocale.value === 'he' ? FxemojiGreatbritainflag : TwemojiFlagIsrael,
 );
 const localeToggleLabel = computed(() =>
     currentLocale.value === 'he' ? 'Switch to English' : 'Switch to Hebrew',
@@ -158,7 +160,7 @@ const closeTivuchimNotice = () => {
                         @click="handleLocaleChange"
                     >
                         <span class="text-lg" aria-hidden="true">
-                            {{ localeToggleFlag }}
+                            <component :is="localeToggleFlag" class="h-4 w-4" />
                         </span>
                     </Button>
                     <template v-if="user">
@@ -198,7 +200,7 @@ const closeTivuchimNotice = () => {
                 </div>
             </div>
         </div>
-        <div
+        <!-- <div
             class="bg-red-700 text-white transition-all duration-300 ease-out"
             :class="
                 showTivuchimNotice
@@ -221,7 +223,7 @@ const closeTivuchimNotice = () => {
                     {{ t('common.acceptTc') }}
                 </Button>
             </div>
-        </div>
+        </div> -->
         <Modal
             :open="shortTermModalOpen"
             title="Short Term Properties"

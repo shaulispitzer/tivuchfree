@@ -74,6 +74,9 @@ onMounted(() => {
             <div
                 class="relative z-10 mx-auto flex min-h-[78vh] max-w-7xl flex-col items-center justify-center gap-7 px-6 py-12 text-center text-white"
             >
+                <p class="text-sm text-white" dir="rtl">
+                    לע&quot;נ הצדיק ר&apos; ישעיה בן ר&apos; משה זי&quot;ע
+                </p>
                 <h1
                     class="text-3xl font-bold tracking-tight text-balance sm:text-5xl"
                 >
@@ -84,10 +87,6 @@ onMounted(() => {
                     {{ t('common.saveMoneyConnectDirectlyMoveSmarter') }}
                 </p>
 
-                <p class="text-xl font-semibold text-amber-200" dir="rtl">
-                    לע&quot;נ הצדיק ר&apos; ישעיה בן ר&apos; משה זי&quot;ע
-                </p>
-
                 <div
                     class="grid w-full max-w-4xl grid-cols-1 place-items-center gap-5 pt-2 sm:grid-cols-3"
                 >
@@ -95,7 +94,7 @@ onMounted(() => {
                         as="button"
                         type="button"
                         href="/properties?type=long_term"
-                        class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
+                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                     >
                         {{ t('common.longTermListings') }}
                     </Link>
@@ -104,14 +103,14 @@ onMounted(() => {
                         as="button"
                         type="button"
                         href="/properties?type=medium_term"
-                        class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
+                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                     >
                         {{ t('common.mediumTermListings') }}
                     </Link>
 
                     <button
                         type="button"
-                        class="flex h-44 w-44 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-white/15 p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
+                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
                         @click="openShortTermModal"
                     >
                         {{ t('common.shortTermListings') }}
