@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -37,10 +37,10 @@ const { t } = useI18n();
             {{ status }}
         </div>
         <Button variant="outline" class="w-full" as-child>
-            <Link :href="googleRedirect()">
+            <a :href="googleRedirect.url()" class="inline-flex items-center justify-center gap-2">
                 <MaterialIconThemeGoogle class="h-5 w-5" />
                 {{ t('auth.google') }}
-            </Link>
+            </a>
         </Button>
 
         <div class="relative my-2">
