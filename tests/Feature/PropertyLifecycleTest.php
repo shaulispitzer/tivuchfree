@@ -2,6 +2,7 @@
 
 use App\Mail\PropertyTakenWarning;
 use App\Models\Property;
+use App\Models\PropertyStat;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -17,6 +18,7 @@ test('mark as taken sets taken_at timestamp', function () {
     $property->refresh();
     expect($property->taken)->toBeTrue();
     expect($property->taken_at)->not->toBeNull();
+    expect(PropertyStat::query()->where('property_id', $property->id)->exists())->toBeTrue();
 });
 
 test('non-owner cannot mark property as taken', function () {
@@ -107,6 +109,8 @@ test('lifecycle command deletes properties taken for 14+ days', function () {
     expect(Property::find($deletableProperty->id))->toBeNull();
     expect(Property::find($recentlyTakenProperty->id))->not->toBeNull();
     expect(Property::find($availableProperty->id))->not->toBeNull();
+
+    expect(PropertyStat::query()->where('property_id', $deletableProperty->id)->exists())->toBeTrue();
 });
 
 test('lifecycle command sends warning email 3 days before auto-mark', function () {
@@ -174,6 +178,24 @@ test('owner can delete their property', function () {
         ->assertRedirect(route('my-properties.index'));
 
     expect(Property::find($property->id))->toBeNull();
+    expect(PropertyStat::query()->where('property_id', $property->id)->exists())->toBeTrue();
+});
+
+test('deleting a taken property does not create duplicate property stats', function () {
+    $user = User::factory()->create();
+    $property = Property::factory()->create(['user_id' => $user->id]);
+
+    $this->actingAs($user)
+        ->patch(route('my-properties.mark-as-taken', $property), [
+            'how_got_taken' => 'agent',
+        ])
+        ->assertRedirect();
+
+    $this->actingAs($user)
+        ->delete(route('my-properties.destroy', $property))
+        ->assertRedirect(route('my-properties.index'));
+
+    expect(PropertyStat::query()->where('property_id', $property->id)->count())->toBe(1);
 });
 
 test('non-owner cannot delete a property', function () {

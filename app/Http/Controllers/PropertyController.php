@@ -13,10 +13,12 @@ use App\Enums\PropertyFurnished;
 use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
+use App\Http\Requests\MarkPropertyAsTakenRequest;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
 use App\Services\PropertyGeocoder;
+use App\Services\PropertyStatRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -442,7 +444,7 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function markAsTaken(Request $request, Property $property): RedirectResponse
+    public function markAsTaken(MarkPropertyAsTakenRequest $request, Property $property, PropertyStatRecorder $propertyStatRecorder): RedirectResponse
     {
         if ($property->user_id !== $request->user()->id) {
             abort(403);
@@ -454,6 +456,13 @@ class PropertyController extends Controller
                 'taken_at' => now(),
             ]);
         }
+
+        $validated = $request->validated();
+
+        $propertyStatRecorder->recordTaken($property->fresh(), [
+            'how_got_taken' => $validated['how_got_taken'] ?? null,
+            'price_taken_at' => $validated['price_taken_at'] ?? null,
+        ]);
 
         return back()->success('Property marked as taken');
     }

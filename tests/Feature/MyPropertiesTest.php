@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Property;
+use App\Models\PropertyStat;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -34,10 +35,18 @@ test('owners can mark their property as taken', function () {
         'taken' => false,
     ]);
 
-    $response = $this->actingAs($owner)->patch(route('my-properties.mark-as-taken', $property));
+    $response = $this->actingAs($owner)->patch(route('my-properties.mark-as-taken', $property), [
+        'how_got_taken' => 'tivuchfree',
+        'price_taken_at' => 1234,
+    ]);
 
     $response->assertRedirect();
     expect($property->fresh()->taken)->toBeTrue();
+
+    $stat = PropertyStat::query()->where('property_id', $property->id)->first();
+    expect($stat)->not->toBeNull();
+    expect($stat->how_got_taken)->toBe('tivuchfree');
+    expect((string) $stat->price_taken_at)->toBe('1234.00');
 });
 
 test('users cannot mark other users properties as taken', function () {

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PropertyStat extends Model
 {
@@ -16,6 +15,7 @@ class PropertyStat extends Model
      */
     protected $fillable = [
         'property_id',
+        'type',
         'neighbourhoods',
         'address',
         'how_got_taken',
@@ -24,11 +24,6 @@ class PropertyStat extends Model
         'date_taken',
         'date_advertised',
     ];
-
-    public function property(): BelongsTo
-    {
-        return $this->belongsTo(Property::class);
-    }
 
     /**
      * @return array<string, string>

@@ -20,8 +20,9 @@ use Spatie\LaravelData\Data;
 class PropertyFormData extends Data
 {
     public function __construct(
-        public ?string $contact_name,
+        public string $contact_name,
         public string $contact_phone,
+        public ?string $email,
         public ?float $price,
         public array $neighbourhoods,
         public ?int $building_number,
@@ -34,12 +35,12 @@ class PropertyFormData extends Data
         public float $bedrooms,
         public ?float $bathrooms,
         public PropertyFurnished $furnished,
-        public ?PropertyAccess $access,
-        public ?PropertyKitchenDiningRoom $kitchen_dining_room,
-        public ?PropertyPorchGarden $porch_garden,
+        public PropertyAccess $access,
+        public PropertyKitchenDiningRoom $kitchen_dining_room,
+        public PropertyPorchGarden $porch_garden,
         public bool $succah_porch,
-        public ?PropertyAirConditioning $air_conditioning,
-        public ?PropertyApartmentCondition $apartment_condition,
+        public PropertyAirConditioning $air_conditioning,
+        public PropertyApartmentCondition $apartment_condition,
         public ?string $additional_info_en,
         public ?string $additional_info_he,
         public bool $has_dud_shemesh,

@@ -61,8 +61,9 @@ created_at: string;
 }
 declare namespace App.Data.Forms {
 export type PropertyFormData = {
-contact_name: string | null;
+contact_name: string;
 contact_phone: string;
+email: string | null;
 price: number | null;
 neighbourhoods: Array<any>;
 building_number: number | null;
@@ -75,12 +76,12 @@ available_to: string | null;
 bedrooms: number;
 bathrooms: number | null;
 furnished: App.Enums.PropertyFurnished;
-access: App.Enums.PropertyAccess | null;
-kitchen_dining_room: App.Enums.PropertyKitchenDiningRoom | null;
-porch_garden: App.Enums.PropertyPorchGarden | null;
+access: App.Enums.PropertyAccess;
+kitchen_dining_room: App.Enums.PropertyKitchenDiningRoom;
+porch_garden: App.Enums.PropertyPorchGarden;
 succah_porch: boolean;
-air_conditioning: App.Enums.PropertyAirConditioning | null;
-apartment_condition: App.Enums.PropertyApartmentCondition | null;
+air_conditioning: App.Enums.PropertyAirConditioning;
+apartment_condition: App.Enums.PropertyApartmentCondition;
 additional_info_en: string | null;
 additional_info_he: string | null;
 has_dud_shemesh: boolean;

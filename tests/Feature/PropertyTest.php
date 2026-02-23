@@ -9,6 +9,7 @@ use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Models\Property;
+use App\Models\PropertyStat;
 use App\Models\Street;
 use App\Models\User;
 use App\Services\PropertyGeocoder;
@@ -542,6 +543,21 @@ test('admins can view admin properties index', function () {
         );
 });
 
+test('admins can view admin property stats index', function () {
+    $admin = User::factory()->admin()->create();
+    $stat = PropertyStat::factory()->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.property-stats.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/PropertyStats')
+            ->has('stats', 1)
+            ->where('stats.0.id', $stat->id)
+            ->where('stats.0.property_id', $stat->property_id)
+        );
+});
+
 test('admins can delete properties', function () {
     $admin = User::factory()->admin()->create();
     $property = Property::factory()->create();
@@ -552,11 +568,22 @@ test('admins can delete properties', function () {
     expect(Property::find($property->id))->toBeNull();
 });
 
+test('admins can delete property stats', function () {
+    $admin = User::factory()->admin()->create();
+    $stat = PropertyStat::factory()->create();
+
+    $response = $this->actingAs($admin)->delete(route('admin.property-stats.destroy', $stat));
+
+    $response->assertRedirect(route('admin.property-stats.index'));
+    expect(PropertyStat::find($stat->id))->toBeNull();
+});
+
 test('non admins cannot access admin properties', function () {
     $user = User::factory()->create();
     $property = Property::factory()->create();
 
     $this->actingAs($user)->get(route('admin.properties.index'))->assertForbidden();
+    $this->actingAs($user)->get(route('admin.property-stats.index'))->assertForbidden();
     $this->actingAs($user)->delete(route('admin.properties.destroy', $property))
         ->assertForbidden();
 });
@@ -565,6 +592,7 @@ test('guests cannot access admin properties', function () {
     $property = Property::factory()->create();
 
     $this->get(route('admin.properties.index'))->assertRedirect(route('login'));
+    $this->get(route('admin.property-stats.index'))->assertRedirect(route('login'));
     $this->delete(route('admin.properties.destroy', $property))
         ->assertRedirect(route('login'));
 });

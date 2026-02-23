@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
+use App\Http\Controllers\Admin\PropertyStatController as AdminPropertyStatController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\HomeController;
@@ -29,9 +30,18 @@ Route::get('properties', [PropertyController::class, 'index'])->name('properties
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('properties', [AdminPropertyController::class, 'index'])->name('properties.index');
     Route::delete('properties/{property}', [AdminPropertyController::class, 'destroy'])->name('properties.destroy');
+    Route::get('property-stats', [AdminPropertyStatController::class, 'index'])->name('property-stats.index');
+    Route::delete('property-stats/{propertyStat}', [AdminPropertyStatController::class, 'destroy'])->name('property-stats.destroy');
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
     Route::patch('users/{user}/make-admin', [AdminUserController::class, 'makeAdmin'])->name('users.make-admin');
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
+    Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
+    Route::post('streets', [StreetController::class, 'store'])->name('streets.store');
+    Route::post('streets/import', [StreetController::class, 'import'])->name('streets.import');
+    Route::get('streets/{street}/edit', [StreetController::class, 'edit'])->name('streets.edit');
+    Route::put('streets/{street}', [StreetController::class, 'update'])->name('streets.update');
+    Route::delete('streets/{street}', [StreetController::class, 'destroy'])->name('streets.destroy');
 });
 
 Route::middleware('auth', 'verified')->group(function () {
@@ -56,13 +66,6 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::delete('my-properties/{property}', [PropertyController::class, 'destroyMyProperty'])
         ->name('my-properties.destroy');
 
-    Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
-    Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
-    Route::post('streets', [StreetController::class, 'store'])->name('streets.store');
-    Route::post('streets/import', [StreetController::class, 'import'])->name('streets.import');
-    Route::get('streets/{street}/edit', [StreetController::class, 'edit'])->name('streets.edit');
-    Route::put('streets/{street}', [StreetController::class, 'update'])->name('streets.update');
-    Route::delete('streets/{street}', [StreetController::class, 'destroy'])->name('streets.destroy');
 });
 
 // mails routes

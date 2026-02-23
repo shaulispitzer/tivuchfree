@@ -3,7 +3,6 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { CircleCheck, Pencil, RefreshCw, Trash2 } from 'lucide-vue-next';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import ConfirmableButton from '@/components/ConfirmableButton.vue';
 import Modal from '@/components/Modal.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +33,7 @@ defineProps({
 const { t } = useI18n();
 
 const deletingId = ref<number | null>(null);
+const deleteModalPropertyId = ref<number | null>(null);
 const markAsTakenModalPropertyId = ref<number | null>(null);
 const feedbackSource = ref<string | null>(null);
 const feedbackPrice = ref('');
@@ -52,13 +52,30 @@ function openMarkAsTakenModal(propertyId: number) {
     feedbackPrice.value = '';
 }
 
+function openDeleteModal(propertyId: number) {
+    deleteModalPropertyId.value = propertyId;
+}
+
 function handleMarkAsTaken() {
     if (!markAsTakenModalPropertyId.value) return;
+
+    const priceString =
+        typeof feedbackPrice.value === 'string'
+            ? feedbackPrice.value
+            : String(feedbackPrice.value ?? '');
+    const priceTrimmed = priceString.trim();
+    const parsedPrice =
+        priceTrimmed !== '' && Number.isFinite(Number(priceTrimmed))
+            ? Number(priceTrimmed)
+            : null;
 
     markingAsTaken.value = true;
     router.patch(
         markAsTaken(markAsTakenModalPropertyId.value).url,
-        {},
+        {
+            how_got_taken: feedbackSource.value,
+            price_taken_at: parsedPrice,
+        },
         {
             preserveScroll: true,
             onFinish: () => {
@@ -79,10 +96,15 @@ function handleRepost(propertyId: number) {
     );
 }
 
-function handleDelete(propertyId: number) {
+function handleConfirmDelete() {
+    if (!deleteModalPropertyId.value) return;
+
+    const propertyId = deleteModalPropertyId.value;
+
     deletingId.value = propertyId;
     router.delete(destroy(propertyId).url, {
         preserveScroll: true,
+        onSuccess: () => (deleteModalPropertyId.value = null),
         onFinish: () => (deletingId.value = null),
     });
 }
@@ -251,22 +273,11 @@ function handleDelete(propertyId: number) {
                                         <DropdownMenuItem
                                             v-else
                                             variant="destructive"
-                                            as-child
+                                            class="cursor-pointer text-red-500"
+                                            @click="openDeleteModal(property.id)"
                                         >
-                                            <ConfirmableButton
-                                                variant="ghost"
-                                                size="sm"
-                                                class="w-full justify-start px-2 py-1.5 text-red-500"
-                                                :processing="
-                                                    deletingId === property.id
-                                                "
-                                                @confirm="
-                                                    handleDelete(property.id)
-                                                "
-                                            >
-                                                <Trash2 class="mr-2 size-4" />
-                                                {{ t('common.delete') }}
-                                            </ConfirmableButton>
+                                            <Trash2 class="mr-2 size-4" />
+                                            {{ t('common.delete') }}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -321,5 +332,18 @@ function handleDelete(propertyId: number) {
                 />
             </div>
         </div>
+    </Modal>
+
+    <Modal
+        :open="deleteModalPropertyId !== null"
+        :title="t('common.actionDangerous')"
+        :confirm-label="t('common.delete')"
+        :processing="deleteModalPropertyId !== null && deletingId === deleteModalPropertyId"
+        @close="deleteModalPropertyId = null"
+        @confirm="handleConfirmDelete"
+    >
+        <p class="text-sm text-muted-foreground">
+            {{ t('common.actionDangerousConfirm') }}
+        </p>
     </Modal>
 </template>

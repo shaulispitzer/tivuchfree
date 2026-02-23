@@ -43,12 +43,25 @@ const LeaseType = {
 
 type PropertyCreateFormData = Omit<
     App.Data.Forms.PropertyFormData,
-    'street' | 'floor' | 'bedrooms' | 'building_number'
+    | 'street'
+    | 'floor'
+    | 'bedrooms'
+    | 'building_number'
+    | 'access'
+    | 'kitchen_dining_room'
+    | 'porch_garden'
+    | 'air_conditioning'
+    | 'apartment_condition'
 > & {
     building_number: number | undefined;
     street: number | undefined;
     floor: number | undefined;
     bedrooms: number | undefined;
+    access: App.Enums.PropertyAccess | null;
+    kitchen_dining_room: App.Enums.PropertyKitchenDiningRoom | null;
+    porch_garden: App.Enums.PropertyPorchGarden | null;
+    air_conditioning: App.Enums.PropertyAirConditioning | null;
+    apartment_condition: App.Enums.PropertyApartmentCondition | null;
 };
 
 function getLocalDateString(date: Date): string {
@@ -67,6 +80,7 @@ function toISODateTime(dateString: string | null): string | null {
 const form = useForm<PropertyCreateFormData>({
     contact_name: '',
     contact_phone: '',
+    email: null,
     price: null,
     square_meter: null,
     bathrooms: null,
@@ -215,7 +229,14 @@ const availableTo = computed<string>({
 const contactNameInput = computed<string | undefined>({
     get: () => form.contact_name ?? undefined,
     set: (value) => {
-        form.contact_name = value ?? null;
+        form.contact_name = value ?? '';
+    },
+});
+
+const emailInput = computed<string | undefined>({
+    get: () => form.email ?? undefined,
+    set: (value) => {
+        form.email = value ?? null;
     },
 });
 
@@ -369,7 +390,8 @@ function submit(): void {
                         type="text"
                         name="contact_name"
                         :label="t('common.contactName')"
-                        :placeholder="t('common.optional')"
+                        validation="required"
+                        label-class="required-asterisk"
                     />
                     <div
                         v-if="form.errors.contact_name"
@@ -394,6 +416,15 @@ function submit(): void {
                     >
                         {{ form.errors.contact_phone }}
                     </div>
+                </div>
+                <div class="grid gap-2">
+                    <FormKit
+                        v-model="emailInput"
+                        type="email"
+                        name="email"
+                        :label="t('common.email')"
+                        validation="email"
+                    />
                 </div>
             </div>
         </Card>
@@ -708,8 +739,10 @@ function submit(): void {
                         type="select"
                         name="access"
                         :label="t('common.access')"
-                        :placeholder="t('common.selectAccess')"
+                        validation="required"
+                        label-class="required-asterisk"
                         :options="translatedAccess"
+                        :placeholder="t('common.selectAccess')"
                     />
                     <div v-if="form.errors.access" class="text-sm text-red-600">
                         {{ form.errors.access }}
@@ -722,8 +755,10 @@ function submit(): void {
                         type="select"
                         name="kitchen_dining_room"
                         :label="t('common.separateKitchenDiningRoom')"
-                        :placeholder="t('common.selectOption')"
+                        validation="required"
+                        label-class="required-asterisk"
                         :options="translatedKitchenDiningRoom"
+                        :placeholder="t('common.selectOption')"
                     />
                     <div
                         v-if="form.errors.kitchen_dining_room"
@@ -741,6 +776,8 @@ function submit(): void {
                         :label="t('common.porchGarden')"
                         :placeholder="t('common.selectOption')"
                         :options="translatedPorchGarden"
+                        validation="required"
+                        label-class="required-asterisk"
                     />
                     <div
                         v-if="form.errors.porch_garden"
@@ -758,6 +795,8 @@ function submit(): void {
                         :label="t('common.airConditioning')"
                         :placeholder="t('common.selectOption')"
                         :options="translatedAirConditioning"
+                        validation="required"
+                        label-class="required-asterisk"
                     />
                     <div
                         v-if="form.errors.air_conditioning"
@@ -775,6 +814,8 @@ function submit(): void {
                         :label="t('common.apartmentCondition')"
                         :placeholder="t('common.selectOption')"
                         :options="translatedApartmentCondition"
+                        validation="required"
+                        label-class="required-asterisk"
                     />
                     <div
                         v-if="form.errors.apartment_condition"
@@ -785,46 +826,6 @@ function submit(): void {
                 </div>
             </div>
         </Card>
-
-        <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">
-                {{ t('common.notes') }}
-            </h2>
-            <div class="grid gap-4 lg:grid-cols-2">
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="additionalInfoEnInput"
-                        type="textarea"
-                        name="additional_info_en"
-                        :label="t('common.additionalInfoEnglish')"
-                        rows="4"
-                    />
-                    <div
-                        v-if="form.errors.additional_info_en"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.additional_info_en }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="additionalInfoHeInput"
-                        type="textarea"
-                        name="additional_info_he"
-                        :label="t('common.additionalInfoHebrew')"
-                        rows="4"
-                    />
-                    <div
-                        v-if="form.errors.additional_info_he"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.additional_info_he }}
-                    </div>
-                </div>
-            </div>
-        </Card>
-
         <Card>
             <h2 class="text-sm font-semibold text-foreground/80">
                 {{ t('common.amenities') }}
@@ -887,6 +888,44 @@ function submit(): void {
                         class="text-sm text-red-600"
                     >
                         {{ form.errors.has_parking_spot }}
+                    </div>
+                </div>
+            </div>
+        </Card>
+        <Card>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.notes') }}
+            </h2>
+            <div class="grid gap-4 lg:grid-cols-2">
+                <div class="grid gap-2">
+                    <FormKit
+                        v-model="additionalInfoEnInput"
+                        type="textarea"
+                        name="additional_info_en"
+                        :label="t('common.additionalInfoEnglish')"
+                        rows="4"
+                    />
+                    <div
+                        v-if="form.errors.additional_info_en"
+                        class="text-sm text-red-600"
+                    >
+                        {{ form.errors.additional_info_en }}
+                    </div>
+                </div>
+
+                <div class="grid gap-2">
+                    <FormKit
+                        v-model="additionalInfoHeInput"
+                        type="textarea"
+                        name="additional_info_he"
+                        :label="t('common.additionalInfoHebrew')"
+                        rows="4"
+                    />
+                    <div
+                        v-if="form.errors.additional_info_he"
+                        class="text-sm text-red-600"
+                    >
+                        {{ form.errors.additional_info_he }}
                     </div>
                 </div>
             </div>

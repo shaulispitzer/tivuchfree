@@ -18,6 +18,7 @@ class PropertyStatFactory extends Factory
     {
         return [
             'property_id' => \App\Models\Property::factory(),
+            'type' => $this->faker->randomElement(['long_term', 'medium_term']),
             'neighbourhoods' => [$this->faker->city()],
             'address' => $this->faker->address(),
             'how_got_taken' => $this->faker->randomElement(['website', 'phone', 'referral', 'other']),

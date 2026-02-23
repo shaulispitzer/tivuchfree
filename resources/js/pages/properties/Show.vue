@@ -90,7 +90,7 @@ function formatDate(value: string | null): string | null {
 }
 
 function formatBoolean(value: boolean): string {
-    return value ? 'Yes' : 'No';
+    return value ? t('common.yes') : t('common.no');
 }
 
 function isMissing(value: unknown): boolean {
@@ -114,77 +114,77 @@ type PropertyDetail = {
 const propertyDetails = computed<PropertyDetail[]>(() => {
     const details: PropertyDetail[] = [
         {
-            label: 'Bedrooms',
+            label: t('common.bedrooms'),
             value: props.property.bedrooms,
             icon: BedroomChildOutlineRounded,
         },
         {
-            label: 'Bathrooms',
+            label: t('common.bathrooms'),
             value: props.property.bathrooms,
             icon: Bath,
         },
         {
-            label: 'Square meters',
+            label: t('common.squareMeter'),
             value: props.property.square_meter,
             icon: Ruler,
         },
         {
-            label: 'Floor',
+            label: t('common.floor'),
             value: props.property.floor,
             icon: Layers,
         },
         {
-            label: 'Furnished',
-            value: formatLabel(props.property.furnished),
+            label: t('common.furnished'),
+            value: t(props.property.furnished ?? 'not specified'),
             icon: Armchair,
         },
         {
-            label: 'Access',
-            value: formatLabel(props.property.access),
+            label: t('common.access'),
+            value: t(props.property.access ?? 'not specified'),
             icon: KeyRound,
         },
         {
-            label: 'Condition',
-            value: formatLabel(props.property.apartment_condition),
+            label: t('common.condition'),
+            value: t(props.property.apartment_condition ?? 'not specified'),
             icon: Home,
         },
         {
-            label: 'Kitchen / dining',
-            value: formatLabel(props.property.kitchen_dining_room),
+            label: t('common.kitchenDining'),
+            value: t(props.property.kitchen_dining_room ?? 'not specified'),
             icon: ChefHat,
         },
         {
-            label: 'Porch / garden',
-            value: formatLabel(props.property.porch_garden),
+            label: t('common.porchGarden'),
+            value: t(props.property.porch_garden ?? 'not specified'),
             icon: Trees,
         },
         {
-            label: 'Air conditioning',
-            value: formatLabel(props.property.air_conditioning),
+            label: t('common.airConditioning'),
+            value: t(props.property.air_conditioning ?? 'not specified'),
             icon: AirVent,
         },
         {
-            label: 'Succah porch',
+            label: t('common.succahPorch'),
             value: formatBoolean(props.property.succah_porch),
             icon: SunMedium,
         },
         {
-            label: 'Dud shemesh',
+            label: t('common.dudShemesh'),
             value: formatBoolean(props.property.has_dud_shemesh),
             icon: SmartHomeBoiler,
         },
         {
-            label: 'Machsan',
+            label: t('common.machsan'),
             value: formatBoolean(props.property.has_machsan),
             icon: Warehouse,
         },
         {
-            label: 'Parking spot',
+            label: t('common.parkingSpot'),
             value: formatBoolean(props.property.has_parking_spot),
             icon: ParkingSquare,
         },
         {
-            label: 'Views',
+            label: t('common.views'),
             value: props.property.views,
             icon: Eye,
         },
@@ -198,7 +198,8 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
     <Modal
         :open="open"
         :title="
-            'Property #' +
+            t('common.property', 1) +
+            ' #' +
             (property.type === 'long_term' ? '1' : '6') +
             property.id
         "
@@ -231,7 +232,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         >
                             <img
                                 :src="url"
-                                alt="Main property image"
+                                :alt="t('common.mainPropertyImageAlt')"
                                 class="h-56 w-full object-cover sm:h-72 md:h-80"
                             />
                         </SwiperSlide>
@@ -260,7 +261,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         >
                             <img
                                 :src="url"
-                                alt="Property thumbnail"
+                                :alt="t('common.propertyThumbnailAlt')"
                                 class="h-16 w-full rounded-md border border-border/60 object-cover transition sm:h-20"
                             />
                         </SwiperSlide>
@@ -270,7 +271,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                     v-if="imageUrls.length === 0"
                     class="flex h-24 w-full items-center justify-center rounded-lg border border-dashed text-xs text-muted-foreground sm:h-28"
                 >
-                    No images available
+                    {{ t('common.noImagesAvailable') }}
                 </div>
             </div>
 
@@ -280,7 +281,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                     class="text-sm text-muted-foreground"
                     :class="{ italic: isMissing(neighbourhoodsLabel) }"
                 >
-                    {{ neighbourhoodsLabel ?? notSpecifiedLabel }}
+                    {{ neighbourhoodsLabel ?? t('common.notSpecified') }}
                 </p>
                 <p
                     class="text-xl font-semibold text-primary"
@@ -293,7 +294,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                     {{
                         property.price !== null
                             ? `₪${property.price.toFixed(2)}`
-                            : notSpecifiedLabel
+                            : t('common.notSpecified')
                     }}
                 </p>
                 <div
@@ -301,7 +302,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                 >
                     <span class="inline-flex items-center gap-1.5">
                         <CalendarDays class="h-3.5 w-3.5 text-primary" />
-                        <span>Available from</span>
+                        <span>{{ t('common.availableFrom') }}</span>
                         <span
                             class="font-medium"
                             :class="{
@@ -312,7 +313,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         >
                             {{
                                 formatDate(property.available_from) ??
-                                notSpecifiedLabel
+                                t('common.notSpecified')
                             }}
                         </span>
                     </span>
@@ -321,7 +322,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         class="inline-flex items-center gap-1.5"
                     >
                         <CalendarClock class="h-3.5 w-3.5 text-primary" />
-                        <span>Available to</span>
+                        <span>{{ t('common.availableTo') }}</span>
                         <span
                             class="font-medium"
                             :class="{
@@ -332,7 +333,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         >
                             {{
                                 formatDate(property.available_to) ??
-                                notSpecifiedLabel
+                                t('common.notSpecified')
                             }}
                         </span>
                     </span>
@@ -342,7 +343,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800"
                     >
                         <CalendarClock class="h-3.5 w-3.5" />
-                        Medium term
+                        {{ t('common.mediumTermRental') }}
                     </Badge>
                 </div>
             </div>
@@ -371,7 +372,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         >
                             {{
                                 isMissing(detail.value)
-                                    ? notSpecifiedLabel
+                                    ? t('common.notSpecified')
                                     : detail.value
                             }}
                         </p>
@@ -380,7 +381,9 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
             </div>
 
             <div class="space-y-2 rounded-md bg-muted/20 p-4">
-                <p class="text-xs text-muted-foreground">Additional info</p>
+                <p class="text-xs text-muted-foreground">
+                    {{ t('common.additionalInfo') }}
+                </p>
                 <p
                     class="text-sm leading-relaxed"
                     :class="{
@@ -389,7 +392,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         ),
                     }"
                 >
-                    {{ property.additional_info ?? notSpecifiedLabel }}
+                    {{ property.additional_info ?? t('common.notSpecified') }}
                 </p>
             </div>
         </div>

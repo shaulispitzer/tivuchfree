@@ -85,16 +85,17 @@
                             >
                                 <Button
                                     v-if="cancelable"
-                                    color="secondary"
+                                    variant="secondary"
                                     size="lg"
                                     @click="closeModal"
+                                    class="mx-2"
                                 >
                                     {{ cancelLabel || t('common.cancel') }}
                                 </Button>
                                 <Button
                                     :processing="processing"
                                     v-if="confirmable"
-                                    color="brand"
+                                    variant="default"
                                     size="lg"
                                     @click="emit('confirm')"
                                 >

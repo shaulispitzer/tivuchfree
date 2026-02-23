@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
 import { Menu } from 'lucide-vue-next';
-import { useI18n } from 'vue-i18n';
 import { dashboard, home, locale, login } from '@/routes';
 import { create as propertiesCreate } from '@/routes/properties';
 import AppHeaderNav from './AppHeaderNav.vue';
-import FxemojiGreatbritainflag from '~icons/fxemoji/greatbritainflag';
+import FlagpackGbUkm from '~icons/flagpack/gb-ukm';
 import TwemojiFlagIsrael from '~icons/twemoji/flag-israel';
 const { t } = useI18n();
 
@@ -21,7 +19,7 @@ const page = usePage();
 const user = computed(() => page.props.user ?? null);
 const currentLocale = computed(() => page.props.locale ?? 'en');
 const localeToggleFlag = computed(() =>
-    currentLocale.value === 'he' ? FxemojiGreatbritainflag : TwemojiFlagIsrael,
+    currentLocale.value === 'he' ? FlagpackGbUkm : TwemojiFlagIsrael,
 );
 const localeToggleLabel = computed(() =>
     currentLocale.value === 'he' ? 'Switch to English' : 'Switch to Hebrew',

@@ -27,14 +27,22 @@ class ProcessPropertyLifecycle extends Command
      */
     protected function deleteTakenProperties(): void
     {
-        $deleted = Property::query()
+        $query = Property::query()
             ->where('taken', true)
             ->whereNotNull('taken_at')
-            ->where('taken_at', '<=', now()->subDays(14))
-            ->delete();
+            ->where('taken_at', '<=', now()->subDays(14));
 
-        if ($deleted > 0) {
-            $this->info("Deleted {$deleted} properties that were taken for 14+ days.");
+        $count = 0;
+
+        $query->chunkById(100, function ($properties) use (&$count) {
+            foreach ($properties as $property) {
+                $property->delete();
+                $count++;
+            }
+        });
+
+        if ($count > 0) {
+            $this->info("Deleted {$count} properties that were taken for 14+ days.");
         }
     }
 

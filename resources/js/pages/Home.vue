@@ -94,7 +94,7 @@ onMounted(() => {
                         as="button"
                         type="button"
                         href="/properties?type=long_term"
-                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
+                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white transition hover:scale-[1.03] hover:bg-primary/90 hover:shadow-xl"
                     >
                         {{ t('common.longTermListings') }}
                     </Link>
@@ -103,14 +103,14 @@ onMounted(() => {
                         as="button"
                         type="button"
                         href="/properties?type=medium_term"
-                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
+                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white transition hover:scale-[1.03] hover:bg-primary/90 hover:shadow-xl"
                     >
                         {{ t('common.mediumTermListings') }}
                     </Link>
 
                     <button
                         type="button"
-                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white shadow-xl backdrop-blur-sm transition hover:scale-[1.03] hover:bg-white/25"
+                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white transition hover:scale-[1.03] hover:bg-primary/90 hover:shadow-xl"
                         @click="openShortTermModal"
                     >
                         {{ t('common.shortTermListings') }}

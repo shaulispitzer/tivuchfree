@@ -37,7 +37,7 @@ export default defaultConfig({
             },
             number: {
                 inner: '$reset  text-base flex items-center w-full py-2 px-3 rounded-lg bg-white focus-within:ring-1 focus-within:!ring-primary focus-within:!border-primary group-data-[invalid]:border-primary group-data-[invalid]:ring-1 group-data-[invalid]:ring-primary group-data-[disabled]:bg-gray-100 group-data-[disabled]:!cursor-not-allowed shadow-sm group-[&]/repeater:shadow-none group-[&]/multistep:shadow-none ',
-                input: '$reset [color-scheme:light] selection:text-gray-700 group-data-[has-overlay]:selection:!text-transparent text-base text-gray-700 min-w-0 min-h-[1.5em] grow outline-hidden bg-transparent selection:bg-red-100 placeholder:text-gray-400 group-data-[disabled]:!cursor-not-allowed dark:placeholder-gray-400/50 dark:text-gray-300 border-none p-0 focus:ring-0 formkit-input',
+                input: '$reset [color-scheme:light] selection:text-gray-700 group-data-[has-overlay]:selection:!text-transparent text-base text-gray-700 min-w-0 min-h-[1.5em] grow outline-hidden bg-transparent selection:bg-red-100 placeholder:text-gray-400 group-data-[disabled]:!cursor-not-allowed border-none p-0 focus:ring-0 formkit-input',
             },
             textarea: {
                 inner: '$reset text-base flex items-center w-full py-2 px-3 rounded-lg bg-white focus-within:ring-1 focus-within:!ring-primary focus-within:!border-primary group-data-[invalid]:border-primary group-data-[invalid]:ring-1 group-data-[invalid]:ring-primary group-data-[disabled]:bg-gray-100 group-data-[disabled]:!cursor-not-allowed shadow-sm group-[&]/repeater:shadow-none group-[&]/multistep:shadow-none ',
@@ -46,9 +46,14 @@ export default defaultConfig({
                 inner: '$reset text-base flex items-center w-full py-2 px-3 rounded-lg bg-white focus-within:ring-1 focus-within:!ring-primary focus-within:!border-primary group-data-[invalid]:border-primary group-data-[invalid]:ring-1 group-data-[invalid]:ring-primary group-data-[disabled]:bg-gray-100 group-data-[disabled]:!cursor-not-allowed shadow-sm group-[&]/repeater:shadow-none group-[&]/multistep:shadow-none ',
             },
             checkbox: {
-                // inner: '$reset text-base flex items-center w-full py-2 px-3 rounded-lg bg-white focus-within:ring-1 focus-within:!ring-primary focus-within:!border-primary group-data-[invalid]:border-primary group-data-[invalid]:ring-1 group-data-[invalid]:ring-primary group-data-[disabled]:bg-gray-100 group-data-[disabled]:!cursor-not-allowed shadow-sm group-[&]/repeater:shadow-none group-[&]/multistep:shadow-none ',
+                decorator:
+                    ' $reset mx-1.5 bg-white ring-primary/90 peer-checked:border-primary relative block text-lg w-[1em] aspect-[1/1] border border-gray-300 text-transparent peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-offset-1 select-none group-data-[disabled]:!cursor-not-allowed peer-disabled:bg-gray-100 group-data-[disabled]:grayscale shadow-sm peer-disabled:cursor-not-allowed group-[&]/repeater:shadow-none group-[&]/multistep:shadow-none  formkit-decorator after:content-["✓"] after:absolute after:inset-0 after:flex after:items-center after:justify-center after:opacity-0 after:text-current after:text-[0.65em] after:leading-none peer-checked:after:opacity-100',
+                input: '$reset appearance-none [color-scheme:light]  selection:bg-red-100 selection:text-gray-700 group-data-[has-overlay]:selection:!text-transparent peer pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0 formkit-input',
             },
             radio: {
+                inner: '$reset text-base flex items-center w-full py-2 px-3 rounded-lg bg-white focus-within:ring-1 focus-within:!ring-primary focus-within:!border-primary group-data-[invalid]:border-primary group-data-[invalid]:ring-1 group-data-[invalid]:ring-primary group-data-[disabled]:bg-gray-100 group-data-[disabled]:!cursor-not-allowed shadow-sm group-[&]/repeater:shadow-none group-[&]/multistep:shadow-none ',
+            },
+            email: {
                 inner: '$reset text-base flex items-center w-full py-2 px-3 rounded-lg bg-white focus-within:ring-1 focus-within:!ring-primary focus-within:!border-primary group-data-[invalid]:border-primary group-data-[invalid]:ring-1 group-data-[invalid]:ring-primary group-data-[disabled]:bg-gray-100 group-data-[disabled]:!cursor-not-allowed shadow-sm group-[&]/repeater:shadow-none group-[&]/multistep:shadow-none ',
             },
         }),
