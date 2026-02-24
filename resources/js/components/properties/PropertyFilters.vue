@@ -24,7 +24,7 @@ type Option = {
 };
 
 export type PropertyFilterState = {
-    neighbourhood: string;
+    neighbourhoods: string[];
     hide_taken_properties: boolean;
     bedrooms_range: [number, number];
     furnished: string;
@@ -58,13 +58,20 @@ const sortOptions = computed<Option[]>(() => [
     { value: SortValue.Oldest, label: t('propertyFilters.oldestToLatest') },
 ]);
 
-const ALL_NEIGHBOURHOODS_VALUE = '__all_neighbourhoods__';
 const ALL_FURNISHED_VALUE = '__all_furnished__';
 const ALL_TYPES_VALUE = '__all_types__';
+
+function normalizeNeighbourhoods(value: PropertyFilterState): string[] {
+    if (Array.isArray(value.neighbourhoods)) return [...value.neighbourhoods];
+    const legacy = (value as { neighbourhood?: string }).neighbourhood;
+    if (typeof legacy === 'string' && legacy.trim() !== '') return [legacy];
+    return [];
+}
 
 function cloneFilters(value: PropertyFilterState): PropertyFilterState {
     return {
         ...value,
+        neighbourhoods: normalizeNeighbourhoods(value),
         bedrooms_range: [...value.bedrooms_range],
     };
 }
@@ -76,12 +83,21 @@ function isSameBedroomsRange(
     return first[0] === second[0] && first[1] === second[1];
 }
 
+function isSameNeighbourhoods(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false;
+    const set = new Set(b);
+    return a.every((n) => set.has(n));
+}
+
 function isSameFilterState(
     first: PropertyFilterState,
     second: PropertyFilterState,
 ): boolean {
     return (
-        first.neighbourhood === second.neighbourhood &&
+        isSameNeighbourhoods(
+            first.neighbourhoods ?? [],
+            second.neighbourhoods ?? [],
+        ) &&
         first.hide_taken_properties === second.hide_taken_properties &&
         isSameBedroomsRange(first.bedrooms_range, second.bedrooms_range) &&
         first.furnished === second.furnished &&
@@ -130,19 +146,23 @@ const props = withDefaults(
         show_sort?: boolean;
         show_hide_taken?: boolean;
         subscription_mode?: boolean;
+        subscription_neighbourhoods?: string[];
     }>(),
     {
         show_sort: true,
         show_hide_taken: true,
         subscription_mode: false,
+        subscription_neighbourhoods: () => [],
     },
 );
 
 const emit = defineEmits<{
     'update:filters': [value: PropertyFilterState];
+    'update:subscription_neighbourhoods': [value: string[]];
 }>();
 
 const localFilters = ref<PropertyFilterState>(cloneFilters(props.filters));
+
 const bedroomsRangeDraft = ref<[number, number]>([
     ...localFilters.value.bedrooms_range,
 ]);
@@ -151,14 +171,55 @@ const isMediumTerm = computed(
     () => localFilters.value.type === LeaseType.MediumTerm,
 );
 
-const neighbourhoodSelectValue = computed({
-    get: (): string =>
-        localFilters.value.neighbourhood || ALL_NEIGHBOURHOODS_VALUE,
-    set: (value: string): void => {
-        localFilters.value.neighbourhood =
-            value === ALL_NEIGHBOURHOODS_VALUE ? '' : value;
+function formatNeighbourhoodsDisplay(arr: string[]): string {
+    if (arr.length === 0) return t('neighbourhoods.allNeighbourhoods');
+    if (arr.length === 1) {
+        return t(`neighbourhoods.${arr[0].replaceAll(' ', '')}`);
+    }
+    return t('propertyFilters.neighbourhoodsSelected', { count: arr.length });
+}
+
+const subscriptionNeighbourhoods = computed(() =>
+    Array.isArray(props.subscription_neighbourhoods)
+        ? props.subscription_neighbourhoods
+        : normalizeNeighbourhoods(props.filters),
+);
+
+const subscriptionNeighbourhoodsModel = computed({
+    get: () => subscriptionNeighbourhoods.value,
+    set: (value: string[]) => {
+        emit('update:subscription_neighbourhoods', value);
+        emit('update:filters', {
+            ...cloneFilters(localFilters.value),
+            neighbourhoods: value,
+        });
     },
 });
+
+const neighbourhoodsModel = computed({
+    get: () =>
+        props.subscription_mode
+            ? subscriptionNeighbourhoodsModel.value
+            : localFilters.value.neighbourhoods,
+    set: (value: string[]) => {
+        if (props.subscription_mode) {
+            subscriptionNeighbourhoodsModel.value = value;
+        } else {
+            localFilters.value = {
+                ...localFilters.value,
+                neighbourhoods: value,
+            };
+        }
+    },
+});
+
+const neighbourhoodsDisplay = computed(() =>
+    formatNeighbourhoodsDisplay(
+        props.subscription_mode
+            ? subscriptionNeighbourhoods.value
+            : (localFilters.value.neighbourhoods ?? []),
+    ),
+);
 
 const furnishedSelectValue = computed({
     get: (): string => localFilters.value.furnished || ALL_FURNISHED_VALUE,
@@ -188,6 +249,9 @@ function commitBedroomsRange(value: number | number[]): void {
 watch(
     () => props.filters,
     (value) => {
+        if (props.subscription_mode) {
+            return;
+        }
         if (isSameFilterState(value, localFilters.value)) {
             return;
         }
@@ -213,140 +277,205 @@ watch(
 watch(
     () => localFilters.value,
     (value) => {
-        emit('update:filters', cloneFilters(value));
+        if (props.subscription_mode) {
+            emit('update:filters', {
+                ...cloneFilters(value),
+                neighbourhoods: subscriptionNeighbourhoods.value,
+            });
+        } else {
+            emit('update:filters', cloneFilters(value));
+        }
     },
     { deep: true },
 );
 
+defineExpose({
+    getFilters: (): PropertyFilterState =>
+        props.subscription_mode
+            ? {
+                  ...cloneFilters(localFilters.value),
+                  neighbourhoods: subscriptionNeighbourhoods.value,
+              }
+            : cloneFilters(localFilters.value),
+});
+
 const triggerClass = computed(() =>
     props.subscription_mode
-        ? 'group !h-11 w-full justify-between border-input bg-transparent px-4 text-base shadow-xs hover:bg-accent data-[state=open]:bg-accent'
+        ? 'group !h-11 w-full items-center justify-between border-input bg-transparent px-4 text-base shadow-xs hover:bg-accent data-[state=open]:bg-accent'
         : 'group h-9 w-full hover:bg-accent data-[state=open]:bg-accent',
 );
 const gridClass = computed(() =>
     props.subscription_mode
-        ? 'grid gap-5 sm:grid-cols-2 lg:grid-cols-6'
-        : 'grid gap-3 sm:grid-cols-2 lg:grid-cols-7',
+        ? 'grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-6'
+        : 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7',
 );
 </script>
 
 <template>
     <form class="mt-4">
         <div :class="gridClass">
-            <Select v-model="neighbourhoodSelectValue" name="neighbourhood">
-                <SelectTrigger :class="triggerClass">
-                    <SelectValue
-                        :placeholder="t('neighbourhoods.allNeighbourhoods')"
-                    />
-                    <template #trigger-icon>
-                        <ChevronDown16
-                            class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                        />
-                    </template>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem :value="ALL_NEIGHBOURHOODS_VALUE">
-                        {{ t('neighbourhoods.allNeighbourhoods') }}
-                    </SelectItem>
-                    <SelectItem
-                        v-for="neighbourhood in neighbourhood_options"
-                        :key="neighbourhood"
-                        :value="neighbourhood"
-                    >
-                        {{
-                            t(
-                                `neighbourhoods.${neighbourhood.replaceAll(' ', '')}`,
-                            )
-                        }}
-                    </SelectItem>
-                </SelectContent>
-            </Select>
-            <Select v-model="furnishedSelectValue" name="furnished">
-                <SelectTrigger :class="triggerClass">
-                    <SelectValue
-                        :placeholder="t('propertyFilters.allFurnishedOptions')"
-                    />
-                    <template #trigger-icon>
-                        <ChevronDown16
-                            class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                        />
-                    </template>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem :value="ALL_FURNISHED_VALUE">
-                        {{ t('propertyFilters.allFurnishedOptions') }}
-                    </SelectItem>
-                    <SelectItem
-                        v-for="option in furnished_options"
-                        :key="option.value"
-                        :value="option.value"
-                    >
-                        {{ t(`propertyFurnished.${option.value}`) }}
-                    </SelectItem>
-                </SelectContent>
-            </Select>
-            <div class="w-full sm:w-auto">
-                <Popover>
-                    <PopoverTrigger as-child>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            :class="triggerClass"
-                            class="font-normal"
-                        >
-                            <span class="truncate">{{
-                                t('propertyFilters.bedrooms')
-                            }}</span>
-                            <span class="truncate text-muted-foreground">
-                                {{ formatBedroomsRange(bedroomsRangeDraft) }}
-                            </span>
-                            <ChevronDown16
-                                class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                            />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent class="w-80 space-y-3 pt-12" align="end">
-                        <Slider
-                            v-model="bedroomsRangeDraft"
-                            @set="commitBedroomsRange"
-                            class="slider-red"
-                            :min="1"
-                            :max="10"
-                            :step="0.5"
-                            :tooltips="true"
-                            :lazy="false"
-                            :format="formatBedrooms"
-                        />
-                    </PopoverContent>
-                </Popover>
-            </div>
-            <Select v-model="typeSelectValue" name="type">
-                <SelectTrigger
-                    :class="[
-                        triggerClass,
-                        'sm:col-span-2 sm:w-1/2 lg:col-span-1 lg:w-auto',
-                    ]"
+            <div
+                :class="
+                    subscription_mode
+                        ? 'col-span-full flex w-full min-w-0 flex-wrap items-center gap-4'
+                        : 'contents'
+                "
+            >
+                <div
+                    :class="
+                        subscription_mode
+                            ? 'min-w-72 shrink-0 overflow-hidden'
+                            : 'min-w-0 overflow-hidden'
+                    "
                 >
-                    <SelectValue :placeholder="t('propertyFilters.allTypes')" />
-                    <template #trigger-icon>
-                        <ChevronDown16
-                            class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                        />
-                    </template>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem :value="ALL_TYPES_VALUE">
-                        {{ t('propertyFilters.allTypes') }}
-                    </SelectItem>
-                    <SelectItem
-                        v-for="option in type_options"
-                        :key="option.value"
-                        :value="option.value"
+                    <Select
+                        v-model="neighbourhoodsModel"
+                        name="neighbourhoods"
+                        multiple
                     >
-                        {{ t(`propertyLeaseType.${option.value}`) }}
-                    </SelectItem>
-                </SelectContent>
-            </Select>
+                        <SelectTrigger :class="triggerClass">
+                            <span class="min-w-0 truncate">{{
+                                neighbourhoodsDisplay
+                            }}</span>
+                            <template #trigger-icon>
+                                <ChevronDown16
+                                    class="size-4 shrink-0 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+                                />
+                            </template>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                                v-for="neighbourhood in neighbourhood_options"
+                                :key="neighbourhood"
+                                :value="neighbourhood"
+                            >
+                                {{
+                                    t(
+                                        `neighbourhoods.${neighbourhood.replaceAll(' ', '')}`,
+                                    )
+                                }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div
+                    :class="
+                        subscription_mode
+                            ? 'w-72 shrink-0 overflow-hidden sm:w-56'
+                            : 'min-w-0'
+                    "
+                >
+                    <Select v-model="furnishedSelectValue" name="furnished">
+                        <SelectTrigger :class="triggerClass">
+                            <SelectValue
+                                :placeholder="
+                                    t('propertyFilters.allFurnishedOptions')
+                                "
+                            />
+                            <template #trigger-icon>
+                                <ChevronDown16
+                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+                                />
+                            </template>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem :value="ALL_FURNISHED_VALUE">
+                                {{ t('propertyFilters.allFurnishedOptions') }}
+                            </SelectItem>
+                            <SelectItem
+                                v-for="option in furnished_options"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ t(`propertyFurnished.${option.value}`) }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div
+                    :class="
+                        subscription_mode
+                            ? 'w-72 shrink-0 sm:w-56'
+                            : 'w-full min-w-0 sm:w-auto'
+                    "
+                >
+                    <Popover>
+                        <PopoverTrigger as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                :class="triggerClass"
+                                class="font-normal"
+                            >
+                                <span class="truncate">{{
+                                    t('propertyFilters.bedrooms')
+                                }}</span>
+                                <span class="truncate text-muted-foreground">
+                                    {{
+                                        formatBedroomsRange(bedroomsRangeDraft)
+                                    }}
+                                </span>
+                                <ChevronDown16
+                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+                                />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            class="w-80 space-y-3 pt-12"
+                            align="end"
+                        >
+                            <Slider
+                                v-model="bedroomsRangeDraft"
+                                @set="commitBedroomsRange"
+                                class="slider-red"
+                                :min="1"
+                                :max="10"
+                                :step="0.5"
+                                :tooltips="true"
+                                :lazy="false"
+                                :format="formatBedrooms"
+                            />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                <div
+                    :class="
+                        subscription_mode ? 'w-72 shrink-0 sm:w-44' : 'min-w-0'
+                    "
+                >
+                    <Select v-model="typeSelectValue" name="type">
+                        <SelectTrigger
+                            :class="[
+                                triggerClass,
+                                subscription_mode
+                                    ? ''
+                                    : 'sm:col-span-2 sm:w-1/2 lg:col-span-1 lg:w-auto',
+                            ]"
+                        >
+                            <SelectValue
+                                :placeholder="t('propertyFilters.allTypes')"
+                            />
+                            <template #trigger-icon>
+                                <ChevronDown16
+                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+                                />
+                            </template>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem :value="ALL_TYPES_VALUE">
+                                {{ t('propertyFilters.allTypes') }}
+                            </SelectItem>
+                            <SelectItem
+                                v-for="option in type_options"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ t(`propertyLeaseType.${option.value}`) }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
 
             <input
                 v-if="isMediumTerm"

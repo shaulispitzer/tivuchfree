@@ -14,7 +14,7 @@ import { index } from '@/routes/properties';
 type Option = { value: string; label: string };
 
 const defaultFilters: PropertyFilterState = {
-    neighbourhood: '',
+    neighbourhoods: [],
     hide_taken_properties: false,
     bedrooms_range: [1, 10],
     furnished: '',
@@ -50,6 +50,12 @@ const props = defineProps({
 const { t } = useI18n();
 
 const filters = ref<PropertyFilterState>({ ...defaultFilters });
+const subscriptionNeighbourhoods = ref<string[]>(
+    filters.value.neighbourhoods ?? [],
+);
+const propertyFiltersRef = ref<InstanceType<typeof PropertyFilters> | null>(
+    null,
+);
 const email = ref(props.user?.email ?? '');
 
 const form = useForm<{
@@ -80,11 +86,21 @@ watch(
 );
 
 function updateFilters(value: PropertyFilterState): void {
-    filters.value = value;
+    filters.value = { ...value, neighbourhoods: [...(value.neighbourhoods ?? [])] };
+    subscriptionNeighbourhoods.value = value.neighbourhoods ?? [];
+}
+
+function updateSubscriptionNeighbourhoods(value: string[]): void {
+    subscriptionNeighbourhoods.value = value;
 }
 
 function submitSubscribe(): void {
-    form.filters = filters.value;
+    const currentFilters =
+        propertyFiltersRef.value?.getFilters() ?? filters.value;
+    form.filters = {
+        ...currentFilters,
+        neighbourhoods: subscriptionNeighbourhoods.value,
+    };
     form.email = props.user?.email ?? email.value;
     subscribeProcessing.value = true;
     form.post(store.url(), {
@@ -169,7 +185,9 @@ function submitOtp(): void {
             </p>
             <form @submit.prevent="submitSubscribe" class="space-y-6">
                 <PropertyFilters
+                    ref="propertyFiltersRef"
                     :filters="filters"
+                    :subscription_neighbourhoods="subscriptionNeighbourhoods"
                     :neighbourhood_options="neighbourhood_options"
                     :furnished_options="furnished_options"
                     :type_options="type_options"
@@ -177,6 +195,7 @@ function submitOtp(): void {
                     :show_hide_taken="false"
                     :subscription_mode="true"
                     @update:filters="updateFilters"
+                    @update:subscription_neighbourhoods="updateSubscriptionNeighbourhoods"
                 />
 
                 <div v-if="!user" class="space-y-2">

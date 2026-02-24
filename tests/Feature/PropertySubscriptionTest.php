@@ -23,7 +23,7 @@ test('logged-in user can subscribe to property updates', function () {
 
     $response = $this->actingAs($user)->post(route('property-subscriptions.store'), [
         'filters' => [
-            'neighbourhood' => Neighbourhood::Sanhedria->value,
+            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
             'hide_taken_properties' => false,
             'bedrooms_range' => [2, 4],
             'furnished' => '',
@@ -47,7 +47,7 @@ test('guest can subscribe and receives otp email', function () {
     $response = $this->post(route('property-subscriptions.store'), [
         'email' => 'guest@example.com',
         'filters' => [
-            'neighbourhood' => '',
+            'neighbourhoods' => [],
             'hide_taken_properties' => false,
             'bedrooms_range' => [1, 10],
             'furnished' => '',
@@ -69,7 +69,7 @@ test('guest can verify otp and complete subscription', function () {
     $pending = PropertySubscriptionPending::create([
         'email' => 'verify@example.com',
         'filters' => [
-            'neighbourhood' => null,
+            'neighbourhoods' => [],
             'availability' => 'all',
             'bedrooms_min' => 1,
             'bedrooms_max' => 10,
@@ -106,7 +106,7 @@ test('existing subscriber can update filters', function () {
         'email' => $user->email,
         'user_id' => $user->id,
         'filters' => [
-            'neighbourhood' => Neighbourhood::Sanhedria->value,
+            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
             'availability' => 'all',
             'bedrooms_min' => 1,
             'bedrooms_max' => 10,
@@ -122,7 +122,7 @@ test('existing subscriber can update filters', function () {
 
     $response = $this->actingAs($user)->post(route('property-subscriptions.store'), [
         'filters' => [
-            'neighbourhood' => Neighbourhood::Geula->value,
+            'neighbourhoods' => [Neighbourhood::Geula->value],
             'hide_taken_properties' => true,
             'bedrooms_range' => [3, 5],
             'furnished' => PropertyFurnished::Yes->value,
@@ -134,7 +134,7 @@ test('existing subscriber can update filters', function () {
 
     $response->assertRedirect(route('properties.index'));
     $subscription->refresh();
-    expect($subscription->filters['neighbourhood'])->toBe(Neighbourhood::Geula->value);
+    expect($subscription->filters['neighbourhoods'])->toEqual([Neighbourhood::Geula->value]);
     expect($subscription->filters['availability'])->toBe('available');
 });
 
@@ -180,7 +180,7 @@ test('new property triggers notification to matching subscribers', function () {
         'email' => 'subscriber@example.com',
         'user_id' => null,
         'filters' => [
-            'neighbourhood' => Neighbourhood::Sanhedria->value,
+            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
             'availability' => 'all',
             'bedrooms_min' => 2,
             'bedrooms_max' => 4,

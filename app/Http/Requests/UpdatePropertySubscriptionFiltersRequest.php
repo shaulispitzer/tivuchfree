@@ -22,7 +22,8 @@ class UpdatePropertySubscriptionFiltersRequest extends FormRequest
     {
         return [
             'filters' => ['required', 'array'],
-            'filters.neighbourhood' => ['nullable', 'string', Rule::enum(Neighbourhood::class)],
+            'filters.neighbourhoods' => ['nullable', 'array'],
+            'filters.neighbourhoods.*' => ['required', 'string', Rule::enum(Neighbourhood::class)],
             'filters.hide_taken_properties' => ['nullable', 'boolean'],
             'filters.bedrooms_range' => ['nullable', 'array', 'size:2'],
             'filters.bedrooms_range.0' => ['nullable', 'numeric', 'min:1', 'max:10'],
@@ -44,8 +45,11 @@ class UpdatePropertySubscriptionFiltersRequest extends FormRequest
         $min = isset($bedroomsRange[0]) ? round((float) $bedroomsRange[0] * 2) / 2 : 1;
         $max = isset($bedroomsRange[1]) ? round((float) $bedroomsRange[1] * 2) / 2 : 10;
 
+        $neighbourhoods = $filters['neighbourhoods'] ?? [];
+        $neighbourhoods = is_array($neighbourhoods) ? array_values(array_unique($neighbourhoods)) : [];
+
         return [
-            'neighbourhood' => $filters['neighbourhood'] ?? null,
+            'neighbourhoods' => $neighbourhoods,
             'availability' => ($filters['hide_taken_properties'] ?? false) ? 'available' : 'all',
             'bedrooms_min' => min($min, $max),
             'bedrooms_max' => max($min, $max),

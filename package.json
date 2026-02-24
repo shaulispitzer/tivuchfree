@@ -38,6 +38,7 @@
         "@formkit/vue": "^1.7.2",
         "@headlessui/vue": "^1.7.23",
         "@inertiajs/vue3": "^2.3.7",
+        "@internationalized/date": "^3.11.0",
         "@jd1378/tailwindcss-rtl": "^0.10.2",
         "@vueform/slider": "^2.1.10",
         "@vueuse/core": "^12.8.2",

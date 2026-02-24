@@ -3,7 +3,6 @@ import L from 'leaflet';
 import type { DivIcon, LayerGroup, Map as LeafletMap } from 'leaflet';
 import type { PropType } from 'vue';
 import 'leaflet/dist/leaflet.css';
-import { useI18n } from 'vue-i18n';
 import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import { Button } from '@/components/ui/button';
 import { create, index, show } from '@/routes/properties';
@@ -16,7 +15,7 @@ type Option = {
 };
 
 type PropertyFilterState = {
-    neighbourhood: string;
+    neighbourhoods: string[];
     hide_taken_properties: boolean;
     bedrooms_range: [number, number];
     furnished: string;
@@ -59,7 +58,7 @@ const props = defineProps({
     },
     filters: {
         type: Object as PropType<{
-            neighbourhood: string | null;
+            neighbourhoods: string[];
             availability: 'all' | 'available' | null;
             bedrooms_min: number | null;
             bedrooms_max: number | null;
@@ -102,7 +101,9 @@ function initialBedroomsRange(): [number, number] {
 }
 
 const filters = ref<PropertyFilterState>({
-    neighbourhood: props.filters.neighbourhood ?? '',
+    neighbourhoods: Array.isArray(props.filters.neighbourhoods)
+        ? [...props.filters.neighbourhoods]
+        : [],
     hide_taken_properties: props.filters.availability === 'available',
     bedrooms_range: initialBedroomsRange(),
     furnished: props.filters.furnished ?? '',
@@ -133,15 +134,15 @@ function roundBedrooms(value: number): number {
     return Math.round((value + Number.EPSILON) * 2) / 2;
 }
 
-function buildQuery(value: typeof filters.value): Record<string, string> {
-    const query: Record<string, string> = {
+function buildQuery(value: typeof filters.value): Record<string, string | string[]> {
+    const query: Record<string, string | string[]> = {
         view: ViewMode.Map,
     };
     const bedroomsMin = roundBedrooms(value.bedrooms_range[0]);
     const bedroomsMax = roundBedrooms(value.bedrooms_range[1]);
 
-    if (value.neighbourhood.trim() !== '') {
-        query.neighbourhood = value.neighbourhood;
+    if ((value.neighbourhoods ?? []).length > 0) {
+        query.neighbourhoods = value.neighbourhoods;
     }
 
     if (value.hide_taken_properties) {

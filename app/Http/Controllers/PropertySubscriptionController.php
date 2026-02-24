@@ -221,8 +221,16 @@ class PropertySubscriptionController extends Controller
         $min = $filters['bedrooms_min'] ?? 1;
         $max = $filters['bedrooms_max'] ?? 10;
 
+        $neighbourhoods = $filters['neighbourhoods'] ?? null;
+        if (is_array($neighbourhoods)) {
+            $neighbourhoods = array_values($neighbourhoods);
+        } else {
+            $legacy = $filters['neighbourhood'] ?? null;
+            $neighbourhoods = is_string($legacy) && $legacy !== '' ? [$legacy] : [];
+        }
+
         return [
-            'neighbourhood' => $filters['neighbourhood'] ?? '',
+            'neighbourhoods' => $neighbourhoods,
             'hide_taken_properties' => ($filters['availability'] ?? 'all') === 'available',
             'bedrooms_range' => [min($min, $max), max($min, $max)],
             'furnished' => $filters['furnished'] ?? '',

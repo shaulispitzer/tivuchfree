@@ -43,8 +43,13 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
-        $validated = Validator::make($request->query(), [
-            'neighbourhood' => ['nullable', Rule::enum(Neighbourhood::class)],
+        $query = $request->query();
+        if (isset($query['neighbourhood']) && ! isset($query['neighbourhoods'])) {
+            $query['neighbourhoods'] = [$query['neighbourhood']];
+        }
+        $validated = Validator::make($query, [
+            'neighbourhoods' => ['nullable', 'array'],
+            'neighbourhoods.*' => ['required', 'string', Rule::enum(Neighbourhood::class)],
             'availability' => ['nullable', Rule::in(['all', 'available'])],
             'bedrooms_min' => ['nullable', 'numeric', 'min:0'],
             'bedrooms_max' => ['nullable', 'numeric', 'min:0'],
@@ -63,10 +68,18 @@ class PropertyController extends Controller
         $sort = $validated['sort'] ?? 'newest';
         $view = $validated['view'] ?? 'list';
 
+        $neighbourhoods = isset($validated['neighbourhoods']) && is_array($validated['neighbourhoods'])
+            ? array_values(array_unique($validated['neighbourhoods']))
+            : [];
+
         $propertiesQuery = Property::query()
             ->with(['media'])
-            ->when(isset($validated['neighbourhood']), function ($query) use ($validated) {
-                $query->whereJsonContains('neighbourhoods', $validated['neighbourhood']);
+            ->when($neighbourhoods !== [], function ($query) use ($neighbourhoods) {
+                $query->where(function ($q) use ($neighbourhoods) {
+                    foreach ($neighbourhoods as $n) {
+                        $q->orWhereJsonContains('neighbourhoods', $n);
+                    }
+                });
             })
             ->when($availability === 'available', function ($query) {
                 $query->where('taken', false);
@@ -123,7 +136,7 @@ class PropertyController extends Controller
                 'can_create' => Auth::check(),
                 'subscription_otp_pending' => session('subscription_otp_pending'),
                 'filters' => [
-                    'neighbourhood' => $validated['neighbourhood'] ?? null,
+                    'neighbourhoods' => $neighbourhoods,
                     'availability' => $availability,
                     'bedrooms_min' => $bedroomsMin,
                     'bedrooms_max' => $bedroomsMax,
@@ -167,7 +180,7 @@ class PropertyController extends Controller
             'can_create' => Auth::check(),
             'subscription_otp_pending' => session('subscription_otp_pending'),
             'filters' => [
-                'neighbourhood' => $validated['neighbourhood'] ?? null,
+                'neighbourhoods' => $neighbourhoods,
                 'availability' => $availability,
                 'bedrooms_min' => $bedroomsMin,
                 'bedrooms_max' => $bedroomsMax,

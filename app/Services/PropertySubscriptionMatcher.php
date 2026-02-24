@@ -22,9 +22,21 @@ class PropertySubscriptionMatcher
 
     public function propertyMatchesFilters(Property $property, array $filters): bool
     {
-        if (isset($filters['neighbourhood']) && $filters['neighbourhood'] !== '') {
-            $neighbourhoods = is_array($property->neighbourhoods) ? $property->neighbourhoods : [];
-            if (! in_array($filters['neighbourhood'], $neighbourhoods, true)) {
+        $filterNeighbourhoods = $filters['neighbourhoods'] ?? null;
+        if (! is_array($filterNeighbourhoods) || $filterNeighbourhoods === []) {
+            $legacy = $filters['neighbourhood'] ?? null;
+            $filterNeighbourhoods = is_string($legacy) && $legacy !== '' ? [$legacy] : [];
+        }
+        if ($filterNeighbourhoods !== []) {
+            $propertyNeighbourhoods = is_array($property->neighbourhoods) ? $property->neighbourhoods : [];
+            $hasMatch = false;
+            foreach ($filterNeighbourhoods as $n) {
+                if (in_array($n, $propertyNeighbourhoods, true)) {
+                    $hasMatch = true;
+                    break;
+                }
+            }
+            if (! $hasMatch) {
                 return false;
             }
         }

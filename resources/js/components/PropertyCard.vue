@@ -80,7 +80,11 @@ const neighbourhoodLabel = computed(() => {
         preserve-scroll
         preserve-state
         class="block focus-visible:outline-none"
-        :class="property.taken === true ? 'pointer-events-none cursor-default' : 'cursor-pointer'"
+        :class="
+            property.taken === true
+                ? 'pointer-events-none cursor-default'
+                : 'cursor-pointer'
+        "
         :tabindex="property.taken === true ? -1 : undefined"
         :aria-disabled="property.taken === true || undefined"
     >
@@ -88,7 +92,7 @@ const neighbourhoodLabel = computed(() => {
             class="relative overflow-hidden rounded-xl border border-input bg-card shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40"
             :class="
                 property.taken === true
-                    ? 'opacity-80 grayscale-75'
+                    ? 'opacity-80 grayscale'
                     : 'transition hover:-translate-y-0.5 hover:shadow-md'
             "
         >

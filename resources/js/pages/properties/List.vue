@@ -16,7 +16,7 @@ type Option = {
 };
 
 type PropertyFilterState = {
-    neighbourhood: string;
+    neighbourhoods: string[];
     hide_taken_properties: boolean;
     bedrooms_range: [number, number];
     furnished: string;
@@ -48,7 +48,7 @@ const props = defineProps({
     },
     filters: {
         type: Object as PropType<{
-            neighbourhood: string | null;
+            neighbourhoods: string[];
             availability: 'all' | 'available' | null;
             bedrooms_min: number | null;
             bedrooms_max: number | null;
@@ -94,7 +94,9 @@ function initialBedroomsRange(): [number, number] {
 }
 
 const filters = ref<PropertyFilterState>({
-    neighbourhood: props.filters.neighbourhood ?? '',
+    neighbourhoods: Array.isArray(props.filters.neighbourhoods)
+        ? [...props.filters.neighbourhoods]
+        : [],
     hide_taken_properties: props.filters.availability === 'available',
     bedrooms_range: initialBedroomsRange(),
     furnished: props.filters.furnished ?? '',
@@ -112,8 +114,10 @@ function roundBedrooms(value: number): number {
     return Math.round((value + Number.EPSILON) * 2) / 2;
 }
 
-function buildQuery(value: PropertyFilterState): Record<string, string> {
-    const query: Record<string, string> = {};
+function buildQuery(
+    value: PropertyFilterState,
+): Record<string, string | string[]> {
+    const query: Record<string, string | string[]> = {};
     const bedroomsMin = roundBedrooms(value.bedrooms_range[0]);
     const bedroomsMax = roundBedrooms(value.bedrooms_range[1]);
 
@@ -121,8 +125,8 @@ function buildQuery(value: PropertyFilterState): Record<string, string> {
         query.view = ViewMode.Map;
     }
 
-    if (value.neighbourhood.trim() !== '') {
-        query.neighbourhood = value.neighbourhood;
+    if ((value.neighbourhoods ?? []).length > 0) {
+        query.neighbourhoods = value.neighbourhoods;
     }
 
     if (value.hide_taken_properties) {
