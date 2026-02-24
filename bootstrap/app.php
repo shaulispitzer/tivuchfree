@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('properties:process-lifecycle')->daily();
+        $schedule->job(new \App\Jobs\ProcessExpiredPropertySubscriptions)->daily();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([

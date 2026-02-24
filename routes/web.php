@@ -4,11 +4,13 @@ use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\PropertyStatController as AdminPropertyStatController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PlaygroundController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyImageUploadController;
+use App\Http\Controllers\PropertySubscriptionController;
 use App\Http\Controllers\StreetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,15 +19,21 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('about-us', function () {
     return Inertia::render('AboutUs');
 })->name('about-us');
-
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('contact', [ContactController::class, 'create'])->name('contact.create');
+Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::post('/locale', LocaleController::class)->name('locale');
 Route::get('playground', [PlaygroundController::class, 'index'])->name('playground');
 
 Route::get('properties', [PropertyController::class, 'index'])->name('properties.index');
+
+Route::get('subscribe', [PropertySubscriptionController::class, 'create'])->name('subscribe');
+Route::post('property-subscriptions', [PropertySubscriptionController::class, 'store'])->name('property-subscriptions.store');
+Route::post('property-subscriptions/verify-otp', [PropertySubscriptionController::class, 'verifyOtp'])->name('property-subscriptions.verify-otp');
+Route::get('subscriptions/unsubscribe/{token}', [PropertySubscriptionController::class, 'unsubscribe'])->name('subscriptions.unsubscribe');
+Route::post('subscriptions/unsubscribe/{token}', [PropertySubscriptionController::class, 'confirmUnsubscribe'])->name('subscriptions.confirm-unsubscribe');
+Route::get('subscriptions/update-filters/{token}', [PropertySubscriptionController::class, 'updateFilters'])->name('subscriptions.update-filters');
+Route::post('subscriptions/update-filters/{token}', [PropertySubscriptionController::class, 'saveFilters'])->name('subscriptions.save-filters');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('properties', [AdminPropertyController::class, 'index'])->name('properties.index');
@@ -70,11 +78,6 @@ Route::middleware('auth', 'verified')->group(function () {
 
 // mails routes
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/mailable', function () {
-        $property = \App\Models\Property::findOrFail(34);
-
-        return new \App\Mail\NewListing($property);
-    });
     Route::get('/mailable-taken-warning', function () {
         $property = \App\Models\Property::findOrFail(34);
 
@@ -82,6 +85,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::get('/mailable-welcome', function () {
         return new \App\Mail\WelcomeEmail(\App\Models\User::firstOrFail());
+    });
+    Route::get('/mailable/subscription/notification', function () {
+        $property = \App\Models\Property::findOrFail(34);
+        $subscription = \App\Models\PropertySubscription::firstOrFail();
+
+        return new \App\Mail\PropertySubscriptionNotification($property, $subscription, route('properties.show', $property), route('subscriptions.unsubscribe', $subscription->token), route('subscriptions.update-filters', $subscription->token));
+    });
+    Route::get('/mailable/subscription/confirmation', function () {
+        $subscription = \App\Models\PropertySubscription::firstOrFail();
+
+        return new \App\Mail\PropertySubscriptionConfirmation($subscription, route('subscriptions.unsubscribe', $subscription->token), route('subscriptions.update-filters', $subscription->token));
+    });
+    Route::get('/mailable/subscription/expired', function () {
+        $subscription = \App\Models\PropertySubscription::firstOrFail();
+
+        return new \App\Mail\PropertySubscriptionExpired($subscription, route('properties.index'));
+    });
+    Route::get('/mailable/listing-status-change', function () {
+        $user = \App\Models\User::firstOrFail();
+        $property = \App\Models\Property::firstOrFail();
+
+        return new \App\Mail\PropertyListingStatusChange(
+            $user->name,
+            trim($property->street.($property->building_number ? ' '.$property->building_number : '')),
+            request()->query('action', 'marked_as_taken'),
+            request()->query('method', 'manually'),
+        );
     });
 });
 Route::middleware('guest')->group(function () {

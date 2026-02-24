@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Menu } from 'lucide-vue-next';
-import { dashboard, home, locale, login } from '@/routes';
+import { home, locale, login } from '@/routes';
 import { create as propertiesCreate } from '@/routes/properties';
 import AppHeaderNav from './AppHeaderNav.vue';
 import FlagpackGbUkm from '~icons/flagpack/gb-ukm';
@@ -24,7 +24,7 @@ const localeToggleFlag = computed(() =>
 const localeToggleLabel = computed(() =>
     currentLocale.value === 'he' ? 'Switch to English' : 'Switch to Hebrew',
 );
-const logoHref = computed(() => (user.value ? dashboard() : home()));
+const logoHref = computed(() => home());
 const shortTermModalOpen = ref(false);
 const handleNavClick = (action: string) => {
     switch (action) {
@@ -42,6 +42,9 @@ const handleNavClick = (action: string) => {
             return;
         case 'about-us':
             router.visit('/about-us');
+            return;
+        case 'contact-us':
+            router.visit('/contact');
             return;
         default:
             console.log(`${action} clicked`);

@@ -220,6 +220,36 @@ export default {
             takenAt: 'Taken At',
             dateTaken: 'Date Taken',
             dateAdvertised: 'Date Advertised',
+            sending: 'Sending...',
+            editProperty: 'Edit Property',
+            next: 'Next',
+        },
+        contact: {
+            subject: 'Subject',
+            email: 'Email',
+            isAboutDira: 'Is this about a dira?',
+            propertyId: 'Dira ID',
+            message: 'Message',
+            send: 'Send Message',
+        },
+        subscription: {
+            subscribeToUpdates: 'Subscribe to receive updates',
+            chooseFilters:
+                'Choose the filters for properties you want to be notified about.',
+            subscribed:
+                'You have been subscribed. You will receive emails when new properties match your filters.',
+            filtersUpdated: 'Your subscription filters have been updated.',
+            otpSent:
+                'A verification code has been sent to your email. Enter it below to complete your subscription.',
+            invalidOrExpiredOtp:
+                'The code is invalid or has expired. Please try subscribing again.',
+            enterCode: 'Enter the 6-digit code',
+            verify: 'Verify',
+            unsubscribeConfirm: 'Are you sure you want to unsubscribe',
+            unsubscribed: 'You have been unsubscribed from property updates.',
+            updateFilters: 'Update your subscription filters',
+            updateFiltersIntro:
+                'Change the filters below to receive emails for different property criteria.',
         },
     },
     he: {
@@ -435,6 +465,35 @@ export default {
             takenAt: 'תפוס בתאריך',
             dateTaken: 'תאריך תפוס',
             dateAdvertised: 'תאריך מודעה',
+            sending: 'שולח...',
+            editProperty: 'ערוך נכס',
+            next: 'הבא',
+        },
+        contact: {
+            subject: 'נושא',
+            email: 'אימייל',
+            isAboutDira: 'האם זה קשור לדירה?',
+            propertyId: 'מזהה דירה',
+            message: 'הודעה',
+            send: 'שלח הודעה',
+        },
+        subscription: {
+            subscribeToUpdates: 'הירשם לקבלת עדכונים',
+            chooseFilters: 'בחר את הסינונים לנכסים שתרצה לקבל עליהם התראות.',
+            subscribed:
+                'נרשמת בהצלחה. תקבל אימיילים כשנכסים חדשים יתאימו לסינונים שלך.',
+            filtersUpdated: 'סינוני ההרשמה שלך עודכנו.',
+            otpSent:
+                'קוד אימות נשלח לאימייל שלך. הזן אותו למטה כדי להשלים את ההרשמה.',
+            invalidOrExpiredOtp:
+                'הקוד לא תקין או פג תוקף. נא לנסות להירשם שוב.',
+            enterCode: 'הזן את הקוד בן 6 הספרות',
+            verify: 'אימות',
+            unsubscribeConfirm: 'האם אתה בטוח שברצונך לבטל את ההרשמה',
+            unsubscribed: 'ביטלת את ההרשמה לעדכוני נכסים.',
+            updateFilters: 'עדכן את סינוני ההרשמה',
+            updateFiltersIntro:
+                'שנה את הסינונים למטה כדי לקבל אימיילים לפי קריטריונים שונים.',
         },
     },
 };

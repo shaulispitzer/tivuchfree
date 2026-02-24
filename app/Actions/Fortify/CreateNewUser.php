@@ -32,7 +32,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $input['password'],
         ]);
 
-        Mail::to($user)->send(new WelcomeEmail($user));
+        Mail::to($user)->locale('en')->send(new WelcomeEmail($user));
 
         return $user;
     }

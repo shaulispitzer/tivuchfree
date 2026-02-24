@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PropertyListingStatusChange;
 use App\Models\Property;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,6 +45,17 @@ class PropertyController extends Controller
     public function destroy(Property $property): RedirectResponse
     {
         $this->authorize('delete', $property);
+
+        $property->loadMissing('user');
+        if ($property->user?->email) {
+            $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
+            Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+                $property->user->name,
+                $address,
+                'deleted',
+                'manually',
+            ));
+        }
 
         $property->delete();
 

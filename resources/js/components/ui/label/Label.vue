@@ -5,9 +5,9 @@ import { reactiveOmit } from "@vueuse/core"
 import { Label } from "reka-ui"
 import { cn } from "@/lib/utils"
 
-const props = defineProps<LabelProps & { class?: HTMLAttributes["class"] }>()
+const props = defineProps<LabelProps & { class?: HTMLAttributes["class"] } & { requiredStar?: boolean }>()
 
-const delegatedProps = reactiveOmit(props, "class")
+const delegatedProps = reactiveOmit(props, "class", "requiredStar")
 </script>
 
 <template>
@@ -22,5 +22,6 @@ const delegatedProps = reactiveOmit(props, "class")
     "
   >
     <slot />
+    <span v-if="requiredStar" class="text-red-500">*</span>
   </Label>
 </template>

@@ -2,50 +2,39 @@
 
 namespace App\Mail;
 
-use App\Models\Property;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewListing extends Mailable
+class ContactMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Property $property;
+    public function __construct(
+        public string $contactSubject,
+        public string $email,
+        public bool $isAboutDira,
+        public ?string $propertyId,
+        public string $contactMessage,
+    ) {}
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(Property $property)
-    {
-        $this->property = $property;
-    }
-
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Listing',
+            subject: 'Contact: '.$this->contactSubject,
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.listing.subscription.newListing',
+            markdown: 'mail.contact',
         );
     }
 
     /**
-     * Get the attachments for the message.
-     *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array

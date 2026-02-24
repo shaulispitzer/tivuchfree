@@ -219,6 +219,9 @@ watch(activeView, () => {
                 </Button>
             </div>
 
+            <Button variant="outline" as-child>
+                <Link href="/subscribe">{{ t('subscription.subscribeToUpdates') }}</Link>
+            </Button>
             <Button v-if="can_create" as-child>
                 <Link :href="create()">{{ t('common.addProperty') }}</Link>
             </Button>

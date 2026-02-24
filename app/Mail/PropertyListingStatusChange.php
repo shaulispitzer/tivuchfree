@@ -2,44 +2,46 @@
 
 namespace App\Mail;
 
-use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class YourPropertyWasListed extends Mailable
+class PropertyListingStatusChange extends Mailable
 {
     use Queueable, SerializesModels;
 
+    /**
+     * @param  'marked_as_taken'|'deleted'  $action
+     * @param  'automatically'|'manually'  $method
+     */
     public function __construct(
-        public User $user,
+        public string $recipientName,
+        public string $propertyAddress,
+        public string $action,
+        public string $method,
     ) {}
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
+        $subject = $this->action === 'deleted'
+            ? 'Your property listing was deleted'
+            : 'Your property listing was marked as taken';
+
         return new Envelope(
-            subject: 'Your Property Was Listed',
+            subject: $subject,
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.listing.yourProperty.successfullyListed',
+            markdown: 'mail.property.listing-status-change',
         );
     }
 
     /**
-     * Get the attachments for the message.
-     *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array

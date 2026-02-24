@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\PropertyListingStatusChange;
 use App\Mail\PropertyTakenWarning;
 use App\Models\Property;
 use Illuminate\Console\Command;
@@ -28,6 +29,7 @@ class ProcessPropertyLifecycle extends Command
     protected function deleteTakenProperties(): void
     {
         $query = Property::query()
+            ->with('user')
             ->where('taken', true)
             ->whereNotNull('taken_at')
             ->where('taken_at', '<=', now()->subDays(14));
@@ -36,6 +38,15 @@ class ProcessPropertyLifecycle extends Command
 
         $query->chunkById(100, function ($properties) use (&$count) {
             foreach ($properties as $property) {
+                if ($property->user?->email) {
+                    $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
+                    Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+                        $property->user->name,
+                        $address,
+                        'deleted',
+                        'automatically',
+                    ));
+                }
                 $property->delete();
                 $count++;
             }
@@ -52,6 +63,7 @@ class ProcessPropertyLifecycle extends Command
     protected function markExpiredPropertiesAsTaken(): void
     {
         $properties = Property::query()
+            ->with('user')
             ->where('taken', false)
             ->where('created_at', '<=', now()->subDays(30))
             ->get();
@@ -63,6 +75,16 @@ class ProcessPropertyLifecycle extends Command
                 'taken' => true,
                 'taken_at' => now(),
             ]);
+
+            if ($property->user?->email) {
+                $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
+                Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+                    $property->user->name,
+                    $address,
+                    'marked_as_taken',
+                    'automatically',
+                ));
+            }
 
             $count++;
         }
@@ -92,7 +114,7 @@ class ProcessPropertyLifecycle extends Command
                 continue;
             }
 
-            Mail::to($property->user->email)->queue(new PropertyTakenWarning($property));
+            Mail::to($property->user->email)->locale('en')->queue(new PropertyTakenWarning($property));
 
             $property->update([
                 'taken_warning_sent_at' => now(),

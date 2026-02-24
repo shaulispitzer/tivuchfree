@@ -115,4 +115,17 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Throttle delay (development)
+    |--------------------------------------------------------------------------
+    |
+    | Seconds to wait between sending each subscriber notification in local
+    | environment. Use to avoid hitting Mailtrap (or similar) rate limits.
+    | Set to 0 to disable. Only applies when APP_ENV=local.
+    |
+    */
+
+    'throttle_delay_seconds' => env('MAIL_THROTTLE_DELAY_SECONDS', 11),
+
 ];

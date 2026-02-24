@@ -2,44 +2,37 @@
 
 namespace App\Mail;
 
-use App\Models\User;
+use App\Models\PropertySubscription;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class YourPropertyWasListed extends Mailable
+class PropertySubscriptionExpired extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
-        public User $user,
+        public PropertySubscription $subscription,
+        public string $propertiesUrl,
     ) {}
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Property Was Listed',
+            subject: 'Your property subscription has expired',
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.listing.yourProperty.successfullyListed',
+            markdown: 'mail.subscription.expired',
         );
     }
 
     /**
-     * Get the attachments for the message.
-     *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array

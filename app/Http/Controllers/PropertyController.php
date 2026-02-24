@@ -14,6 +14,9 @@ use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Http\Requests\MarkPropertyAsTakenRequest;
+use App\Jobs\NotifyPropertySubscribers;
+use App\Mail\PropertyListingStatusChange;
+use App\Mail\YourPropertyWasListed;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
@@ -24,6 +27,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -117,6 +121,7 @@ class PropertyController extends Controller
             return Inertia::render('properties/Map', [
                 'properties' => $properties,
                 'can_create' => Auth::check(),
+                'subscription_otp_pending' => session('subscription_otp_pending'),
                 'filters' => [
                     'neighbourhood' => $validated['neighbourhood'] ?? null,
                     'availability' => $availability,
@@ -160,6 +165,7 @@ class PropertyController extends Controller
         return Inertia::render('properties/List', [
             'properties' => $properties,
             'can_create' => Auth::check(),
+            'subscription_otp_pending' => session('subscription_otp_pending'),
             'filters' => [
                 'neighbourhood' => $validated['neighbourhood'] ?? null,
                 'availability' => $availability,
@@ -368,6 +374,10 @@ class PropertyController extends Controller
             return $property;
         });
 
+        Mail::to($property->user->email)->locale('en')->send(new YourPropertyWasListed($property->user));
+
+        NotifyPropertySubscribers::dispatchSync($property);
+
         return redirect()->route('properties.edit', $property)->success('Property created successfully');
     }
 
@@ -464,6 +474,17 @@ class PropertyController extends Controller
             'price_taken_at' => $validated['price_taken_at'] ?? null,
         ]);
 
+        $property->loadMissing('user');
+        if ($property->user?->email) {
+            $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
+            Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+                $property->user->name,
+                $address,
+                'marked_as_taken',
+                'manually',
+            ));
+        }
+
         return back()->success('Property marked as taken');
     }
 
@@ -489,6 +510,17 @@ class PropertyController extends Controller
     {
         if ($property->user_id !== $request->user()->id) {
             abort(403);
+        }
+
+        $property->loadMissing('user');
+        if ($property->user?->email) {
+            $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
+            Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+                $property->user->name,
+                $address,
+                'deleted',
+                'manually',
+            ));
         }
 
         $property->delete();
