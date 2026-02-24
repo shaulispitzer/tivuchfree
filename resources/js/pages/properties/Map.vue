@@ -3,7 +3,6 @@ import L from 'leaflet';
 import type { DivIcon, LayerGroup, Map as LeafletMap } from 'leaflet';
 import type { PropType } from 'vue';
 import 'leaflet/dist/leaflet.css';
-import { Head, Link, router } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import { Button } from '@/components/ui/button';
@@ -430,7 +429,9 @@ onBeforeUnmount(() => {
             </div>
 
             <Button variant="outline" as-child>
-                <Link href="/subscribe">{{ t('subscription.subscribeToUpdates') }}</Link>
+                <Link href="/subscribe">{{
+                    t('subscription.subscribeToUpdates')
+                }}</Link>
             </Button>
             <Button v-if="can_create" as-child>
                 <Link :href="create()">{{ t('common.addProperty') }}</Link>
