@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { parseDate } from '@internationalized/date';
 import Slider from '@vueform/slider';
 import '@vueform/slider/themes/default.css';
+import type { DateValue } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
+import DatePicker from '@/components/DatePicker.vue';
 import { Button } from '@/components/ui/button';
 import {
     Popover,
@@ -170,6 +173,32 @@ const bedroomsRangeDraft = ref<[number, number]>([
 const isMediumTerm = computed(
     () => localFilters.value.type === LeaseType.MediumTerm,
 );
+
+function toDateValue(value: string): DateValue | undefined {
+    const trimmed = value?.trim();
+    if (!trimmed) return undefined;
+
+    const normalized = trimmed.includes('T') ? trimmed.slice(0, 10) : trimmed;
+    try {
+        return parseDate(normalized);
+    } catch {
+        return undefined;
+    }
+}
+
+const availableFromDate = computed<DateValue | undefined>({
+    get: () => toDateValue(localFilters.value.available_from),
+    set: (value) => {
+        localFilters.value.available_from = value ? value.toString() : '';
+    },
+});
+
+const availableToDate = computed<DateValue | undefined>({
+    get: () => toDateValue(localFilters.value.available_to),
+    set: (value) => {
+        localFilters.value.available_to = value ? value.toString() : '';
+    },
+});
 
 function formatNeighbourhoodsDisplay(arr: string[]): string {
     if (arr.length === 0) return t('neighbourhoods.allNeighbourhoods');
@@ -477,24 +506,24 @@ const gridClass = computed(() =>
                 </div>
             </div>
 
-            <input
+            <DatePicker
                 v-if="isMediumTerm"
-                type="date"
                 name="available_from"
-                v-model="localFilters.available_from"
-                :class="[
+                v-model="availableFromDate"
+                clearable
+                :trigger-class="[
                     'rounded-md border border-input bg-background',
                     subscription_mode
                         ? 'h-11! px-4 text-base'
                         : 'h-9 px-3 text-sm',
                 ]"
             />
-            <input
+            <DatePicker
                 v-if="isMediumTerm"
-                type="date"
                 name="available_to"
-                v-model="localFilters.available_to"
-                :class="[
+                v-model="availableToDate"
+                clearable
+                :trigger-class="[
                     'rounded-md border border-input bg-background',
                     subscription_mode
                         ? 'h-11! px-4 text-base'

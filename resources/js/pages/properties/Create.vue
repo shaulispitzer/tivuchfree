@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import { parseDate } from '@internationalized/date';
 import axios from 'axios';
 import { Check, ChevronsUpDown } from 'lucide-vue-next';
+import type { DateValue } from 'reka-ui';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import DatePicker from '@/components/DatePicker.vue';
 import PropertyImageUploader from '@/components/PropertyImageUploader.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import MenuSelect from '@/components/ui/menu-select/MenuSelect.vue';
 import {
     Popover,
     PopoverContent,
@@ -226,6 +230,34 @@ const availableTo = computed<string>({
     },
 });
 
+function toDateValue(value: string): DateValue | undefined {
+    const trimmed = value?.trim();
+    if (!trimmed) return undefined;
+
+    const normalized = trimmed.includes('T') ? trimmed.slice(0, 10) : trimmed;
+    try {
+        return parseDate(normalized);
+    } catch {
+        return undefined;
+    }
+}
+
+const availableFromDate = computed<DateValue | undefined>({
+    get: () => toDateValue(availableFrom.value),
+    set: (value) => {
+        if (value) {
+            availableFrom.value = value.toString();
+        }
+    },
+});
+
+const availableToDate = computed<DateValue | undefined>({
+    get: () => toDateValue(availableTo.value),
+    set: (value) => {
+        availableTo.value = value ? value.toString() : '';
+    },
+});
+
 const contactNameInput = computed<string | undefined>({
     get: () => form.contact_name ?? undefined,
     set: (value) => {
@@ -265,6 +297,45 @@ const additionalInfoHeInput = computed<string | undefined>({
     get: () => form.additional_info_he ?? undefined,
     set: (value) => {
         form.additional_info_he = value ?? null;
+    },
+});
+
+const accessSelect = computed<string>({
+    get: () => form.access ?? '',
+    set: (value) => {
+        form.access = (value || null) as App.Enums.PropertyAccess | null;
+    },
+});
+
+const kitchenDiningRoomSelect = computed<string>({
+    get: () => form.kitchen_dining_room ?? '',
+    set: (value) => {
+        form.kitchen_dining_room = (value ||
+            null) as App.Enums.PropertyKitchenDiningRoom | null;
+    },
+});
+
+const porchGardenSelect = computed<string>({
+    get: () => form.porch_garden ?? '',
+    set: (value) => {
+        form.porch_garden = (value ||
+            null) as App.Enums.PropertyPorchGarden | null;
+    },
+});
+
+const airConditioningSelect = computed<string>({
+    get: () => form.air_conditioning ?? '',
+    set: (value) => {
+        form.air_conditioning = (value ||
+            null) as App.Enums.PropertyAirConditioning | null;
+    },
+});
+
+const apartmentConditionSelect = computed<string>({
+    get: () => form.apartment_condition ?? '',
+    set: (value) => {
+        form.apartment_condition = (value ||
+            null) as App.Enums.PropertyApartmentCondition | null;
     },
 });
 
@@ -435,9 +506,9 @@ function submit(): void {
             </h2>
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div class="grid gap-3 md:col-span-2">
-                    <Label class="required-asterisk">{{
-                        t('common.neighbourhoods')
-                    }}</Label>
+                    <Label :requiredStar="true">
+                        {{ t('common.neighbourhoods') }}
+                    </Label>
                     <Select v-model="form.neighbourhoods" multiple>
                         <SelectTrigger class="w-full border-0 shadow-sm">
                             <SelectValue
@@ -477,9 +548,9 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2 md:col-span-2 xl:col-span-1">
-                    <Label class="required-asterisk">{{
-                        t('common.street')
-                    }}</Label>
+                    <Label :requiredStar="true">
+                        {{ t('common.street') }}
+                    </Label>
                     <Popover v-model:open="streetComboboxOpen">
                         <PopoverTrigger as-child>
                             <Button
@@ -610,15 +681,14 @@ function submit(): void {
             </h2>
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div class="grid gap-2">
-                    <FormKit
+                    <Label requiredStar>
+                        {{ t('common.type') }}
+                    </Label>
+                    <MenuSelect
                         v-model="form.type"
-                        type="select"
-                        name="type"
-                        :label="t('common.type')"
-                        :placeholder="t('common.selectType')"
                         :options="translatedLeaseTypes"
-                        validation="required"
-                        label-class="required-asterisk"
+                        :placeholder="t('common.selectType')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div v-if="form.errors.type" class="text-sm text-red-600">
                         {{ form.errors.type }}
@@ -626,13 +696,12 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="availableFrom"
-                        type="date"
+                    <Label requiredStar>
+                        {{ t('common.availableFrom') }}
+                    </Label>
+                    <DatePicker
+                        v-model="availableFromDate"
                         name="available_from"
-                        :label="t('common.availableFrom')"
-                        validation="required"
-                        label-class="required-asterisk"
                     />
                     <div
                         v-if="form.errors.available_from"
@@ -643,14 +712,10 @@ function submit(): void {
                 </div>
 
                 <div v-if="isMediumTerm" class="grid gap-2">
-                    <FormKit
-                        v-model="availableTo"
-                        type="date"
-                        name="available_to"
-                        :label="t('common.availableTo')"
-                        validation="required"
-                        label-class="required-asterisk"
-                    />
+                    <Label :requiredStar="true">
+                        {{ t('common.availableTo') }}
+                    </Label>
+                    <DatePicker v-model="availableToDate" name="available_to" />
                     <div
                         v-if="form.errors.available_to"
                         class="text-sm text-red-600"
@@ -715,15 +780,14 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
+                    <Label :requiredStar="true">
+                        {{ t('common.furnished') }}
+                    </Label>
+                    <MenuSelect
                         v-model="form.furnished"
-                        type="select"
-                        name="furnished"
-                        :label="t('common.furnished')"
-                        :placeholder="t('common.selectFurnishedStatus')"
                         :options="translatedFurnished"
-                        validation="required"
-                        label-class="required-asterisk"
+                        :placeholder="t('common.selectFurnishedStatus')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.furnished"
@@ -734,15 +798,14 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.access"
-                        type="select"
-                        name="access"
-                        :label="t('common.access')"
-                        validation="required"
-                        label-class="required-asterisk"
+                    <Label :requiredStar="true">
+                        {{ t('common.access') }}
+                    </Label>
+                    <MenuSelect
+                        v-model="accessSelect"
                         :options="translatedAccess"
                         :placeholder="t('common.selectAccess')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div v-if="form.errors.access" class="text-sm text-red-600">
                         {{ form.errors.access }}
@@ -750,15 +813,14 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.kitchen_dining_room"
-                        type="select"
-                        name="kitchen_dining_room"
-                        :label="t('common.separateKitchenDiningRoom')"
-                        validation="required"
-                        label-class="required-asterisk"
+                    <Label :requiredStar="true">
+                        {{ t('common.separateKitchenDiningRoom') }}
+                    </Label>
+                    <MenuSelect
+                        v-model="kitchenDiningRoomSelect"
                         :options="translatedKitchenDiningRoom"
                         :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.kitchen_dining_room"
@@ -769,15 +831,14 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.porch_garden"
-                        type="select"
-                        name="porch_garden"
-                        :label="t('common.porchGarden')"
-                        :placeholder="t('common.selectOption')"
+                    <Label :requiredStar="true">
+                        {{ t('common.porchGarden') }}
+                    </Label>
+                    <MenuSelect
+                        v-model="porchGardenSelect"
                         :options="translatedPorchGarden"
-                        validation="required"
-                        label-class="required-asterisk"
+                        :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.porch_garden"
@@ -788,15 +849,14 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.air_conditioning"
-                        type="select"
-                        name="air_conditioning"
-                        :label="t('common.airConditioning')"
-                        :placeholder="t('common.selectOption')"
+                    <Label :requiredStar="true">
+                        {{ t('common.airConditioning') }}
+                    </Label>
+                    <MenuSelect
+                        v-model="airConditioningSelect"
                         :options="translatedAirConditioning"
-                        validation="required"
-                        label-class="required-asterisk"
+                        :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.air_conditioning"
@@ -807,15 +867,14 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.apartment_condition"
-                        type="select"
-                        name="apartment_condition"
-                        :label="t('common.apartmentCondition')"
-                        :placeholder="t('common.selectOption')"
+                    <Label :requiredStar="true">
+                        {{ t('common.apartmentCondition') }}
+                    </Label>
+                    <MenuSelect
+                        v-model="apartmentConditionSelect"
                         :options="translatedApartmentCondition"
-                        validation="required"
-                        label-class="required-asterisk"
+                        :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.apartment_condition"

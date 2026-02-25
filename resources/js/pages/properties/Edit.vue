@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { parseDate } from '@internationalized/date';
 import axios from 'axios';
 import {
     Check,
@@ -8,12 +9,14 @@ import {
     Star,
     Trash2,
 } from 'lucide-vue-next';
+import type { DateValue } from 'reka-ui';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { useToast } from 'vue-toastification';
 
+import DatePicker from '@/components/DatePicker.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -75,12 +78,27 @@ const LeaseType = {
 
 type PropertyEditFormData = Omit<
     App.Data.Forms.PropertyFormData,
-    'street' | 'floor' | 'bedrooms' | 'building_number'
+    | 'street'
+    | 'floor'
+    | 'bedrooms'
+    | 'building_number'
+    | 'contact_name'
+    | 'access'
+    | 'kitchen_dining_room'
+    | 'porch_garden'
+    | 'air_conditioning'
+    | 'apartment_condition'
 > & {
     building_number: number | undefined;
     street: number | undefined;
     floor: number | undefined;
     bedrooms: number | undefined;
+    contact_name: string;
+    access: App.Enums.PropertyAccess | null;
+    kitchen_dining_room: App.Enums.PropertyKitchenDiningRoom | null;
+    porch_garden: App.Enums.PropertyPorchGarden | null;
+    air_conditioning: App.Enums.PropertyAirConditioning | null;
+    apartment_condition: App.Enums.PropertyApartmentCondition | null;
 };
 
 function toISODateTime(dateString: string | null): string | null {
@@ -111,17 +129,18 @@ function getAdditionalInfo(locale: 'en' | 'he'): string {
 }
 
 const form = useForm<PropertyEditFormData>({
-    contact_name: props.property.contact_name,
+    contact_name: props.property.contact_name ?? '',
     contact_phone: props.property.contact_phone ?? '',
+    email: null,
     price: props.property.price,
     square_meter: props.property.square_meter,
     bathrooms: props.property.bathrooms,
-    access: props.property.access,
-    kitchen_dining_room: props.property.kitchen_dining_room,
-    porch_garden: props.property.porch_garden,
+    access: props.property.access ?? null,
+    kitchen_dining_room: props.property.kitchen_dining_room ?? null,
+    porch_garden: props.property.porch_garden ?? null,
     succah_porch: props.property.succah_porch,
-    air_conditioning: props.property.air_conditioning,
-    apartment_condition: props.property.apartment_condition,
+    air_conditioning: props.property.air_conditioning ?? null,
+    apartment_condition: props.property.apartment_condition ?? null,
     additional_info_en: getAdditionalInfo('en'),
     additional_info_he: getAdditionalInfo('he'),
     has_dud_shemesh: props.property.has_dud_shemesh,
@@ -216,10 +235,38 @@ const availableTo = computed<string>({
     },
 });
 
+function toDateValue(value: string): DateValue | undefined {
+    const trimmed = value?.trim();
+    if (!trimmed) return undefined;
+
+    const normalized = trimmed.includes('T') ? trimmed.slice(0, 10) : trimmed;
+    try {
+        return parseDate(normalized);
+    } catch {
+        return undefined;
+    }
+}
+
+const availableFromDate = computed<DateValue | undefined>({
+    get: () => toDateValue(availableFrom.value),
+    set: (value) => {
+        if (value) {
+            availableFrom.value = value.toString();
+        }
+    },
+});
+
+const availableToDate = computed<DateValue | undefined>({
+    get: () => toDateValue(availableTo.value),
+    set: (value) => {
+        availableTo.value = value ? value.toString() : '';
+    },
+});
+
 const contactNameInput = computed<string | undefined>({
     get: () => form.contact_name ?? undefined,
     set: (value) => {
-        form.contact_name = value ?? null;
+        form.contact_name = value ?? '';
     },
 });
 
@@ -731,13 +778,10 @@ function submit(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="availableFrom"
-                        type="date"
+                    <Label class="required-asterisk">Available from</Label>
+                    <DatePicker
+                        v-model="availableFromDate"
                         name="available_from"
-                        label="Available from"
-                        validation="required"
-                        label-class="required-asterisk"
                     />
                     <div
                         v-if="form.errors.available_from"
@@ -748,14 +792,8 @@ function submit(): void {
                 </div>
 
                 <div v-if="isMediumTerm" class="grid gap-2">
-                    <FormKit
-                        v-model="availableTo"
-                        type="date"
-                        name="available_to"
-                        label="Available to"
-                        validation="required"
-                        label-class="required-asterisk"
-                    />
+                    <Label class="required-asterisk">Available to</Label>
+                    <DatePicker v-model="availableToDate" name="available_to" />
                     <div
                         v-if="form.errors.available_to"
                         class="text-sm text-red-600"

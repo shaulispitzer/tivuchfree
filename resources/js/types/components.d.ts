@@ -84,6 +84,7 @@ declare module 'vue' {
     InputOTPSlot: typeof import('./../components/ui/input-otp/InputOTPSlot.vue')['default']
     Label: typeof import('./../components/ui/label/Label.vue')['default']
     Link: typeof import('@inertiajs/vue3')['Link']
+    MenuSelect: typeof import('./../components/ui/menu-select/MenuSelect.vue')['default']
     Modal: typeof import('./../components/Modal.vue')['default']
     NativeSelect: typeof import('./../components/ui/native-select/NativeSelect.vue')['default']
     NativeSelectOptGroup: typeof import('./../components/ui/native-select/NativeSelectOptGroup.vue')['default']
