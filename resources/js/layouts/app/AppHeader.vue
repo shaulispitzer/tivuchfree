@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Menu } from 'lucide-vue-next';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useInitials } from '@/composables/useInitials';
 import { home, locale, login } from '@/routes';
 import { create as propertiesCreate } from '@/routes/properties';
 import AppHeaderNav from './AppHeaderNav.vue';
 import FlagpackGbUkm from '~icons/flagpack/gb-ukm';
 import TwemojiFlagIsrael from '~icons/twemoji/flag-israel';
 const { t } = useI18n();
+const { getInitials } = useInitials();
 
 // type Props = {
 //     breadcrumbs?: BreadcrumbItem[];
@@ -17,6 +20,11 @@ const { t } = useI18n();
 
 const page = usePage();
 const user = computed(() => page.props.user ?? null);
+const googleAvatar = computed<string | null>(() => {
+    const currentUser = user.value as any;
+
+    return currentUser?.google_avatar ?? null;
+});
 const currentLocale = computed(() => page.props.locale ?? 'en');
 const localeToggleFlag = computed(() =>
     currentLocale.value === 'he' ? FlagpackGbUkm : TwemojiFlagIsrael,
@@ -175,6 +183,11 @@ const closeTivuchimNotice = () => {
                                     <Avatar
                                         class="size-8 overflow-hidden rounded-full"
                                     >
+                                        <AvatarImage
+                                            v-if="googleAvatar"
+                                            :src="googleAvatar"
+                                            :alt="user.name"
+                                        />
                                         <AvatarFallback
                                             class="rounded-lg bg-neutral-200 font-semibold text-black"
                                         >
