@@ -141,6 +141,7 @@ const form = useForm<PropertyEditFormData>({
     succah_porch: props.property.succah_porch,
     air_conditioning: props.property.air_conditioning ?? null,
     apartment_condition: props.property.apartment_condition ?? null,
+    additional_info: props.property.additional_info ?? null,
     additional_info_en: getAdditionalInfo('en'),
     additional_info_he: getAdditionalInfo('he'),
     has_dud_shemesh: props.property.has_dud_shemesh,

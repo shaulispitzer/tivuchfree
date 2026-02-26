@@ -18,7 +18,7 @@ class UserData extends Data
         public bool $is_admin,
 
         public CarbonInterface $created_at,
-        // public $class = 'User',
+        public ?string $google_avatar = null,
     ) {}
 
     public static function fromModel(User $user): self
@@ -29,6 +29,7 @@ class UserData extends Data
             email: $user->email,
             is_admin: $user->is_admin,
             created_at: $user->created_at,
+            google_avatar: $user->google_avatar ?? null,
         );
     }
 
@@ -41,6 +42,7 @@ class UserData extends Data
             email: data_get($userData, 'email'),
             is_admin: false,
             created_at: CarbonImmutable::now(),
+            google_avatar: data_get($userData, 'google_avatar') ?? null,
         );
     }
 }

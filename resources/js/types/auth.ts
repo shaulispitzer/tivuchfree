@@ -4,9 +4,10 @@ export type User = {
     email: string;
     is_admin: boolean;
     avatar?: string;
-    email_verified_at: string | null;
+    google_avatar: string | null;
+    email_verified_at?: string | null;
     created_at: string;
-    updated_at: string;
+    updated_at?: string;
     [key: string]: unknown;
 };
 

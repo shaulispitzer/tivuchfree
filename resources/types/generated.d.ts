@@ -58,6 +58,7 @@ name: string;
 email: string;
 is_admin: boolean;
 created_at: string;
+google_avatar: string | null;
 };
 }
 declare namespace App.Data.Forms {
