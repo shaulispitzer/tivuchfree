@@ -53,7 +53,7 @@ const clearLabel = computed(() => (isHebrewLocale.value ? 'נקה' : 'Clear'));
 </script>
 
 <template>
-    <div class="w-full min-w-0">
+    <div class="w-full min-w-40">
         <Popover v-slot="{ close }">
             <PopoverTrigger as-child>
                 <Button

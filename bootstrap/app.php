@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->job(new \App\Jobs\ProcessExpiredPropertySubscriptions)->daily();
     })
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
         ]);

@@ -3,10 +3,11 @@ import { Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 
 import type { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { show } from '@/routes/properties';
-import fallbackPropertyImage from '../../assets/default-property-image.webp';
-import takenStampImage from '../../assets/taken.png';
+import fallbackPropertyImage from '../../assets/DeafultPropertyImage.webp';
+import takenStampImage from '../../assets/taken.webp';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -17,7 +18,7 @@ import IconHomeVariant from '~icons/mdi/home-variant-outline';
 import IconMapMarker from '~icons/mdi/map-marker-outline';
 import IconRulerSquare from '~icons/mdi/ruler-square';
 import IconSofa from '~icons/mdi/sofa';
-
+const { t } = useI18n();
 const props = defineProps({
     property: {
         type: Object as PropType<App.Data.PropertyData>,
@@ -48,8 +49,26 @@ const formatLabel = (value: string | null) =>
               .join(' ')
         : '—';
 
-const formatDate = (value: string | null) =>
-    value ? value.split('T')[0] : '—';
+const dateLocale = (): string | undefined =>
+    typeof document !== 'undefined' &&
+    document.documentElement?.lang?.startsWith('he')
+        ? 'he'
+        : typeof navigator !== 'undefined' &&
+            navigator.language?.startsWith('he')
+          ? 'he'
+          : undefined;
+
+const formatDate = (value: string | null): string => {
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+        ? '—'
+        : date.toLocaleDateString(dateLocale(), {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+          });
+};
 
 const swiperStyles = {
     '--swiper-pagination-color': 'var(--color-primary)',
@@ -69,7 +88,18 @@ const neighbourhoodLabel = computed(() => {
     }
 
     return neighbourhoods
-        .map((neighbourhood) => formatLabel(neighbourhood))
+        .map((name) => {
+            const key = name
+                .split(/\s+/)
+                .map(
+                    (word: string) =>
+                        word.charAt(0).toUpperCase() +
+                        word.slice(1).toLowerCase(),
+                )
+                .join('');
+            const translated = t(`neighbourhood.${key}`);
+            return translated !== `neighbourhood.${key}` ? translated : name;
+        })
         .join(', ');
 });
 </script>
@@ -88,23 +118,26 @@ const neighbourhoodLabel = computed(() => {
         :tabindex="property.taken === true ? -1 : undefined"
         :aria-disabled="property.taken === true || undefined"
     >
+        <!-- make the taken image not grayscale -->
         <article
             class="relative overflow-hidden rounded-xl border border-input bg-card shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40"
             :class="
-                property.taken === true
-                    ? 'opacity-80 grayscale'
-                    : 'transition hover:-translate-y-0.5 hover:shadow-md'
+                !property.taken &&
+                'transition hover:-translate-y-0.5 hover:scale-101 hover:shadow-lg'
             "
         >
             <img
                 v-if="property.taken === true"
                 :src="takenStampImage"
-                alt="Taken property"
-                class="pointer-events-none absolute inset-x-0 top-5 z-20 mx-auto w-40 select-none"
+                :alt="t('common.takenPropertyStampAlt')"
+                class="pointer-events-none absolute inset-x-0 top-7 z-20 mx-auto w-40 select-none"
                 loading="lazy"
             />
 
-            <div class="relative">
+            <div
+                class="relative"
+                :class="property.taken ? 'opacity-80 grayscale' : ''"
+            >
                 <Swiper
                     v-if="imageUrls.length > 0"
                     :modules="[Navigation, Pagination]"
@@ -120,7 +153,7 @@ const neighbourhoodLabel = computed(() => {
                     >
                         <img
                             :src="url"
-                            alt="Property image"
+                            :alt="t('common.mainPropertyImageAlt')"
                             class="h-52 w-full object-cover"
                             loading="lazy"
                         />
@@ -130,14 +163,26 @@ const neighbourhoodLabel = computed(() => {
                 <div v-else class="h-52 w-full">
                     <img
                         :src="fallbackPropertyImage"
-                        alt="Default property image"
-                        class="h-full w-full object-cover opacity-70 contrast-75"
+                        :alt="t('common.defaultPropertyImageAlt')"
+                        class="h-full w-full opacity-70 contrast-75"
                         loading="lazy"
                     />
                 </div>
+                <!-- make the badge centered -->
+                <div class="absolute -bottom-2 z-10 flex w-full justify-center">
+                    <Badge
+                        v-if="property.type === 'medium_term'"
+                        class="bg-yellow-300 text-yellow-950"
+                    >
+                        {{ t('common.mediumTermRental') }}
+                    </Badge>
+                </div>
             </div>
 
-            <div class="space-y-4 p-4">
+            <div
+                class="space-y-4 p-4"
+                :class="property.taken ? 'opacity-80 grayscale' : ''"
+            >
                 <div class="flex items-start justify-between gap-4">
                     <div class="space-y-1">
                         <div
@@ -161,17 +206,11 @@ const neighbourhoodLabel = computed(() => {
 
                 <div
                     v-if="property.type === 'medium_term'"
-                    class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+                    class="flex items-center gap-2 text-xs text-muted-foreground"
                 >
-                    <Badge class="bg-yellow-300 text-yellow-950">
-                        <IconCalendarRange class="h-3.5 w-3.5" />
-                        Medium term
-                    </Badge>
-                    <span class="flex items-center gap-1">
-                        <IconCalendarRange class="h-4 w-4" />
-                        {{ formatDate(property.available_from) }} -
-                        {{ formatDate(property.available_to) }}
-                    </span>
+                    <IconCalendarRange class="h-4 w-4" />
+                    {{ formatDate(property.available_from) }} -
+                    {{ formatDate(property.available_to) }}
                 </div>
 
                 <div
@@ -179,32 +218,43 @@ const neighbourhoodLabel = computed(() => {
                     class="flex items-center gap-2 text-xs text-muted-foreground"
                 >
                     <IconCalendarRange class="h-4 w-4" />
-                    Available from {{ formatDate(property.available_from) }}
+                    {{ t('common.availableFrom') }}:
+                    <span class="font-medium">{{
+                        formatDate(property.available_from)
+                    }}</span>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 text-sm">
                     <div class="flex items-center gap-2">
                         <IconBed class="h-4 w-4 text-primary" />
+                        <span class="text-muted-foreground"
+                            >{{ t('common.bedrooms') }}:</span
+                        >
                         <span class="font-medium">{{ property.bedrooms }}</span>
-                        <span class="text-muted-foreground">Bedrooms</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <IconRulerSquare class="h-4 w-4 text-primary" />
+                        <span class="text-muted-foreground"
+                            >{{ t('common.m2') }}:</span
+                        >
                         <span class="font-medium">{{
                             property.square_meter ?? '—'
                         }}</span>
-                        <span class="text-muted-foreground">m2</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <IconSofa class="h-4 w-4 text-primary" />
-                        <span class="text-muted-foreground">Furnished</span>
-                        <span class="font-medium">{{
-                            formatLabel(property.furnished)
+                        <!-- never do line breaks -->
+                        <span class="font-medium whitespace-nowrap">{{
+                            property.furnished
+                                ? t('propertyFurnished.' + property.furnished)
+                                : '—'
                         }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <IconHomeVariant class="h-4 w-4 text-primary" />
-                        <span class="text-muted-foreground">Condition</span>
+                        <span class="text-muted-foreground"
+                            >{{ t('common.condition') }}:</span
+                        >
                         <span class="font-medium">{{
                             formatLabel(property.apartment_condition)
                         }}</span>

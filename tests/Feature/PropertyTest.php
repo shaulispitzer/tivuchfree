@@ -31,7 +31,7 @@ function propertyPayload(array $overrides = []): array
         'available_to' => null,
         'bedrooms' => 3,
         'square_meter' => 120,
-        'furnished' => PropertyFurnished::Partially->value,
+        'furnished' => PropertyFurnished::PartiallyFurnished->value,
         'taken' => false,
         'bathrooms' => 2,
         'access' => PropertyAccess::ElevatorNonShabbos->value,
@@ -80,7 +80,7 @@ test('authenticated users can create properties', function () {
 
     $property = Property::query()->first();
 
-    $response->assertRedirect(route('properties.edit', $property));
+    $response->assertRedirect(route('properties.index'));
     expect($property)->not->toBeNull();
     expect($property->user_id)->toBe($user->id);
     expect($property->street)->toBe($street->getTranslation('name', 'he'));
@@ -276,6 +276,32 @@ test('property show is returned as a modal with full details except user fields'
         ->assertJsonMissingPath('props.modal.props.property.user_id');
 });
 
+test('property show increments views on each visit', function () {
+    $property = Property::factory()->create(['views' => 5]);
+
+    $this
+        ->withoutMiddleware(\App\Http\Middleware\HandleInertiaRequests::class)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->get(route('properties.show', $property));
+
+    $property->refresh();
+    expect($property->views)->toBe(6);
+
+    $this
+        ->withoutMiddleware(\App\Http\Middleware\HandleInertiaRequests::class)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->get(route('properties.show', $property));
+
+    $property->refresh();
+    expect($property->views)->toBe(7);
+});
+
 test('properties index does not include owner details for owner listings', function () {
     $owner = User::factory()->create();
     $property = Property::factory()->create(['user_id' => $owner->id]);
@@ -392,15 +418,15 @@ test('properties index can filter bedrooms by range', function () {
 
 test('properties index can filter by furnished status', function () {
     $matchingProperty = Property::factory()->create([
-        'furnished' => PropertyFurnished::Yes,
+        'furnished' => PropertyFurnished::FullyFurnished,
     ]);
 
     Property::factory()->create([
-        'furnished' => PropertyFurnished::No,
+        'furnished' => PropertyFurnished::NotFurnished,
     ]);
 
     $response = $this->get(route('properties.index', [
-        'furnished' => PropertyFurnished::Yes->value,
+        'furnished' => PropertyFurnished::FullyFurnished->value,
     ]));
 
     $response

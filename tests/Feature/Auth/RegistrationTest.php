@@ -9,7 +9,7 @@ test('registration screen can be rendered', function () {
     $response->assertOk();
 });
 
-test('new users can register', function () {
+test('new users can register and are redirected to email verification', function () {
     Mail::fake();
 
     $response = $this->post(route('register.store'), [
@@ -20,10 +20,32 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('home', absolute: false));
+    $response->assertRedirect(route('verification.notice', absolute: false));
 });
 
-test('welcome email is sent when a user registers', function () {
+test('welcome email is sent when a user verifies their email', function () {
+    Mail::fake();
+
+    $user = \App\Models\User::factory()->unverified()->create([
+        'name' => 'Jane Doe',
+        'email' => 'jane@example.com',
+    ]);
+
+    $verificationUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->email)]
+    );
+
+    $this->actingAs($user)->get($verificationUrl);
+
+    Mail::assertQueued(WelcomeEmail::class, function (WelcomeEmail $mail) {
+        return $mail->user->email === 'jane@example.com'
+            && $mail->hasTo('jane@example.com');
+    });
+});
+
+test('welcome email is not sent on registration', function () {
     Mail::fake();
 
     $this->post(route('register.store'), [
@@ -33,10 +55,7 @@ test('welcome email is sent when a user registers', function () {
         'password_confirmation' => 'password',
     ]);
 
-    Mail::assertQueued(WelcomeEmail::class, function (WelcomeEmail $mail) {
-        return $mail->user->email === 'jane@example.com'
-            && $mail->hasTo('jane@example.com');
-    });
+    Mail::assertNotQueued(WelcomeEmail::class);
 });
 
 test('welcome email contains expected content', function () {

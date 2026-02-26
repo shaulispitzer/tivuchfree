@@ -2,7 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { cn } from '@/lib/utils';
-
+const { t } = useI18n();
 type PaginationLink = {
     url: string | null;
     label: string;
@@ -31,15 +31,17 @@ const cleanedLinks = computed(() =>
 </script>
 
 <template>
-    <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div
+        class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
         <p class="text-sm text-muted-foreground">
-            Showing
+            {{ t('common.showing') }}
             <span class="font-medium text-foreground">{{ from ?? 0 }}</span>
-            to
+            {{ t('common.to') }}
             <span class="font-medium text-foreground">{{ to ?? 0 }}</span>
-            of
+            {{ t('common.of') }}
             <span class="font-medium text-foreground">{{ total }}</span>
-            results
+            {{ t('common.results') }}
         </p>
 
         <nav
@@ -47,7 +49,10 @@ const cleanedLinks = computed(() =>
             class="flex flex-wrap items-center gap-2"
             aria-label="Pagination"
         >
-            <template v-for="(link, index) in cleanedLinks" :key="`${index}-${link.text}`">
+            <template
+                v-for="(link, index) in cleanedLinks"
+                :key="`${index}-${link.text}`"
+            >
                 <span
                     v-if="link.url === null"
                     class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm text-muted-foreground"

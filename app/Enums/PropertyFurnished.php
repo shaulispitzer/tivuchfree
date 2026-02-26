@@ -6,16 +6,16 @@ enum PropertyFurnished: string implements PropertyOptionLabel
 {
     use EnumHelpers;
 
-    case Yes = 'yes';
-    case Partially = 'partially';
-    case No = 'no';
+    case FullyFurnished = 'fully_furnished';
+    case PartiallyFurnished = 'partially_furnished';
+    case NotFurnished = 'not_furnished';
 
     public function label(): string
     {
         return match ($this) {
-            self::Yes => 'Yes',
-            self::Partially => 'Partially',
-            self::No => 'No',
+            self::FullyFurnished => 'Fully Furnished',
+            self::PartiallyFurnished => 'Partially Furnished',
+            self::NotFurnished => 'Not Furnished',
         };
     }
 }

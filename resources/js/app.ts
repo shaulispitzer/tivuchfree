@@ -40,14 +40,6 @@ const getInitialLocale = (props: {
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-const csrfToken = document
-    .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
-    ?.getAttribute('content');
-
-if (csrfToken) {
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-}
-
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) =>
@@ -70,6 +62,7 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         setI18nLocale(getInitialLocale(props));
 
+        // #region agent log
         router.on('success', (event) => {
             const locale = normalizeLocale(
                 (event.detail.page.props as { locale?: string }).locale,

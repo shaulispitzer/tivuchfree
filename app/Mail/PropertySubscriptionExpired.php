@@ -15,7 +15,7 @@ class PropertySubscriptionExpired extends Mailable
 
     public function __construct(
         public PropertySubscription $subscription,
-        public string $propertiesUrl,
+        public string $subscribeUrl,
     ) {}
 
     public function envelope(): Envelope

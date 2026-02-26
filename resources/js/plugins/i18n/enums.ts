@@ -70,9 +70,9 @@ export default {
             lived_in: 'Lived In',
         },
         propertyFurnished: {
-            yes: 'Yes',
-            partially: 'Partially',
-            no: 'No',
+            fully_furnished: 'Fully Furnished',
+            partially_furnished: 'Partially Furnished',
+            not_furnished: 'Not Furnished',
         },
         propertyKitchenDiningRoom: {
             separate: 'Separate',
@@ -177,9 +177,9 @@ export default {
             lived_in: 'גרו בו',
         },
         propertyFurnished: {
-            yes: 'כן',
-            partially: 'חלקית',
-            no: 'לא',
+            fully_furnished: 'מרוהט מלא',
+            partially_furnished: 'מרוהט חלקית',
+            not_furnished: 'לא מרוהט',
         },
         propertyKitchenDiningRoom: {
             separate: 'נפרד',

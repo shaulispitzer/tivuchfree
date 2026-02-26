@@ -41,6 +41,7 @@ class PropertyFormData extends Data
         public bool $succah_porch,
         public PropertyAirConditioning $air_conditioning,
         public PropertyApartmentCondition $apartment_condition,
+        public ?string $additional_info,
         public ?string $additional_info_en,
         public ?string $additional_info_he,
         public bool $has_dud_shemesh,

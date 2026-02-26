@@ -67,7 +67,7 @@ it('uploads images immediately and attaches them on property creation', function
         'available_from' => now()->toIso8601String(),
         'available_to' => null,
         'bedrooms' => 2,
-        'furnished' => PropertyFurnished::Yes->value,
+        'furnished' => PropertyFurnished::FullyFurnished->value,
         'temp_upload_id' => (int) $upload1['temp_upload_id'],
         'image_media_ids' => [
             $upload1['media']['id'],
@@ -81,7 +81,7 @@ it('uploads images immediately and attaches them on property creation', function
 
     $property = Property::query()->first();
 
-    $response->assertRedirect(route('properties.edit', $property));
+    $response->assertRedirect(route('properties.index'));
 
     expect($property)->not->toBeNull();
     expect($property->getFirstMedia('main_image'))->not->toBeNull();

@@ -1,8 +1,10 @@
 <?php
 
+use App\Mail\WelcomeEmail;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 
@@ -68,6 +70,41 @@ test('google callback authenticates existing user and updates google fields', fu
     expect($user)
         ->google_id->toBe('google-456')
         ->google_avatar->toBe('https://example.com/avatar.jpg');
+});
+
+test('welcome email is sent when new user signs up with google', function () {
+    Mail::fake();
+
+    Socialite::fake('google', (new SocialiteUser)->map([
+        'id' => 'google-new',
+        'name' => 'New Google User',
+        'email' => 'newgoogle@example.com',
+        'avatar' => 'https://example.com/avatar.jpg',
+    ]));
+
+    $this->get(route('auth.google.callback'));
+
+    Mail::assertQueued(WelcomeEmail::class, function (WelcomeEmail $mail) {
+        return $mail->user->email === 'newgoogle@example.com'
+            && $mail->hasTo('newgoogle@example.com');
+    });
+});
+
+test('welcome email is not sent when existing user logs in with google', function () {
+    Mail::fake();
+
+    User::factory()->create(['email' => 'existing@example.com']);
+
+    Socialite::fake('google', (new SocialiteUser)->map([
+        'id' => 'google-789',
+        'name' => 'Existing User',
+        'email' => 'existing@example.com',
+        'avatar' => 'https://example.com/avatar.jpg',
+    ]));
+
+    $this->get(route('auth.google.callback'));
+
+    Mail::assertNotQueued(WelcomeEmail::class);
 });
 
 test('google callback does not dispatch registered event for existing user', function () {

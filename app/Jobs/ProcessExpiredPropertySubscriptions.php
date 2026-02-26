@@ -22,7 +22,7 @@ class ProcessExpiredPropertySubscriptions implements ShouldQueue
         foreach ($expired as $subscription) {
             Mail::to($subscription->email)->locale('en')->send(new PropertySubscriptionExpired(
                 subscription: $subscription,
-                propertiesUrl: route('properties.index'),
+                subscribeUrl: route('subscribe'),
             ));
 
             $subscription->update(['unsubscribed_at' => now()]);

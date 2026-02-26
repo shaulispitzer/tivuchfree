@@ -36,7 +36,7 @@ test('property store accepts empty image_media_ids', function () {
         'available_from' => now()->toIso8601String(),
         'available_to' => null,
         'bedrooms' => 1,
-        'furnished' => PropertyFurnished::No->value,
+        'furnished' => PropertyFurnished::NotFurnished->value,
         'image_media_ids' => [],
         'temp_upload_id' => null,
         'main_image_media_id' => null,
@@ -47,5 +47,5 @@ test('property store accepts empty image_media_ids', function () {
     $property = Property::query()->latest()->first();
 
     expect($property)->not->toBeNull();
-    $response->assertRedirect(route('properties.edit', $property));
+    $response->assertRedirect(route('properties.index'));
 });

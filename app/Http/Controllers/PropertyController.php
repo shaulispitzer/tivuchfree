@@ -15,6 +15,7 @@ use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Http\Requests\MarkPropertyAsTakenRequest;
 use App\Jobs\NotifyPropertySubscribers;
+use App\Jobs\TranslatePropertyAdditionalInfo;
 use App\Mail\PropertyListingStatusChange;
 use App\Mail\YourPropertyWasListed;
 use App\Models\Property;
@@ -107,11 +108,11 @@ class PropertyController extends Controller
             )
             ->when($type === PropertyLeaseType::MediumTerm->value, function ($query) use ($validated) {
                 if (isset($validated['available_from'])) {
-                    $query->whereDate('available_from', '>=', $validated['available_from']);
+                    $query->whereDate('available_from', '<=', $validated['available_from']);
                 }
 
                 if (isset($validated['available_to'])) {
-                    $query->whereDate('available_to', '<=', $validated['available_to']);
+                    $query->whereDate('available_to', '>=', $validated['available_to']);
                 }
             });
 
@@ -172,7 +173,7 @@ class PropertyController extends Controller
             ->paginate(15)
             ->withQueryString()
             ->through(fn (Property $property) => (
-                PropertyData::fromModel($property)->only('id', 'price', 'neighbourhoods', 'street', 'lat', 'lon', 'building_number', 'floor', 'type', 'available_from', 'available_to', 'bedrooms', 'square_meter', 'views', 'furnished', 'taken', 'image_urls', 'main_image_url')->toArray()
+                PropertyData::fromModel($property)->only('id', 'price', 'neighbourhoods', 'street', 'lat', 'lon', 'building_number', 'floor', 'type', 'available_from', 'available_to', 'bedrooms', 'square_meter', 'views', 'furnished', 'taken', 'image_urls', 'main_image_url', 'created_at')->toArray()
             ));
 
         return Inertia::render('properties/List', [
@@ -274,10 +275,11 @@ class PropertyController extends Controller
         );
 
         $property = DB::transaction(function () use ($data, $request, $streetInHebrew, $coordinates) {
-            $additionalInfo = array_filter([
-                'en' => $data->additional_info_en,
-                'he' => $data->additional_info_he,
-            ], fn (?string $value): bool => is_string($value) && $value !== '');
+            $additionalInfo = $this->resolveAdditionalInfoForImmediateSave(
+                $data->additional_info,
+                $data->additional_info_en,
+                $data->additional_info_he,
+            );
 
             $property = Property::create([
                 'user_id' => $request->user()->id,
@@ -391,7 +393,57 @@ class PropertyController extends Controller
 
         NotifyPropertySubscribers::dispatchSync($property);
 
-        return redirect()->route('properties.edit', $property)->success('Property created successfully');
+        $normalizedAdditionalInfo = is_string($data->additional_info) ? trim($data->additional_info) : '';
+        if ($normalizedAdditionalInfo !== '') {
+            $sourceLocale = app()->getLocale() === 'he' ? 'he' : 'en';
+            TranslatePropertyAdditionalInfo::dispatch($property, $normalizedAdditionalInfo, $sourceLocale);
+        }
+
+        return redirect()->route('properties.index')->success(__('message.propertyCreatedSuccessfully'));
+    }
+
+    /**
+     * Resolves additional info for immediate save without calling the translation API.
+     * When the user provides a single additional_info field, stores the same text in both
+     * languages. Translation runs asynchronously via TranslatePropertyAdditionalInfo job.
+     *
+     * @return array{en: string, he: string}|null
+     */
+    protected function resolveAdditionalInfoForImmediateSave(
+        ?string $additionalInfo,
+        ?string $additionalInfoEn,
+        ?string $additionalInfoHe,
+    ): ?array {
+        $normalizedAdditionalInfo = is_string($additionalInfo) ? trim($additionalInfo) : '';
+
+        if ($normalizedAdditionalInfo !== '') {
+            return [
+                'en' => $normalizedAdditionalInfo,
+                'he' => $normalizedAdditionalInfo,
+            ];
+        }
+
+        $fallbackAdditionalInfo = array_filter([
+            'en' => is_string($additionalInfoEn) ? trim($additionalInfoEn) : null,
+            'he' => is_string($additionalInfoHe) ? trim($additionalInfoHe) : null,
+        ], fn (?string $value): bool => is_string($value) && $value !== '');
+
+        if ($fallbackAdditionalInfo === []) {
+            return null;
+        }
+
+        if (! isset($fallbackAdditionalInfo['en']) && isset($fallbackAdditionalInfo['he'])) {
+            $fallbackAdditionalInfo['en'] = $fallbackAdditionalInfo['he'];
+        }
+
+        if (! isset($fallbackAdditionalInfo['he']) && isset($fallbackAdditionalInfo['en'])) {
+            $fallbackAdditionalInfo['he'] = $fallbackAdditionalInfo['en'];
+        }
+
+        return [
+            'en' => $fallbackAdditionalInfo['en'],
+            'he' => $fallbackAdditionalInfo['he'],
+        ];
     }
 
     /**
@@ -543,6 +595,7 @@ class PropertyController extends Controller
 
     public function show(Request $request, Property $property)
     {
+        $property->increment('views');
         $property->loadMissing(['media']);
 
         $isMapView = $request->query('view') === 'map';

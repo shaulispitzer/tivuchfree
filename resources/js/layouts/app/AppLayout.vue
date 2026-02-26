@@ -3,7 +3,7 @@ import { Modal as InertiaModal } from '../../../../vendor/emargareten/inertia-mo
 import AppContent from './AppContent.vue';
 import AppFooter from './AppFooter.vue';
 import AppHeader from './AppHeader.vue';
-
+import FluentColorWarning28 from '~icons/fluent-color/warning-28';
 const { t } = useI18n();
 
 const TIVUCHIM_NOTICE_STORAGE_KEY = 'tivuchfree:tivuchim-notice-dismissed-at';
@@ -15,7 +15,9 @@ let tivuchimNoticeTimerId: number | undefined;
 
 function isTivuchimNoticeInCooldown(): boolean {
     try {
-        const storedTimestamp = window.localStorage.getItem(TIVUCHIM_NOTICE_STORAGE_KEY);
+        const storedTimestamp = window.localStorage.getItem(
+            TIVUCHIM_NOTICE_STORAGE_KEY,
+        );
 
         if (!storedTimestamp) {
             return false;
@@ -34,7 +36,10 @@ function isTivuchimNoticeInCooldown(): boolean {
 
 function rememberTivuchimNoticeDismissed(): void {
     try {
-        window.localStorage.setItem(TIVUCHIM_NOTICE_STORAGE_KEY, Date.now().toString());
+        window.localStorage.setItem(
+            TIVUCHIM_NOTICE_STORAGE_KEY,
+            Date.now().toString(),
+        );
     } catch {
         // Intentionally no-op if storage is unavailable.
     }
@@ -138,21 +143,25 @@ onUnmounted(() => {
 
         <Modal
             :open="showTivuchimNoticeModal"
-            :title="t('common.pleaseNote')"
             :actions="false"
             :closable="false"
             :close-on-backdrop="false"
             width="max-w-2xl"
         >
             <div class="space-y-5">
-                <p class="text-base leading-relaxed text-foreground">
+                <div class="flex items-center justify-center">
+                    <FluentColorWarning28 class="size-60" />
+                </div>
+                <p
+                    class="mx-auto text-center text-2xl leading-relaxed text-red-700"
+                >
                     {{ t('common.tivuchnotice') }}
                 </p>
 
                 <div class="flex flex-wrap gap-3 pt-2">
                     <button
                         type="button"
-                        class="inline-flex items-center justify-center rounded-md bg-primary px-7 py-3 text-base font-bold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                        class="mx-auto inline-flex cursor-pointer items-center justify-center rounded-md bg-primary px-7 py-3 text-base font-bold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                         @click="handleTivuchimNoticeAccept"
                     >
                         {{ t('common.acceptTc') }}

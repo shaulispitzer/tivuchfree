@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n';
 import auth from './auth';
 import common from './common';
 import enums from './enums';
+import neighbourhood from './neighbourhood';
 import ui from './ui';
 
 const instance = createI18n({
@@ -16,7 +17,7 @@ const instance = createI18n({
     fallbackLocale: 'en',
     fallbackWarn: false,
     missingWarn: false,
-    messages: merge(auth, common, enums, ui),
+    messages: merge(auth, common, enums, neighbourhood, ui),
 });
 export default instance;
 

@@ -135,7 +135,9 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
         },
         {
             label: t('common.furnished'),
-            value: t(props.property.furnished ?? 'not specified'),
+            value: props.property.furnished
+                ? t('propertyFurnished.' + props.property.furnished)
+                : t('common.notSpecified'),
             icon: Armchair,
         },
         {

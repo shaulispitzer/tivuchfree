@@ -39,6 +39,10 @@ const props = defineProps({
     },
 });
 const { t } = useI18n();
+const page = usePage();
+const currentLocale = computed(() =>
+    page.props.locale === 'he' ? 'he' : 'en',
+);
 
 const LeaseType = {
     MediumTerm: 'medium_term',
@@ -94,8 +98,9 @@ const form = useForm<PropertyCreateFormData>({
     succah_porch: false,
     air_conditioning: null,
     apartment_condition: null,
-    additional_info_en: '',
-    additional_info_he: '',
+    additional_info: '',
+    additional_info_en: null,
+    additional_info_he: null,
     has_dud_shemesh: false,
     has_machsan: false,
     has_parking_spot: false,
@@ -107,7 +112,7 @@ const form = useForm<PropertyCreateFormData>({
     available_from: getLocalDateString(new Date()) + 'T00:00:00Z',
     available_to: null,
     bedrooms: undefined,
-    furnished: 'no',
+    furnished: 'not_furnished',
     temp_upload_id: null,
     image_media_ids: [],
     main_image_media_id: null,
@@ -286,17 +291,10 @@ const bathroomsInput = computed<number | undefined>({
     },
 });
 
-const additionalInfoEnInput = computed<string | undefined>({
-    get: () => form.additional_info_en ?? undefined,
+const additionalInfoInput = computed<string | undefined>({
+    get: () => form.additional_info ?? undefined,
     set: (value) => {
-        form.additional_info_en = value ?? null;
-    },
-});
-
-const additionalInfoHeInput = computed<string | undefined>({
-    get: () => form.additional_info_he ?? undefined,
-    set: (value) => {
-        form.additional_info_he = value ?? null;
+        form.additional_info = value ?? null;
     },
 });
 
@@ -955,36 +953,24 @@ function submit(): void {
             <h2 class="text-sm font-semibold text-foreground/80">
                 {{ t('common.notes') }}
             </h2>
-            <div class="grid gap-4 lg:grid-cols-2">
+            <div class="grid gap-4">
                 <div class="grid gap-2">
+                    <p class="text-sm text-muted-foreground">
+                        Please enter text in {{ currentLocale }}. We will handle
+                        the translation automatically.
+                    </p>
                     <FormKit
-                        v-model="additionalInfoEnInput"
+                        v-model="additionalInfoInput"
                         type="textarea"
-                        name="additional_info_en"
-                        :label="t('common.additionalInfoEnglish')"
+                        name="additional_info"
+                        :label="t('common.additionalInfo')"
                         rows="4"
                     />
                     <div
-                        v-if="form.errors.additional_info_en"
+                        v-if="form.errors.additional_info"
                         class="text-sm text-red-600"
                     >
-                        {{ form.errors.additional_info_en }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="additionalInfoHeInput"
-                        type="textarea"
-                        name="additional_info_he"
-                        :label="t('common.additionalInfoHebrew')"
-                        rows="4"
-                    />
-                    <div
-                        v-if="form.errors.additional_info_he"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.additional_info_he }}
+                        {{ form.errors.additional_info }}
                     </div>
                 </div>
             </div>

@@ -125,7 +125,7 @@ test('existing subscriber can update filters', function () {
             'neighbourhoods' => [Neighbourhood::Geula->value],
             'hide_taken_properties' => true,
             'bedrooms_range' => [3, 5],
-            'furnished' => PropertyFurnished::Yes->value,
+            'furnished' => PropertyFurnished::FullyFurnished->value,
             'type' => PropertyLeaseType::LongTerm->value,
             'available_from' => '',
             'available_to' => '',

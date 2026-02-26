@@ -1,0 +1,6 @@
+{"sessionId":"6a2048","hypothesisId":"A","location":"DebugCsrfLogging","message":"Auth page request","data":{"method":"GET","path":"register","sessionTokenPrefix":"B8ot0NzO...","requestToken":null},"timestamp":1772054655223}
+{"sessionId":"6a2048","hypothesisId":"A","location":"DebugCsrfLogging","message":"Auth page request","data":{"method":"GET","path":"login","sessionTokenPrefix":"B8ot0NzO...","requestToken":null},"timestamp":1772054660690}
+{"sessionId":"6a2048","hypothesisId":"A","location":"DebugCsrfLogging","message":"Auth page request","data":{"method":"POST","path":"login","sessionTokenPrefix":"B8ot0NzO...","requestToken":"eyJpdiI6..."},"timestamp":1772054675985}
+{"sessionId":"6a2048","hypothesisId":"A","location":"DebugCsrfLogging","message":"Auth page request","data":{"method":"GET","path":"login","sessionTokenPrefix":"poIGqNvV...","requestToken":null},"timestamp":1772054687187}
+{"sessionId":"6a2048","hypothesisId":"A","location":"DebugCsrfLogging","message":"Auth page request","data":{"method":"GET","path":"register","sessionTokenPrefix":"poIGqNvV...","requestToken":null},"timestamp":1772054690043}
+{"sessionId":"6a2048","hypothesisId":"A","location":"DebugCsrfLogging","message":"Auth page request","data":{"method":"POST","path":"register","sessionTokenPrefix":"poIGqNvV...","requestToken":"eyJpdiI6..."},"timestamp":1772054718500}

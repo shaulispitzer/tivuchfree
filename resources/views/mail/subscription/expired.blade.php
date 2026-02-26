@@ -5,7 +5,7 @@ Your 30-day property subscription has ended. You will no longer receive emails a
 
 If you would like to continue receiving updates, you can subscribe again anytime.
 
-<x-mail::button :url="$propertiesUrl">
+<x-mail::button :url="$subscribeUrl">
 Subscribe again
 </x-mail::button>
 

@@ -36,6 +36,7 @@ has_parking_spot: boolean;
 user: App.Data.UserData | null;
 main_image_url: string | null;
 image_urls: Array<any>;
+created_at: string;
 };
 export type PropertyFormOptionsData = {
 neighbourhoods: Array<any>;
@@ -82,6 +83,7 @@ porch_garden: App.Enums.PropertyPorchGarden;
 succah_porch: boolean;
 air_conditioning: App.Enums.PropertyAirConditioning;
 apartment_condition: App.Enums.PropertyApartmentCondition;
+additional_info: string | null;
 additional_info_en: string | null;
 additional_info_he: string | null;
 has_dud_shemesh: boolean;
@@ -112,7 +114,7 @@ export type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'defau
 export type PropertyAccess = 'step_free_access' | 'steps_only' | 'elevator_non_shabbos' | 'elevator_shabbos';
 export type PropertyAirConditioning = 'fully_airconditioned' | 'partly_airconditioned' | 'not_airconditioned';
 export type PropertyApartmentCondition = 'brand_new' | 'excellent' | 'good' | 'lived_in';
-export type PropertyFurnished = 'yes' | 'partially' | 'no';
+export type PropertyFurnished = 'fully_furnished' | 'partially_furnished' | 'not_furnished';
 export type PropertyKitchenDiningRoom = 'separate' | 'not_separate' | 'partly_separate' | 'no_kitchen';
 export type PropertyLeaseType = 'medium_term' | 'long_term';
 export type PropertyPorchGarden = 'porch' | 'garden' | 'no';

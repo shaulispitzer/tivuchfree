@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import heroImage from '@assets/jerusalem-night-view.jpg';
 import { Head, Link } from '@inertiajs/vue3';
-
+import FluentArrowUp12Filled from '~icons/fluent/arrow-up-12-filled';
+import LineMdHomeSimple from '~icons/line-md/home-simple';
 const { t } = useI18n();
 const shortTermModalOpen = ref(false);
 const targetSavings = 8_787_876_786;
@@ -72,49 +73,140 @@ onMounted(() => {
             <div class="absolute inset-0 bg-slate-950/55" />
 
             <div
-                class="relative z-10 mx-auto flex min-h-[78vh] max-w-7xl flex-col items-center justify-center gap-7 px-6 py-12 text-center text-white"
+                class="relative z-10 mx-auto flex min-h-[78vh] max-w-7xl flex-col items-center px-6 py-6 text-center text-white"
             >
-                <p class="text-sm text-white" dir="rtl">
-                    לע&quot;נ הצדיק ר&apos; ישעיה בן ר&apos; משה זי&quot;ע
-                </p>
-                <h1
-                    class="text-3xl font-bold tracking-tight text-balance sm:text-5xl"
-                >
-                    {{ t('common.freeToListFreeToFind') }}
-                </h1>
-
-                <p class="text-lg font-medium text-white/90">
-                    {{ t('common.saveMoneyConnectDirectlyMoveSmarter') }}
-                </p>
+                <div class="relative z-20 flex shrink-0 flex-col items-center gap-2 pt-12">
+                    <p class="text-sm text-white" dir="rtl">
+                        לע&quot;נ הצדיק ר&apos; ישעיה בן ר&apos; משה זי&quot;ע
+                    </p>
+                    <h1
+                        class="text-3xl font-bold tracking-tight text-balance sm:text-5xl"
+                    >
+                        {{ t('common.freeToListFreeToFind') }}
+                    </h1>
+                </div>
 
                 <div
-                    class="grid w-full max-w-4xl grid-cols-1 place-items-center gap-5 pt-2 sm:grid-cols-3"
+                    class="absolute inset-0 flex items-center justify-center pt-24 sm:pt-0"
                 >
-                    <Link
-                        as="button"
-                        type="button"
-                        href="/properties?type=long_term"
-                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white transition hover:scale-[1.03] hover:bg-primary/90 hover:shadow-xl"
+                    <div
+                        class="grid w-full max-w-4xl grid-cols-1 place-items-center gap-5 sm:grid-cols-3"
                     >
-                        {{ t('common.longTermListings') }}
-                    </Link>
+                        <Link
+                            as="button"
+                            type="button"
+                            href="/properties?type=long_term"
+                            class="flex w-56 flex-col items-center gap-3 transition hover:scale-[1.03] sm:w-60"
+                        >
+                            <span
+                                class="relative flex h-54 w-54 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-white shadow-lg transition hover:bg-primary/90 hover:shadow-xl"
+                            >
+                                <LineMdHomeSimple
+                                    class="absolute inset-0 m-auto h-48 w-48 text-white"
+                                    aria-hidden
+                                    preserveAspectRatio="none"
+                                />
+                                <div
+                                    class="absolute inset-0 flex flex-col items-center justify-center gap-0.5 text-center"
+                                >
+                                    <span
+                                        class="flex items-center justify-center gap-0.5 text-lg leading-none font-bold"
+                                    >
+                                        6
+                                        <FluentArrowUp12Filled
+                                            class="size-5 shrink-0"
+                                            aria-hidden
+                                        />
+                                    </span>
+                                    <span
+                                        class="text-lg font-semibold uppercase"
+                                    >
+                                        {{ t('common.months') }}
+                                    </span>
+                                </div>
+                            </span>
+                            <span
+                                class="text-center text-lg font-semibold text-white"
+                            >
+                                {{ t('common.longTermListings') }}
+                            </span>
+                        </Link>
 
-                    <Link
-                        as="button"
-                        type="button"
-                        href="/properties?type=medium_term"
-                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white transition hover:scale-[1.03] hover:bg-primary/90 hover:shadow-xl"
-                    >
-                        {{ t('common.mediumTermListings') }}
-                    </Link>
+                        <Link
+                            as="button"
+                            type="button"
+                            href="/properties?type=medium_term"
+                            class="flex w-52 flex-col items-center gap-3 transition hover:scale-[1.03] sm:w-54"
+                        >
+                            <span
+                                class="relative flex h-54 w-54 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-white shadow-lg transition hover:bg-primary/90 hover:shadow-xl"
+                            >
+                                <LineMdHomeSimple
+                                    class="absolute inset-0 m-auto h-38 w-48 text-white"
+                                    preserveAspectRatio="none"
+                                    aria-hidden
+                                />
+                                <div
+                                    class="absolute inset-0 flex flex-col items-center justify-center gap-0.5 text-center"
+                                >
+                                    <span
+                                        class="text-lg leading-none font-bold"
+                                    >
+                                        1-6
+                                    </span>
+                                    <span
+                                        class="text-lg font-semibold uppercase"
+                                    >
+                                        {{ t('common.months') }}
+                                    </span>
+                                </div>
+                            </span>
+                            <span
+                                class="text-center text-lg font-semibold text-white"
+                            >
+                                {{ t('common.mediumTermListings') }}
+                            </span>
+                        </Link>
 
-                    <button
-                        type="button"
-                        class="flex h-54 w-54 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-center text-lg font-semibold text-white transition hover:scale-[1.03] hover:bg-primary/90 hover:shadow-xl"
-                        @click="openShortTermModal"
-                    >
-                        {{ t('common.shortTermListings') }}
-                    </button>
+                        <button
+                            type="button"
+                            class="flex w-44 flex-col items-center gap-3 transition hover:scale-[1.03] sm:w-48"
+                            @click="openShortTermModal"
+                        >
+                            <span
+                                class="relative flex h-54 w-54 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/35 bg-primary p-5 text-white shadow-lg transition hover:bg-primary/90 hover:shadow-xl"
+                            >
+                                <LineMdHomeSimple
+                                    class="absolute inset-0 m-auto h-28 w-48 text-white"
+                                    preserveAspectRatio="none"
+                                    aria-hidden
+                                />
+                                <div
+                                    class="absolute inset-0 flex flex-col items-center justify-center gap-0.5 text-center"
+                                >
+                                    <span
+                                        class="flex items-center justify-center gap-0.5 text-lg leading-none font-bold"
+                                    >
+                                        1
+                                        <FluentArrowUp12Filled
+                                            class="size-5 shrink-0 rotate-180"
+                                            aria-hidden
+                                        />
+                                    </span>
+                                    <span
+                                        class="text-lg font-semibold uppercase"
+                                    >
+                                        {{ t('common.months') }}
+                                    </span>
+                                </div>
+                            </span>
+                            <span
+                                class="text-center text-lg font-semibold text-white"
+                            >
+                                {{ t('common.shortTermListings') }}
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>

@@ -54,6 +54,7 @@ class PropertyData extends Data
         public ?UserData $user,
         public ?string $main_image_url,
         public array $image_urls,
+        public CarbonInterface $created_at,
     ) {}
 
     public static function fromModel(
@@ -94,6 +95,7 @@ class PropertyData extends Data
             user: $property->user !== null ? UserData::fromModel($property->user) : null,
             main_image_url: $property->getFirstMediaUrl('main_image') ?: null,
             image_urls: $property->getMedia('images')->map(fn ($media) => $media->getUrl())->all(),
+            created_at: $property->created_at,
         );
     }
 }
