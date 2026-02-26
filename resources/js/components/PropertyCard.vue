@@ -11,13 +11,13 @@ import takenStampImage from '../../assets/taken.webp';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import MaterialSymbolsStairs2Rounded from '~icons/material-symbols/stairs-2-rounded';
 import IconBed from '~icons/mdi/bed';
 import IconCalendarRange from '~icons/mdi/calendar-range';
+import IconCurrencyUsd from '~icons/mdi/currency-usd';
 import IconHome from '~icons/mdi/home-outline';
-import IconHomeVariant from '~icons/mdi/home-variant-outline';
 import IconMapMarker from '~icons/mdi/map-marker-outline';
 import IconRulerSquare from '~icons/mdi/ruler-square';
-import IconSofa from '~icons/mdi/sofa';
 const { t } = useI18n();
 const props = defineProps({
     property: {
@@ -40,14 +40,6 @@ const addressLine = computed(() =>
         .filter(Boolean)
         .join(' '),
 );
-
-const formatLabel = (value: string | null) =>
-    value
-        ? value
-              .split('_')
-              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-              .join(' ')
-        : '—';
 
 const dateLocale = (): string | undefined =>
     typeof document !== 'undefined' &&
@@ -226,6 +218,18 @@ const neighbourhoodLabel = computed(() => {
 
                 <div class="grid grid-cols-2 gap-3 text-sm">
                     <div class="flex items-center gap-2">
+                        <IconCurrencyUsd class="h-4 w-4 text-primary" />
+                        <span class="text-muted-foreground"
+                            >{{ t('common.price') }}:</span
+                        >
+                        <span class="font-medium" v-if="property.price">{{
+                            '₪' + property.price.toFixed(2)
+                        }}</span>
+                        <span class="font-medium italic" v-else>{{
+                            t('common.notSpecified')
+                        }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
                         <IconBed class="h-4 w-4 text-primary" />
                         <span class="text-muted-foreground"
                             >{{ t('common.bedrooms') }}:</span
@@ -242,21 +246,14 @@ const neighbourhoodLabel = computed(() => {
                         }}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <IconSofa class="h-4 w-4 text-primary" />
-                        <!-- never do line breaks -->
-                        <span class="font-medium whitespace-nowrap">{{
-                            property.furnished
-                                ? t('propertyFurnished.' + property.furnished)
-                                : '—'
-                        }}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <IconHomeVariant class="h-4 w-4 text-primary" />
+                        <MaterialSymbolsStairs2Rounded
+                            class="h-4 w-4 text-primary"
+                        />
                         <span class="text-muted-foreground"
-                            >{{ t('common.condition') }}:</span
+                            >{{ t('common.floor') }}:</span
                         >
                         <span class="font-medium">{{
-                            formatLabel(property.apartment_condition)
+                            property.floor ?? '—'
                         }}</span>
                     </div>
                 </div>
@@ -272,16 +269,19 @@ const neighbourhoodLabel = computed(() => {
 
 .property-card-swiper :deep(.swiper-button-next),
 .property-card-swiper :deep(.swiper-button-prev) {
-    width: 2rem;
-    height: 2rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
     border-radius: 999px;
     background: rgb(15 23 42 / 0.45);
     backdrop-filter: blur(6px);
+    color: white;
 }
 
-.property-card-swiper :deep(.swiper-button-next::after),
-.property-card-swiper :deep(.swiper-button-prev::after) {
-    font-size: 0.9rem;
-    font-weight: 700;
+.property-card-swiper :deep(.swiper-button-next svg),
+.property-card-swiper :deep(.swiper-button-prev svg) {
+    width: 0.7rem;
+    height: 0.7rem;
+    filter: drop-shadow(0 0 0.5px currentColor);
 }
 </style>

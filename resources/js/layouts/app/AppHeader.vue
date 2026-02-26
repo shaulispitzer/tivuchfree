@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { Menu } from 'lucide-vue-next';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Home, Menu, Building2, Info, Mail } from 'lucide-vue-next';
+import {
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/composables/useInitials';
 import { home, locale, login } from '@/routes';
 import { create as propertiesCreate } from '@/routes/properties';
@@ -33,6 +39,9 @@ const localeToggleLabel = computed(() =>
     currentLocale.value === 'he' ? 'Switch to English' : 'Switch to Hebrew',
 );
 const logoHref = computed(() => home());
+const isOnCreatePage = computed(
+    () => (page.component as string) === 'properties/Create',
+);
 const shortTermModalOpen = ref(false);
 const handleNavClick = (action: string) => {
     switch (action) {
@@ -88,10 +97,6 @@ onBeforeUnmount(() => {
         clearTimeout(tivuchimNoticeTimeout);
     }
 });
-
-const closeTivuchimNotice = () => {
-    showTivuchimNotice.value = false;
-};
 </script>
 
 <template>
@@ -102,51 +107,95 @@ const closeTivuchimNotice = () => {
             <div
                 class="relative mx-auto flex h-16 items-center px-4 md:max-w-7xl xl:px-0"
             >
-                <!-- Mobile Menu -->
-                <div class="lg:hidden">
-                    <Sheet>
-                        <SheetTrigger :as-child="true">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                class="mr-2 h-9 w-9"
-                            >
-                                <Menu class="h-5 w-5" />
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" class="w-[300px] p-6">
-                            <SheetTitle class="sr-only"
-                                >Navigation Menu</SheetTitle
-                            >
-                            <SheetHeader class="flex justify-start text-left">
-                                <AppLogoIcon
-                                    class="size-6 fill-current text-black dark:text-white"
-                                />
-                            </SheetHeader>
-                            <div
-                                class="flex h-full flex-1 flex-col justify-between space-y-4 py-6"
-                            >
-                                <AppHeaderNav
-                                    nav-class="-mx-3 space-y-1"
-                                    button-class="w-full justify-start px-3"
-                                    dropdown-align="start"
-                                    dropdown-content-class="w-56"
-                                    :on-nav-click="handleNavClick"
-                                />
-                            </div>
-                        </SheetContent>
-                    </Sheet>
+                <!-- Mobile: menu + logo side by side (menu left in en, right in he) -->
+                <div
+                    class="flex items-center gap-2 md:contents"
+                >
+                    <div class="md:hidden">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger :as-child="true">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="h-9 w-9"
+                                    aria-label="Open navigation menu"
+                                >
+                                    <Menu class="h-5 w-5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            align="start"
+                            class="w-56"
+                            side="bottom"
+                        >
+                            <DropdownMenuGroup>
+                                <DropdownMenuItem
+                                    @select="handleNavClick('home')"
+                                >
+                                    <Home class="me-2 h-4 w-4" />
+                                    {{ t('common.home') }}
+                                </DropdownMenuItem>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <Building2 class="me-2 h-4 w-4" />
+                                        {{ t('common.listings') }}
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent class="w-52">
+                                        <DropdownMenuItem
+                                            @select="
+                                                handleNavClick(
+                                                    'listings-long-term',
+                                                )
+                                            "
+                                        >
+                                            {{ t('common.longTermRental') }}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            @select="
+                                                handleNavClick(
+                                                    'listings-medium-term',
+                                                )
+                                            "
+                                        >
+                                            {{ t('common.mediumTermRental') }}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            @select="
+                                                handleNavClick(
+                                                    'listings-short-term',
+                                                )
+                                            "
+                                        >
+                                            {{ t('common.shortTermRental') }}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuItem
+                                    @select="handleNavClick('about-us')"
+                                >
+                                    <Info class="me-2 h-4 w-4" />
+                                    {{ t('common.aboutUs') }}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    @select="handleNavClick('contact-us')"
+                                >
+                                    <Mail class="me-2 h-4 w-4" />
+                                    {{ t('common.contactUs') }}
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <Link
+                        :href="logoHref"
+                        class="flex h-16 items-center gap-x-2"
+                    >
+                        <AppLogo />
+                    </Link>
                 </div>
 
-                <Link
-                    :href="logoHref"
-                    class="absolute left-1/2 flex -translate-x-1/2 items-center gap-x-2 lg:static lg:translate-x-0"
-                >
-                    <AppLogo />
-                </Link>
-
                 <!-- Desktop Menu -->
-                <div class="hidden h-full lg:flex lg:flex-1">
+                <div class="hidden h-full md:flex md:flex-1">
                     <AppHeaderNav
                         nav-class="ml-8 flex h-full items-center gap-2"
                         button-class="h-9 px-3"
@@ -158,7 +207,7 @@ const closeTivuchimNotice = () => {
 
                 <div class="ms-auto flex items-center space-x-2">
                     <div class="relative flex items-center space-x-1">
-                        <div class="hidden space-x-1 lg:flex"></div>
+                        <div class="hidden space-x-1 md:flex"></div>
                     </div>
 
                     <Button
@@ -171,6 +220,11 @@ const closeTivuchimNotice = () => {
                         <span class="text-lg" aria-hidden="true">
                             <component :is="localeToggleFlag" class="h-4 w-4" />
                         </span>
+                    </Button>
+                    <Button v-if="!isOnCreatePage" as-child>
+                        <Link :href="propertiesCreate()">{{
+                            t('common.addListing')
+                        }}</Link>
                     </Button>
                     <template v-if="user">
                         <DropdownMenu>
@@ -205,39 +259,11 @@ const closeTivuchimNotice = () => {
                         <Button as-child variant="outline">
                             <Link :href="login()">{{ t('auth.login') }}</Link>
                         </Button>
-                        <Button as-child>
-                            <Link :href="propertiesCreate()">{{
-                                t('common.addListing')
-                            }}</Link>
-                        </Button>
                     </template>
                 </div>
             </div>
         </div>
-        <!-- <div
-            class="bg-red-700 text-white transition-all duration-300 ease-out"
-            :class="
-                showTivuchimNotice
-                    ? 'max-h-24 translate-y-0 opacity-100'
-                    : 'max-h-0 -translate-y-3 overflow-hidden opacity-0'
-            "
-        >
-            <div
-                class="mx-auto flex min-h-10 flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm md:max-w-7xl xl:px-0"
-            >
-                <p class="font-medium">
-                    {{ t('common.tivuchnotice') }}
-                </p>
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    class="h-8 border border-white/40 bg-white/15 px-3 text-xs text-white hover:bg-white/25"
-                    @click="closeTivuchimNotice"
-                >
-                    {{ t('common.acceptTc') }}
-                </Button>
-            </div>
-        </div> -->
+
         <Modal
             :open="shortTermModalOpen"
             title="Short Term Properties"

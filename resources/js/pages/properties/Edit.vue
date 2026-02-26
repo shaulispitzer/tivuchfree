@@ -34,7 +34,12 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { index, update } from '@/routes/properties';
+
 const { t } = useI18n();
+const page = usePage();
+const currentLocale = computed(() =>
+    page.props.locale === 'he' ? 'he' : 'en',
+);
 type StreetOption = {
     id: number;
     name: string;
@@ -131,6 +136,7 @@ function getAdditionalInfo(locale: 'en' | 'he'): string {
 const form = useForm<PropertyEditFormData>({
     contact_name: props.property.contact_name ?? '',
     contact_phone: props.property.contact_phone ?? '',
+    contact_phone_2: props.property.contact_phone_2 ?? null,
     email: null,
     price: props.property.price,
     square_meter: props.property.square_meter,
@@ -141,9 +147,12 @@ const form = useForm<PropertyEditFormData>({
     succah_porch: props.property.succah_porch,
     air_conditioning: props.property.air_conditioning ?? null,
     apartment_condition: props.property.apartment_condition ?? null,
-    additional_info: props.property.additional_info ?? null,
-    additional_info_en: getAdditionalInfo('en'),
-    additional_info_he: getAdditionalInfo('he'),
+    additional_info:
+        getAdditionalInfo(
+            (page.props.locale as string) === 'he' ? 'he' : 'en',
+        ) ?? null,
+    additional_info_en: null,
+    additional_info_he: null,
     has_dud_shemesh: props.property.has_dud_shemesh,
     has_machsan: props.property.has_machsan,
     has_parking_spot: props.property.has_parking_spot,
@@ -236,6 +245,13 @@ const availableTo = computed<string>({
     },
 });
 
+const contactPhone2Input = computed({
+    get: () => form.contact_phone_2 ?? '',
+    set: (value: string) => {
+        form.contact_phone_2 = value.trim() || null;
+    },
+});
+
 function toDateValue(value: string): DateValue | undefined {
     const trimmed = value?.trim();
     if (!trimmed) return undefined;
@@ -285,17 +301,10 @@ const bathroomsInput = computed<number | undefined>({
     },
 });
 
-const additionalInfoEnInput = computed<string | undefined>({
-    get: () => form.additional_info_en ?? undefined,
+const additionalInfoInput = computed<string | undefined>({
+    get: () => form.additional_info ?? undefined,
     set: (value) => {
-        form.additional_info_en = value ?? null;
-    },
-});
-
-const additionalInfoHeInput = computed<string | undefined>({
-    get: () => form.additional_info_he ?? undefined,
-    set: (value) => {
-        form.additional_info_he = value ?? null;
+        form.additional_info = value ?? null;
     },
 });
 
@@ -591,6 +600,21 @@ function submit(): void {
                         class="text-sm text-red-600"
                     >
                         {{ form.errors.contact_phone }}
+                    </div>
+                </div>
+
+                <div class="grid gap-2">
+                    <FormKit
+                        v-model="contactPhone2Input"
+                        type="text"
+                        name="contact_phone_2"
+                        :label="t('common.contactPhone2')"
+                    />
+                    <div
+                        v-if="form.errors.contact_phone_2"
+                        class="text-sm text-red-600"
+                    >
+                        {{ form.errors.contact_phone_2 }}
                     </div>
                 </div>
             </div>
@@ -962,37 +986,27 @@ function submit(): void {
         </Card>
 
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Notes</h2>
-            <div class="grid gap-4 lg:grid-cols-2">
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.notes') }}
+            </h2>
+            <div class="grid gap-4">
                 <div class="grid gap-2">
+                    <p class="text-sm text-muted-foreground">
+                        Please enter text in {{ currentLocale }}. We will handle
+                        the translation automatically.
+                    </p>
                     <FormKit
-                        v-model="additionalInfoEnInput"
+                        v-model="additionalInfoInput"
                         type="textarea"
-                        name="additional_info_en"
-                        label="Additional info (English)"
+                        name="additional_info"
+                        :label="t('common.additionalInfo')"
                         rows="4"
                     />
                     <div
-                        v-if="form.errors.additional_info_en"
+                        v-if="form.errors.additional_info"
                         class="text-sm text-red-600"
                     >
-                        {{ form.errors.additional_info_en }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="additionalInfoHeInput"
-                        type="textarea"
-                        name="additional_info_he"
-                        label="Additional info (Hebrew)"
-                        rows="4"
-                    />
-                    <div
-                        v-if="form.errors.additional_info_he"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.additional_info_he }}
+                        {{ form.errors.additional_info }}
                     </div>
                 </div>
             </div>

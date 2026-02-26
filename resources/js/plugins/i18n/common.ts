@@ -32,7 +32,7 @@ export default {
             title: 'Title',
             video: 'Video',
             description: 'Description',
-            price: 'Price',
+            price: 'Price p/m',
             amount: 'Amount',
             message: 'Message',
             noResults: 'No results found',
@@ -121,6 +121,7 @@ export default {
             contactSection: 'Contact',
             contactName: 'Contact Name',
             contactPhone: 'Contact Phone',
+            contactPhone2: 'Second contact phone',
             neighbourhoods: 'Neighbourhoods',
             selectOneToThreeNeighbourhoods: 'Select 1 to 3 neighbourhoods',
             street: 'Street',
@@ -138,7 +139,7 @@ export default {
             availableFrom: 'Available from',
             availableTo: 'Available to',
             bedrooms: 'Bedrooms',
-            squareMeter: 'Square meter',
+            squareMeter: 'Size in m²',
             bathrooms: 'Bathrooms',
             furnished: 'Furnished',
             selectFurnishedStatus: 'Select furnished status',
@@ -173,6 +174,9 @@ export default {
                 'No properties with map coordinates match these filters.',
             propertyDetailsShownOnEachPinClickAPinToOpenDetails:
                 'Property details are shown on each pin. Click a pin to open details.',
+            priceNotListed: 'Price not listed',
+            rooms: 'rooms',
+            closeTooltip: 'Close tooltip',
             tivuchnotice:
                 'Note to Tivuchim: It is אסור (Forbidden) to take listings from this site!',
             acceptTc: "Accept T&C's",
@@ -202,6 +206,8 @@ export default {
             shortTermListings: 'Short Term Listings',
             shortTermMonths: 'Less than 1 month',
             moneySavedByOurCommunity: 'Money Saved by Our Community',
+            propertiesLetThroughTivuchFree:
+                'Properties let through Tivuch Free',
             testimonials: 'Testimonials',
             leaveAReview: 'Leave a review',
             shortTermProperties: 'Short Term Properties',
@@ -243,6 +249,7 @@ export default {
             send: 'Send Message',
         },
         subscription: {
+            subscribe: 'Subscribe',
             subscribeToUpdates: 'Subscribe to receive updates',
             chooseFilters:
                 'Choose the filters for properties you want to be notified about.',
@@ -295,7 +302,7 @@ export default {
             title: 'כותרת',
             video: 'סרטון',
             description: 'תיאור',
-            price: 'מחיר',
+            price: 'מחיר לחודש',
             amount: 'סכום',
             message: 'הודעה',
             noResults: 'לא נמצאו תוצאות',
@@ -382,6 +389,7 @@ export default {
             contactSection: 'פרטי קשר',
             contactName: 'שם איש קשר',
             contactPhone: 'טלפון איש קשר',
+            contactPhone2: 'טלפון נוסף',
             neighbourhoods: 'שכונות',
             selectOneToThreeNeighbourhoods: 'בחר 1 עד 3 שכונות',
             street: 'רחוב',
@@ -398,7 +406,7 @@ export default {
             availableFrom: 'זמין מתאריך',
             availableTo: 'זמין עד תאריך',
             bedrooms: 'חדרי שינה',
-            squareMeter: 'מטר מרובע',
+            squareMeter: 'מידה במ"ר',
             bathrooms: 'חדרי רחצה',
             furnished: 'מרוהט',
             selectFurnishedStatus: 'בחר מצב ריהוט',
@@ -429,6 +437,11 @@ export default {
             noPropertiesAddedYet: 'עדיין לא נוספו נכסים.',
             noPropertiesWithMapCoordinatesMatchTheseFilters:
                 'אין נכסים עם קואורדינטות מפה תואמות לסינון הזה.',
+            propertyDetailsShownOnEachPinClickAPinToOpenDetails:
+                'פרטי הנכס מוצגים על כל סיכה. לחץ על סיכה לפתיחת פרטים.',
+            priceNotListed: 'מחיר לא צוין',
+            rooms: 'חדרים',
+            closeTooltip: 'סגור בועית',
             tivuchnotice: 'הערה לטיווחים: אסור לקחת רשימות מאתר זה!',
             acceptTc: "אשר T&C's",
             listings: 'רשימות',
@@ -457,6 +470,8 @@ export default {
             shortTermListings: 'רשימות טווח קצר',
             shortTermMonths: 'פחות מחודש',
             moneySavedByOurCommunity: 'כספים שחסכנו על ידי הקהילה שלנו',
+            propertiesLetThroughTivuchFree:
+                'נכסים שעברו דרך Tivuch Free',
             testimonials: 'משובים',
             leaveAReview: 'צור משוב',
             shortTermProperties: 'רשימות טווח קצר',
@@ -498,6 +513,7 @@ export default {
             send: 'שלח הודעה',
         },
         subscription: {
+            subscribe: 'הירשם',
             subscribeToUpdates: 'הירשם לקבלת עדכונים',
             chooseFilters: 'בחר את הסינונים לנכסים שתרצה לקבל עליהם התראות.',
             subscribed:

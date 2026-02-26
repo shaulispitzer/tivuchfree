@@ -60,6 +60,7 @@ type PropertyCreateFormData = Omit<
     | 'porch_garden'
     | 'air_conditioning'
     | 'apartment_condition'
+    | 'furnished'
 > & {
     building_number: number | undefined;
     street: number | undefined;
@@ -70,6 +71,7 @@ type PropertyCreateFormData = Omit<
     porch_garden: App.Enums.PropertyPorchGarden | null;
     air_conditioning: App.Enums.PropertyAirConditioning | null;
     apartment_condition: App.Enums.PropertyApartmentCondition | null;
+    furnished: App.Enums.PropertyFurnished | null;
 };
 
 function getLocalDateString(date: Date): string {
@@ -88,6 +90,7 @@ function toISODateTime(dateString: string | null): string | null {
 const form = useForm<PropertyCreateFormData>({
     contact_name: '',
     contact_phone: '',
+    contact_phone_2: null,
     email: null,
     price: null,
     square_meter: null,
@@ -112,7 +115,7 @@ const form = useForm<PropertyCreateFormData>({
     available_from: getLocalDateString(new Date()) + 'T00:00:00Z',
     available_to: null,
     bedrooms: undefined,
-    furnished: 'not_furnished',
+    furnished: null,
     temp_upload_id: null,
     image_media_ids: [],
     main_image_media_id: null,
@@ -131,6 +134,13 @@ const translatedLeaseTypes = computed(() =>
     props.options.lease_types.map((option) => ({
         value: option.value,
         label: t(`propertyLeaseType.${option.value}`),
+    })),
+);
+
+const translatedNeighbourhoods = computed(() =>
+    props.options.neighbourhoods.map((option) => ({
+        value: option.value,
+        label: t(`neighbourhood.${option.value.replaceAll(' ', '')}`),
     })),
 );
 
@@ -277,6 +287,13 @@ const emailInput = computed<string | undefined>({
     },
 });
 
+const contactPhone2Input = computed<string | undefined>({
+    get: () => form.contact_phone_2 ?? undefined,
+    set: (value) => {
+        form.contact_phone_2 = value ?? null;
+    },
+});
+
 const squareMeterInput = computed<number | undefined>({
     get: () => form.square_meter ?? undefined,
     set: (value) => {
@@ -334,6 +351,13 @@ const apartmentConditionSelect = computed<string>({
     set: (value) => {
         form.apartment_condition = (value ||
             null) as App.Enums.PropertyApartmentCondition | null;
+    },
+});
+
+const furnishedSelect = computed<string>({
+    get: () => form.furnished ?? '',
+    set: (value) => {
+        form.furnished = (value || null) as App.Enums.PropertyFurnished | null;
     },
 });
 
@@ -486,6 +510,21 @@ function submit(): void {
                         {{ form.errors.contact_phone }}
                     </div>
                 </div>
+
+                <div class="grid gap-2">
+                    <FormKit
+                        v-model="contactPhone2Input"
+                        type="text"
+                        name="contact_phone_2"
+                        :label="t('common.contactPhone2')"
+                    />
+                    <div
+                        v-if="form.errors.contact_phone_2"
+                        class="text-sm text-red-600"
+                    >
+                        {{ form.errors.contact_phone_2 }}
+                    </div>
+                </div>
                 <div class="grid gap-2">
                     <FormKit
                         v-model="emailInput"
@@ -517,7 +556,7 @@ function submit(): void {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem
-                                v-for="option in props.options.neighbourhoods"
+                                v-for="option in translatedNeighbourhoods"
                                 :key="option.value"
                                 :value="option.value"
                             >
@@ -782,7 +821,7 @@ function submit(): void {
                         {{ t('common.furnished') }}
                     </Label>
                     <MenuSelect
-                        v-model="form.furnished"
+                        v-model="furnishedSelect"
                         :options="translatedFurnished"
                         :placeholder="t('common.selectFurnishedStatus')"
                         trigger-class="w-full border-0 shadow-sm justify-between"

@@ -3,10 +3,15 @@ import heroImage from '@assets/jerusalem-night-view.jpg';
 import { Head, Link } from '@inertiajs/vue3';
 import FluentArrowUp12Filled from '~icons/fluent/arrow-up-12-filled';
 import LineMdHomeSimple from '~icons/line-md/home-simple';
+const props = defineProps<{
+    tivuchfreePropertiesCount: number;
+    moneySavedByCommunity: number;
+}>();
+
 const { t } = useI18n();
 const shortTermModalOpen = ref(false);
-const targetSavings = 8_787_876_786;
 const displayedSavings = ref(0);
+const displayedPropertiesCount = ref(0);
 
 const testimonials = [
     {
@@ -30,6 +35,10 @@ const formattedSavings = computed(() =>
     new Intl.NumberFormat('en-US').format(displayedSavings.value),
 );
 
+const formattedPropertiesCount = computed(() =>
+    new Intl.NumberFormat('en-US').format(displayedPropertiesCount.value),
+);
+
 function openShortTermModal(): void {
     shortTermModalOpen.value = true;
 }
@@ -41,12 +50,15 @@ function closeShortTermModal(): void {
 onMounted(() => {
     const durationInMs = 2200;
     const animationStart = performance.now();
+    const targetCount = props.tivuchfreePropertiesCount;
+    const targetSavings = Math.round(props.moneySavedByCommunity);
 
     const animateCounter = (timestamp: number): void => {
         const elapsed = timestamp - animationStart;
         const progress = Math.min(elapsed / durationInMs, 1);
 
         displayedSavings.value = Math.floor(targetSavings * progress);
+        displayedPropertiesCount.value = Math.floor(targetCount * progress);
 
         if (progress < 1) {
             requestAnimationFrame(animateCounter);
@@ -54,6 +66,7 @@ onMounted(() => {
         }
 
         displayedSavings.value = targetSavings;
+        displayedPropertiesCount.value = targetCount;
     };
 
     requestAnimationFrame(animateCounter);
@@ -87,7 +100,35 @@ onMounted(() => {
                 </div>
 
                 <div
-                    class="absolute inset-0 flex items-center justify-center pt-24 sm:pt-0"
+                    class="relative z-20 mt-10 flex w-full max-w-xs flex-col gap-3 sm:hidden"
+                >
+                    <Link
+                        as="button"
+                        type="button"
+                        href="/properties?type=long_term"
+                        class="w-full rounded-lg border border-white/35 bg-primary px-5 py-3 text-center font-semibold text-white shadow-lg transition hover:bg-primary/90"
+                    >
+                        {{ t('common.longTermListings') }}
+                    </Link>
+                    <Link
+                        as="button"
+                        type="button"
+                        href="/properties?type=medium_term"
+                        class="w-full rounded-lg border border-white/35 bg-primary px-5 py-3 text-center font-semibold text-white shadow-lg transition hover:bg-primary/90"
+                    >
+                        {{ t('common.mediumTermListings') }}
+                    </Link>
+                    <button
+                        type="button"
+                        class="w-full rounded-lg border border-white/35 bg-primary px-5 py-3 text-center font-semibold text-white shadow-lg transition hover:bg-primary/90"
+                        @click="openShortTermModal"
+                    >
+                        {{ t('common.shortTermListings') }}
+                    </button>
+                </div>
+
+                <div
+                    class="absolute inset-0 hidden items-center justify-center pt-24 sm:flex sm:pt-0"
                 >
                     <div
                         class="grid w-full max-w-4xl grid-cols-1 place-items-center gap-5 sm:grid-cols-3"
@@ -213,17 +254,35 @@ onMounted(() => {
 
         <section class="bg-background py-14">
             <div class="mx-auto max-w-7xl px-6">
-                <div
-                    class="rounded-2xl border border-border bg-card p-7 text-center shadow-sm"
-                >
-                    <p
-                        class="text-sm font-semibold tracking-wider text-muted-foreground uppercase"
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div
+                        class="rounded-2xl border border-border bg-card p-7 text-center shadow-sm"
                     >
-                        {{ t('common.moneySavedByOurCommunity') }}
-                    </p>
-                    <p class="mt-3 text-3xl font-bold text-primary sm:text-5xl">
-                        ₪{{ formattedSavings }}
-                    </p>
+                        <p
+                            class="text-sm font-semibold tracking-wider text-muted-foreground uppercase"
+                        >
+                            {{ t('common.moneySavedByOurCommunity') }}
+                        </p>
+                        <p
+                            class="mt-3 text-3xl font-bold text-primary sm:text-5xl"
+                        >
+                            ₪{{ formattedSavings }}
+                        </p>
+                    </div>
+                    <div
+                        class="rounded-2xl border border-border bg-card p-7 text-center shadow-sm"
+                    >
+                        <p
+                            class="text-sm font-semibold tracking-wider text-muted-foreground uppercase"
+                        >
+                            {{ t('common.propertiesLetThroughTivuchFree') }}
+                        </p>
+                        <p
+                            class="mt-3 text-3xl font-bold text-primary sm:text-5xl"
+                        >
+                            {{ formattedPropertiesCount }}
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>

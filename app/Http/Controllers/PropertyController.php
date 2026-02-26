@@ -285,6 +285,7 @@ class PropertyController extends Controller
                 'user_id' => $request->user()->id,
                 'contact_name' => $data->contact_name,
                 'contact_phone' => $data->contact_phone,
+                'contact_phone_2' => $data->contact_phone_2,
                 'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
                 'building_number' => $data->building_number,
                 'street' => $streetInHebrew,
@@ -686,6 +687,9 @@ class PropertyController extends Controller
     {
         $this->authorize('update', $property);
 
+        $originalAdditionalInfoEn = $property->getTranslation('additional_info', 'en', false);
+        $originalAdditionalInfoHe = $property->getTranslation('additional_info', 'he', false);
+
         $resolvedStreetId = $this->resolveStreetIdForUpdate($request, $property);
 
         if ($resolvedStreetId !== null) {
@@ -727,15 +731,19 @@ class PropertyController extends Controller
                 $data->building_number !== null ? (string) $data->building_number : null,
             );
 
+            $normalizedAdditionalInfo = is_string($data->additional_info) ? trim($data->additional_info) : '';
+
             DB::transaction(function () use ($coordinates, $data, $property, $request, $streetInHebrew): void {
-                $additionalInfo = array_filter([
-                    'en' => $data->additional_info_en,
-                    'he' => $data->additional_info_he,
-                ], fn (?string $value): bool => is_string($value) && $value !== '');
+                $additionalInfo = $this->resolveAdditionalInfoForImmediateSave(
+                    $data->additional_info,
+                    $data->additional_info_en,
+                    $data->additional_info_he,
+                );
 
                 $property->update([
                     'contact_name' => $data->contact_name,
                     'contact_phone' => $data->contact_phone,
+                    'contact_phone_2' => $data->contact_phone_2,
                     'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
                     'building_number' => $data->building_number,
                     'street' => $streetInHebrew,
@@ -770,12 +778,29 @@ class PropertyController extends Controller
                 );
             });
 
+            if ($normalizedAdditionalInfo !== '') {
+                $sourceLocale = app()->getLocale() === 'he' ? 'he' : 'en';
+
+                $previousSourceText = $sourceLocale === 'he'
+                    ? (is_string($originalAdditionalInfoHe) ? trim($originalAdditionalInfoHe) : '')
+                    : (is_string($originalAdditionalInfoEn) ? trim($originalAdditionalInfoEn) : '');
+
+                if ($normalizedAdditionalInfo !== $previousSourceText) {
+                    $freshProperty = $property->fresh();
+
+                    if ($freshProperty) {
+                        TranslatePropertyAdditionalInfo::dispatch($freshProperty, $normalizedAdditionalInfo, $sourceLocale);
+                    }
+                }
+            }
+
             return redirect()->route('properties.edit', $property)->success('Property updated successfully');
         }
 
         $validated = Validator::make($request->all(), [
             'contact_name' => ['nullable', 'string', 'max:255'],
             'contact_phone' => ['required', 'string', 'max:255'],
+            'contact_phone_2' => ['nullable', 'string', 'max:255'],
             'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
             'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
             'price' => ['nullable', 'numeric', 'min:0'],
@@ -810,15 +835,21 @@ class PropertyController extends Controller
             isset($validated['building_number']) ? (string) $validated['building_number'] : null,
         );
 
+        $normalizedAdditionalInfo = is_string($validated['additional_info'] ?? null)
+            ? trim($validated['additional_info'])
+            : '';
+
         DB::transaction(function () use ($coordinates, $property, $validated): void {
-            $additionalInfo = array_filter([
-                'en' => $validated['additional_info'] ?? null,
-                'he' => $validated['additional_info'] ?? null,
-            ], fn (?string $value): bool => is_string($value) && $value !== '');
+            $additionalInfo = $this->resolveAdditionalInfoForImmediateSave(
+                $validated['additional_info'] ?? null,
+                null,
+                null,
+            );
 
             $property->update([
                 'contact_name' => $validated['contact_name'] ?? null,
                 'contact_phone' => $validated['contact_phone'],
+                'contact_phone_2' => $validated['contact_phone_2'] ?? null,
                 'neighbourhoods' => array_values(array_unique($validated['neighbourhoods'])),
                 'price' => $validated['price'] ?? null,
                 'street' => $validated['street'],
@@ -845,6 +876,22 @@ class PropertyController extends Controller
                 'has_parking_spot' => (bool) ($validated['has_parking_spot'] ?? false),
             ]);
         });
+
+        if ($normalizedAdditionalInfo !== '') {
+            $sourceLocale = app()->getLocale() === 'he' ? 'he' : 'en';
+
+            $previousSourceText = $sourceLocale === 'he'
+                ? (is_string($originalAdditionalInfoHe) ? trim($originalAdditionalInfoHe) : '')
+                : (is_string($originalAdditionalInfoEn) ? trim($originalAdditionalInfoEn) : '');
+
+            if ($normalizedAdditionalInfo !== $previousSourceText) {
+                $freshProperty = $property->fresh();
+
+                if ($freshProperty) {
+                    TranslatePropertyAdditionalInfo::dispatch($freshProperty, $normalizedAdditionalInfo, $sourceLocale);
+                }
+            }
+        }
 
         return redirect()->route('properties.edit', $property)->success('Property updated successfully');
     }

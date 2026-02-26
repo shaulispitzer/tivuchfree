@@ -7,6 +7,7 @@ id: number;
 user_id: number | null;
 contact_name: string | null;
 contact_phone: string | null;
+contact_phone_2: string | null;
 neighbourhoods: Array<any>;
 price: number | null;
 street: string;
@@ -65,6 +66,7 @@ declare namespace App.Data.Forms {
 export type PropertyFormData = {
 contact_name: string;
 contact_phone: string;
+contact_phone_2: string | null;
 email: string | null;
 price: number | null;
 neighbourhoods: Array<any>;

@@ -76,6 +76,7 @@ declare module 'vue' {
     DropdownMenuTrigger: typeof import('./../components/ui/dropdown-menu/DropdownMenuTrigger.vue')['default']
     Head: typeof import('@inertiajs/vue3')['Head']
     Heading: typeof import('./../components/Heading.vue')['default']
+    IconLayers: typeof import('~icons/la/yers')['default']
     Input: typeof import('./../components/ui/input/Input.vue')['default']
     InputError: typeof import('./../components/InputError.vue')['default']
     InputOTP: typeof import('./../components/ui/input-otp/InputOTP.vue')['default']

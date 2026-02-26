@@ -350,6 +350,36 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                 </div>
             </div>
 
+            <div
+                v-if="
+                    property.contact_name ||
+                    property.contact_phone ||
+                    property.contact_phone_2
+                "
+                class="space-y-2 rounded-md bg-muted/20 p-4"
+            >
+                <p class="text-xs text-muted-foreground">
+                    {{ t('common.contactSection') }}
+                </p>
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                    <span v-if="property.contact_name" class="font-medium">
+                        {{ property.contact_name }}
+                    </span>
+                    <span
+                        v-if="property.contact_phone"
+                        class="text-muted-foreground"
+                    >
+                        {{ property.contact_phone }}
+                    </span>
+                    <span
+                        v-if="property.contact_phone_2"
+                        class="text-muted-foreground"
+                    >
+                        {{ property.contact_phone_2 }}
+                    </span>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-3">
                 <div
                     v-for="detail in propertyDetails"
@@ -404,18 +434,20 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
 <style scoped>
 .property-show-swiper :deep(.swiper-button-next),
 .property-show-swiper :deep(.swiper-button-prev) {
-    width: 2rem;
-    height: 2rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
     border-radius: 999px;
     background: rgb(15 23 42 / 0.45);
     color: white;
     backdrop-filter: blur(6px);
 }
 
-.property-show-swiper :deep(.swiper-button-next::after),
-.property-show-swiper :deep(.swiper-button-prev::after) {
-    font-size: 0.9rem;
-    font-weight: 700;
+.property-show-swiper :deep(.swiper-button-next svg),
+.property-show-swiper :deep(.swiper-button-prev svg) {
+    width: 0.7rem;
+    height: 0.7rem;
+    filter: drop-shadow(0 0 0.5px currentColor);
 }
 
 .property-show-thumbs-swiper :deep(.swiper-slide) {

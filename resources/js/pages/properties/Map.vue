@@ -5,6 +5,7 @@ import type { PropType } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import { Button } from '@/components/ui/button';
+import { subscribe } from '@/routes';
 import { create, index, show } from '@/routes/properties';
 import IxMapAlt1 from '~icons/ix/map-alt-1';
 import PhListBold from '~icons/ph/list-bold';
@@ -134,7 +135,9 @@ function roundBedrooms(value: number): number {
     return Math.round((value + Number.EPSILON) * 2) / 2;
 }
 
-function buildQuery(value: typeof filters.value): Record<string, string | string[]> {
+function buildQuery(
+    value: typeof filters.value,
+): Record<string, string | string[]> {
     const query: Record<string, string | string[]> = {
         view: ViewMode.Map,
     };
@@ -186,14 +189,14 @@ function syncFiltersToUrl(): void {
 
 function formatMapPrice(value: number | null): string {
     if (value === null) {
-        return 'Price not listed';
+        return t('common.priceNotListed');
     }
 
     return `₪${value.toFixed(0)}`;
 }
 
 function formatMapBedrooms(value: number): string {
-    return `${roundBedrooms(value)} rooms`;
+    return `${roundBedrooms(value)} ${t('common.rooms')}`;
 }
 
 function openPropertyModal(propertyId: number): void {
@@ -290,7 +293,7 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
                     <button
                         type="button"
                         class="property-map-tooltip-close"
-                        aria-label="Close tooltip"
+                        aria-label="${t('common.closeTooltip')}"
                         onmousedown="event.preventDefault(); event.stopPropagation();"
                         ontouchstart="event.preventDefault(); event.stopPropagation();"
                         onclick="event.stopPropagation(); this.closest('.leaflet-tooltip')?.remove();"
@@ -428,17 +431,21 @@ onBeforeUnmount(() => {
                     {{ t('common.mapView') }}
                 </Button>
             </div>
+        </div>
+    </div>
 
-            <Button variant="outline" as-child>
-                <Link href="/subscribe">{{
+    <Teleport to="body">
+        <div class="fixed top-1/2 left-9 z-50 -translate-y-1/2">
+            <Button
+                as-child
+                class="max-w-[calc(100dvh-4rem)] origin-top-left -translate-y-full rotate-90 shadow-md"
+            >
+                <Link :href="subscribe().url">{{
                     t('subscription.subscribeToUpdates')
                 }}</Link>
             </Button>
-            <Button v-if="can_create" as-child>
-                <Link :href="create()">{{ t('common.addProperty') }}</Link>
-            </Button>
         </div>
-    </div>
+    </Teleport>
 
     <div class="relative z-10">
         <PropertyFilters

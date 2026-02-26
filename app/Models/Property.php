@@ -31,6 +31,7 @@ class Property extends Model implements HasMedia
         'user_id',
         'contact_name',
         'contact_phone',
+        'contact_phone_2',
         'neighbourhoods',
         'price',
         'street',

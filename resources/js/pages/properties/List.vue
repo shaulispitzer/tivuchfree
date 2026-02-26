@@ -6,6 +6,7 @@ import PaginationNav from '@/components/PaginationNav.vue';
 import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import PropertyCard from '@/components/PropertyCard.vue';
 import { Button } from '@/components/ui/button';
+import { subscribe } from '@/routes';
 import { create, index } from '@/routes/properties';
 import type { Paginator } from '@/types';
 import IxMapAlt1 from '~icons/ix/map-alt-1';
@@ -222,15 +223,21 @@ watch(activeView, () => {
                     {{ t('common.mapView') }}
                 </Button>
             </div>
-
-            <Button variant="outline" as-child>
-                <Link href="/subscribe">{{ t('subscription.subscribeToUpdates') }}</Link>
-            </Button>
-            <Button v-if="can_create" as-child>
-                <Link :href="create()">{{ t('common.addProperty') }}</Link>
-            </Button>
         </div>
     </div>
+
+    <Teleport to="body">
+        <div class="fixed top-1/2 left-9 z-50 -translate-y-1/2">
+            <Button
+                as-child
+                class="max-w-[calc(100dvh-4rem)] origin-top-left -translate-y-full rotate-90 shadow-md"
+            >
+                <Link :href="subscribe().url">{{
+                    t('subscription.subscribeToUpdates')
+                }}</Link>
+            </Button>
+        </div>
+    </Teleport>
 
     <PropertyFilters
         :filters="filters"

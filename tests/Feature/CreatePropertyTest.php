@@ -205,6 +205,118 @@ it('stores same additional info in both languages when creating and keeps it whe
     expect($property->getTranslation('additional_info', 'en'))->toBe('דירה קרובה לפארק');
 });
 
+it('updates additional info and translates asynchronously when changing it on update', function () {
+    Bus::fake();
+    config()->set('services.openai.api_key', 'test-openai-key');
+    config()->set('services.openai.translation_model', 'gpt-4o-mini');
+    app()->setLocale('en');
+
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $streetId = streetIdForNeighbourhood(Neighbourhood::Sanhedria);
+    $street = Street::query()->findOrFail($streetId);
+
+    /** @var Property $property */
+    $property = Property::factory()->create([
+        'user_id' => $user->id,
+        'street' => $street->getTranslation('name', 'he'),
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'additional_info' => [
+            'en' => 'Old description.',
+            'he' => 'Old description.',
+        ],
+    ]);
+
+    $response = actingAs($user)->put(route('properties.update', $property), [
+        'contact_name' => 'Translate Contact',
+        'contact_phone' => '0501234568',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
+        'succah_porch' => false,
+        'has_dud_shemesh' => false,
+        'has_machsan' => false,
+        'has_parking_spot' => false,
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'street' => $streetId,
+        'floor' => 2,
+        'type' => PropertyLeaseType::LongTerm->value,
+        'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
+        'bedrooms' => 2,
+        'furnished' => PropertyFurnished::FullyFurnished->value,
+        'additional_info' => 'Updated description.',
+    ]);
+
+    $response->assertRedirect(route('properties.edit', $property));
+
+    $property->refresh();
+    expect($property->getTranslation('additional_info', 'en'))->toBe('Updated description.');
+    expect($property->getTranslation('additional_info', 'he'))->toBe('Updated description.');
+
+    Bus::assertDispatched(TranslatePropertyAdditionalInfo::class, function (TranslatePropertyAdditionalInfo $job) use ($property) {
+        return $job->property->id === $property->id
+            && $job->sourceText === 'Updated description.'
+            && $job->sourceLocale === 'en';
+    });
+});
+
+it('does not translate additional info on update when text is unchanged', function () {
+    Bus::fake();
+    config()->set('services.openai.api_key', 'test-openai-key');
+    config()->set('services.openai.translation_model', 'gpt-4o-mini');
+    app()->setLocale('en');
+
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $streetId = streetIdForNeighbourhood(Neighbourhood::Sanhedria);
+    $street = Street::query()->findOrFail($streetId);
+
+    /** @var Property $property */
+    $property = Property::factory()->create([
+        'user_id' => $user->id,
+        'street' => $street->getTranslation('name', 'he'),
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'additional_info' => [
+            'en' => 'Same description.',
+            'he' => 'Same description.',
+        ],
+    ]);
+
+    $response = actingAs($user)->put(route('properties.update', $property), [
+        'contact_name' => 'Translate Contact',
+        'contact_phone' => '0501234568',
+        'access' => 'steps_only',
+        'kitchen_dining_room' => 'separate',
+        'porch_garden' => 'no',
+        'air_conditioning' => 'not_airconditioned',
+        'apartment_condition' => 'good',
+        'succah_porch' => false,
+        'has_dud_shemesh' => false,
+        'has_machsan' => false,
+        'has_parking_spot' => false,
+        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'street' => $streetId,
+        'floor' => 2,
+        'type' => PropertyLeaseType::LongTerm->value,
+        'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
+        'bedrooms' => 2,
+        'furnished' => PropertyFurnished::FullyFurnished->value,
+        'additional_info' => 'Same description.',
+    ]);
+
+    $response->assertRedirect(route('properties.edit', $property));
+
+    $property->refresh();
+    expect($property->getTranslation('additional_info', 'en'))->toBe('Same description.');
+    expect($property->getTranslation('additional_info', 'he'))->toBe('Same description.');
+
+    Bus::assertNotDispatched(TranslatePropertyAdditionalInfo::class);
+});
+
 it('still creates a property when geocoding fails', function () {
     /** @var User $user */
     $user = User::factory()->create();

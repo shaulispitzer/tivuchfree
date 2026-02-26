@@ -3,6 +3,8 @@ import InputError from '@/components/InputError.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+const { t } = useI18n();
+
 type Option = {
     value: string;
     label: string;
@@ -69,14 +71,16 @@ const toDateValue = (value?: string | null) =>
                 id="neighbourhoods"
                 name="neighbourhoods[]"
                 multiple
-                class="min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="min-h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
                 <option
                     v-for="option in props.options.neighbourhoods"
                     :key="option.value"
                     :value="option.value"
                     :selected="
-                        props.property?.neighbourhoods?.includes(option.value) ?? false
+                        props.property?.neighbourhoods?.includes(
+                            option.value,
+                        ) ?? false
                     "
                 >
                     {{ option.label }}
@@ -89,7 +93,7 @@ const toDateValue = (value?: string | null) =>
         </div>
 
         <div class="grid gap-2">
-            <Label for="price">Price</Label>
+            <Label for="price">{{ t('common.price') }}</Label>
             <Input
                 id="price"
                 name="price"
@@ -141,7 +145,7 @@ const toDateValue = (value?: string | null) =>
                 id="type"
                 name="type"
                 required
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.type ?? ''"
             >
                 <option value="" disabled>Select type</option>
@@ -213,7 +217,7 @@ const toDateValue = (value?: string | null) =>
                 id="furnished"
                 name="furnished"
                 required
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.furnished ?? ''"
             >
                 <option value="" disabled>Select furnished status</option>
@@ -245,7 +249,7 @@ const toDateValue = (value?: string | null) =>
             <select
                 id="access"
                 name="access"
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.access ?? ''"
             >
                 <option value="">Select access</option>
@@ -267,7 +271,7 @@ const toDateValue = (value?: string | null) =>
             <select
                 id="kitchen_dining_room"
                 name="kitchen_dining_room"
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.kitchen_dining_room ?? ''"
             >
                 <option value="">Select option</option>
@@ -287,7 +291,7 @@ const toDateValue = (value?: string | null) =>
             <select
                 id="porch_garden"
                 name="porch_garden"
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.porch_garden ?? ''"
             >
                 <option value="">Select option</option>
@@ -307,7 +311,7 @@ const toDateValue = (value?: string | null) =>
             <select
                 id="air_conditioning"
                 name="air_conditioning"
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.air_conditioning ?? ''"
             >
                 <option value="">Select option</option>
@@ -327,7 +331,7 @@ const toDateValue = (value?: string | null) =>
             <select
                 id="apartment_condition"
                 name="apartment_condition"
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.apartment_condition ?? ''"
             >
                 <option value="">Select option</option>
@@ -347,7 +351,7 @@ const toDateValue = (value?: string | null) =>
             <textarea
                 id="additional_info"
                 name="additional_info"
-                class="min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                class="min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 :value="props.property?.additional_info ?? ''"
             ></textarea>
             <InputError :message="props.errors.additional_info" />

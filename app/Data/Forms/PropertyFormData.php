@@ -22,6 +22,7 @@ class PropertyFormData extends Data
     public function __construct(
         public string $contact_name,
         public string $contact_phone,
+        public ?string $contact_phone_2 = null,
         public ?string $email,
         public ?float $price,
         public array $neighbourhoods,

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\HomeController;
 use App\Models\Property;
 use App\Models\PropertyStat;
 
@@ -12,7 +13,7 @@ class PropertyStatRecorder
      */
     public function recordTaken(Property $property, array $takenData = []): PropertyStat
     {
-        return PropertyStat::updateOrCreate(
+        $stat = PropertyStat::updateOrCreate(
             ['property_id' => $property->id],
             [
                 ...$this->baseAttributes($property),
@@ -21,6 +22,12 @@ class PropertyStatRecorder
                 'date_taken' => $property->taken_at ?? now(),
             ],
         );
+
+        if ($stat->how_got_taken === 'tivuchfree') {
+            HomeController::forgetTivuchfreeStatsCache();
+        }
+
+        return $stat;
     }
 
     public function recordDeleted(Property $property): ?PropertyStat
