@@ -63,7 +63,7 @@ test('welcome email contains expected content', function () {
 
     $mailable = new WelcomeEmail($user);
 
-    $mailable->assertHasSubject('Welcome to Tivuch Free!')
+    $mailable->assertHasSubject(__('mail.welcome.subject', ['app' => config('app.name')]))
         ->assertSeeInOrderInHtml([
             'Mario',
             'Browse Properties',
