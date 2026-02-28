@@ -19,7 +19,7 @@ class ContactController extends Controller
     public function store(ContactRequest $request): RedirectResponse
     {
 
-        Mail::to('shaulispitzer@gmail.com')->locale('en')->send(new ContactMail(
+        Mail::to('shaulispitzer@gmail.com')->send(new ContactMail(
             contactSubject: $request->validated('subject'),
             email: $request->validated('email'),
             isAboutDira: (bool) $request->validated('is_about_dira'),

@@ -1,14 +1,14 @@
 <x-mail::message>
-# Your listing will be marked as taken soon
+# {{ __('mail.taken_warning.title') }}
 
-Your property listing at **{{ $property->street }}{{ $property->building_number ? ' ' . $property->building_number : '' }}** will be automatically marked as **taken** in {{ $daysUntilTaken }} days.
+{!! __('mail.taken_warning.body', ['address' => $property->street . ($property->building_number ? ' ' . $property->building_number : ''), 'days' => $daysUntilTaken]) !!}
 
-If your property is still available, you can repost it from the "My Properties" page after it has been marked as taken.
+{{ __('mail.taken_warning.repost') }}
 
 <x-mail::button :url="route('my-properties.index')">
-View My Properties
+{{ __('mail.taken_warning.button') }}
 </x-mail::button>
 
-Thanks,<br>
+{{ __('mail.taken_warning.thanks') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

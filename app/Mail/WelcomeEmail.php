@@ -19,7 +19,7 @@ class WelcomeEmail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to Tivuch Free!',
+            subject: __('mail.welcome.subject', ['app' => config('app.name')]),
         );
     }
 

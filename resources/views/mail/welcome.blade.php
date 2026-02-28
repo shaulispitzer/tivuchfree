@@ -1,26 +1,26 @@
 <x-mail::message>
-# Welcome to {{ config('app.name') }}, {{ $userName }}!
+# {{ __('mail.welcome.title', ['app' => config('app.name'), 'name' => $userName]) }}
 
-We're thrilled to have you on board. **{{ config('app.name') }}** is your go-to place for finding and listing properties — completely free.
+{{ __('mail.welcome.intro', ['app' => config('app.name')]) }}
 
-Here's what you can do right away:
+{{ __('mail.welcome.what_you_can_do') }}
 
-- **Browse listings** — explore the latest properties available in your area.
-- **Post your own property** — list a property in just a few minutes.
-- **Stay updated** — get notified when new listings match your interests.
+- {!! __('mail.welcome.browse') !!}
+- {!! __('mail.welcome.post') !!}
+- {!! __('mail.welcome.stay_updated') !!}
 
 <x-mail::button :url="$browseUrl" color="primary">
-Browse Properties
+{{ __('mail.welcome.browse_button') }}
 </x-mail::button>
 
-Ready to post your first listing?
+{{ __('mail.welcome.ready_to_post') }}
 
 <x-mail::button :url="$createUrl" color="success">
-Create a Listing
+{{ __('mail.welcome.create_button') }}
 </x-mail::button>
 
-If you have any questions, just reply to this email — we're happy to help.
+{{ __('mail.welcome.questions') }}
 
-Welcome aboard,<br>
+{{ __('mail.welcome.signoff') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

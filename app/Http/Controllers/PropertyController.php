@@ -390,7 +390,7 @@ class PropertyController extends Controller
             return $property;
         });
 
-        Mail::to($property->user->email)->locale('en')->send(new YourPropertyWasListed($property->user));
+        Mail::to($property->user->email)->send(new YourPropertyWasListed($property->user));
 
         NotifyPropertySubscribers::dispatchSync($property);
 
@@ -543,7 +543,7 @@ class PropertyController extends Controller
         $property->loadMissing('user');
         if ($property->user?->email) {
             $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
-            Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+            Mail::to($property->user->email)->queue(new PropertyListingStatusChange(
                 $property->user->name,
                 $address,
                 'marked_as_taken',
@@ -581,7 +581,7 @@ class PropertyController extends Controller
         $property->loadMissing('user');
         if ($property->user?->email) {
             $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
-            Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+            Mail::to($property->user->email)->queue(new PropertyListingStatusChange(
                 $property->user->name,
                 $address,
                 'deleted',

@@ -93,6 +93,16 @@ function formatBoolean(value: boolean): string {
     return value ? t('common.yes') : t('common.no');
 }
 
+function formatEnum(
+    value: string | null | undefined,
+    namespace: 'propertyAccess' | 'propertyAirConditioning' | 'propertyApartmentCondition' | 'propertyFurnished' | 'propertyKitchenDiningRoom' | 'propertyPorchGarden',
+): string {
+    if (value == null || value === '') {
+        return t('common.notSpecified');
+    }
+    return t(`${namespace}.${value}`);
+}
+
 function isMissing(value: unknown): boolean {
     if (value === null || value === undefined) {
         return true;
@@ -135,34 +145,32 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
         },
         {
             label: t('common.furnished'),
-            value: props.property.furnished
-                ? t('propertyFurnished.' + props.property.furnished)
-                : t('common.notSpecified'),
+            value: formatEnum(props.property.furnished, 'propertyFurnished'),
             icon: Armchair,
         },
         {
             label: t('common.access'),
-            value: t(props.property.access ?? 'not specified'),
+            value: formatEnum(props.property.access, 'propertyAccess'),
             icon: KeyRound,
         },
         {
             label: t('common.condition'),
-            value: t(props.property.apartment_condition ?? 'not specified'),
+            value: formatEnum(props.property.apartment_condition, 'propertyApartmentCondition'),
             icon: Home,
         },
         {
             label: t('common.kitchenDining'),
-            value: t(props.property.kitchen_dining_room ?? 'not specified'),
+            value: formatEnum(props.property.kitchen_dining_room, 'propertyKitchenDiningRoom'),
             icon: ChefHat,
         },
         {
             label: t('common.porchGarden'),
-            value: t(props.property.porch_garden ?? 'not specified'),
+            value: formatEnum(props.property.porch_garden, 'propertyPorchGarden'),
             icon: Trees,
         },
         {
             label: t('common.airConditioning'),
-            value: t(props.property.air_conditioning ?? 'not specified'),
+            value: formatEnum(props.property.air_conditioning, 'propertyAirConditioning'),
             icon: AirVent,
         },
         {

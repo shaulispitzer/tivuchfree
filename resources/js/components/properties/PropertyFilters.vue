@@ -3,21 +3,7 @@ import { parseDate } from '@internationalized/date';
 import Slider from '@vueform/slider';
 import '@vueform/slider/themes/default.css';
 import type { DateValue } from 'reka-ui';
-import { useI18n } from 'vue-i18n';
 import DatePicker from '@/components/DatePicker.vue';
-import { Button } from '@/components/ui/button';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 
 import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
@@ -318,6 +304,24 @@ watch(
     { deep: true },
 );
 
+const defaultFilterState = (): PropertyFilterState => ({
+    neighbourhoods: [],
+    hide_taken_properties: false,
+    bedrooms_range: [1, 10],
+    furnished: '',
+    type: '',
+    available_from: '',
+    available_to: '',
+    sort: SortValue.Newest,
+});
+
+function clearFilters(): void {
+    if (props.subscription_mode) return;
+    const next = defaultFilterState();
+    localFilters.value = cloneFilters(next);
+    bedroomsRangeDraft.value = [...next.bedrooms_range];
+}
+
 defineExpose({
     getFilters: (): PropertyFilterState =>
         props.subscription_mode
@@ -326,6 +330,7 @@ defineExpose({
                   neighbourhoods: subscriptionNeighbourhoods.value,
               }
             : cloneFilters(localFilters.value),
+    clearFilters,
 });
 
 const triggerClass = computed(() =>
@@ -549,6 +554,20 @@ const gridClass = computed(() =>
                     </SelectItem>
                 </SelectContent>
             </Select>
+        </div>
+        <div
+            v-if="!subscription_mode"
+            class="mt-3 flex flex-wrap items-center gap-3"
+        >
+            <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="text-muted-foreground hover:text-foreground"
+                @click="clearFilters"
+            >
+                {{ t('propertyFilters.clearFilters') }}
+            </Button>
         </div>
         <div v-if="show_hide_taken" class="my-3">
             <label

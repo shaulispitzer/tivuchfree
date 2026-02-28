@@ -18,7 +18,7 @@ class PropertyTakenWarning extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your property listing will be marked as taken soon',
+            subject: __('mail.taken_warning.subject'),
         );
     }
 

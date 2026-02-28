@@ -61,7 +61,7 @@ class SocialiteController extends Controller
 
         event(new Registered($authUser));
 
-        Mail::to($authUser)->locale('en')->send(new WelcomeEmail($authUser));
+        Mail::to($authUser)->send(new WelcomeEmail($authUser));
 
         return $authUser;
     }

@@ -1,22 +1,26 @@
 <x-mail::message>
 # @if($action === 'deleted')
-Your listing was deleted
+{{ __('mail.listing_status_change.title_deleted') }}
 @else
-Your listing was marked as taken
+{{ __('mail.listing_status_change.title_marked_as_taken') }}
 @endif
 
-Hi {{ $recipientName }},
+{{ __('mail.listing_status_change.hi', ['name' => $recipientName]) }}
 
-Your property listing at **{{ $propertyAddress }}** was {{ $action === 'deleted' ? 'deleted' : 'marked as taken' }} {{ $method === 'automatically' ? 'automatically by our system (e.g. after being taken for a certain period).' : 'manually.' }}
+@if($action === 'deleted')
+{!! $method === 'automatically' ? __('mail.listing_status_change.deleted_automatically', ['address' => $propertyAddress]) : __('mail.listing_status_change.deleted_manually', ['address' => $propertyAddress]) !!}
+@else
+{!! $method === 'automatically' ? __('mail.listing_status_change.taken_automatically', ['address' => $propertyAddress]) : __('mail.listing_status_change.taken_manually', ['address' => $propertyAddress]) !!}
+@endif
 
 @if($action === 'marked_as_taken')
-If your property is still available, you can repost it from the "My Properties" page.
+{{ __('mail.listing_status_change.repost') }}
 @endif
 
 <x-mail::button :url="route('my-properties.index')">
-View My Properties
+{{ __('mail.listing_status_change.button') }}
 </x-mail::button>
 
-Thanks,<br>
+{{ __('mail.listing_status_change.thanks') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

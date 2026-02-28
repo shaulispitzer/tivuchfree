@@ -26,8 +26,8 @@ class PropertyListingStatusChange extends Mailable
     public function envelope(): Envelope
     {
         $subject = $this->action === 'deleted'
-            ? 'Your property listing was deleted'
-            : 'Your property listing was marked as taken';
+            ? __('mail.listing_status_change.subject_deleted')
+            : __('mail.listing_status_change.subject_marked_as_taken');
 
         return new Envelope(
             subject: $subject,

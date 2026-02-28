@@ -108,9 +108,7 @@ onBeforeUnmount(() => {
                 class="relative mx-auto flex h-16 items-center px-4 md:max-w-7xl xl:px-0"
             >
                 <!-- Mobile: menu + logo side by side (menu left in en, right in he) -->
-                <div
-                    class="flex items-center gap-2 md:contents"
-                >
+                <div class="flex items-center gap-2 md:contents">
                     <div class="md:hidden">
                         <DropdownMenu>
                             <DropdownMenuTrigger :as-child="true">
@@ -123,67 +121,71 @@ onBeforeUnmount(() => {
                                     <Menu class="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="start"
-                            class="w-56"
-                            side="bottom"
-                        >
-                            <DropdownMenuGroup>
-                                <DropdownMenuItem
-                                    @select="handleNavClick('home')"
-                                >
-                                    <Home class="me-2 h-4 w-4" />
-                                    {{ t('common.home') }}
-                                </DropdownMenuItem>
-                                <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger>
-                                        <Building2 class="me-2 h-4 w-4" />
-                                        {{ t('common.listings') }}
-                                    </DropdownMenuSubTrigger>
-                                    <DropdownMenuSubContent class="w-52">
-                                        <DropdownMenuItem
-                                            @select="
-                                                handleNavClick(
-                                                    'listings-long-term',
-                                                )
-                                            "
-                                        >
-                                            {{ t('common.longTermRental') }}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            @select="
-                                                handleNavClick(
-                                                    'listings-medium-term',
-                                                )
-                                            "
-                                        >
-                                            {{ t('common.mediumTermRental') }}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            @select="
-                                                handleNavClick(
-                                                    'listings-short-term',
-                                                )
-                                            "
-                                        >
-                                            {{ t('common.shortTermRental') }}
-                                        </DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuSub>
-                                <DropdownMenuItem
-                                    @select="handleNavClick('about-us')"
-                                >
-                                    <Info class="me-2 h-4 w-4" />
-                                    {{ t('common.aboutUs') }}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    @select="handleNavClick('contact-us')"
-                                >
-                                    <Mail class="me-2 h-4 w-4" />
-                                    {{ t('common.contactUs') }}
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                        </DropdownMenuContent>
+                            <DropdownMenuContent
+                                align="start"
+                                class="w-56"
+                                side="bottom"
+                            >
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                        @select="handleNavClick('home')"
+                                    >
+                                        <Home class="me-2 h-4 w-4" />
+                                        {{ t('common.home') }}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <Building2 class="me-2 h-4 w-4" />
+                                            {{ t('common.listings') }}
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent class="w-52">
+                                            <DropdownMenuItem
+                                                @select="
+                                                    handleNavClick(
+                                                        'listings-long-term',
+                                                    )
+                                                "
+                                            >
+                                                {{ t('common.longTermRental') }}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                @select="
+                                                    handleNavClick(
+                                                        'listings-medium-term',
+                                                    )
+                                                "
+                                            >
+                                                {{
+                                                    t('common.mediumTermRental')
+                                                }}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                @select="
+                                                    handleNavClick(
+                                                        'listings-short-term',
+                                                    )
+                                                "
+                                            >
+                                                {{
+                                                    t('common.shortTermRental')
+                                                }}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
+                                    <DropdownMenuItem
+                                        @select="handleNavClick('about-us')"
+                                    >
+                                        <Info class="me-2 h-4 w-4" />
+                                        {{ t('common.aboutUs') }}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        @select="handleNavClick('contact-us')"
+                                    >
+                                        <Mail class="me-2 h-4 w-4" />
+                                        {{ t('common.contactUs') }}
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                     <Link

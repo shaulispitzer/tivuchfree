@@ -122,6 +122,7 @@ export default {
             contactName: 'Contact Name',
             contactPhone: 'Contact Phone',
             contactPhone2: 'Second contact phone',
+            invalidPhone: 'Must be a valid phone number.',
             neighbourhoods: 'Neighbourhoods',
             selectOneToThreeNeighbourhoods: 'Select 1 to 3 neighbourhoods',
             street: 'Street',
@@ -239,6 +240,7 @@ export default {
             results: 'results',
             to: 'to',
             months: 'months',
+            posted: 'Posted',
         },
         contact: {
             subject: 'Subject',
@@ -390,6 +392,7 @@ export default {
             contactName: 'שם איש קשר',
             contactPhone: 'טלפון איש קשר',
             contactPhone2: 'טלפון נוסף',
+            invalidPhone: 'חייב להיות מספר טלפון תקין.',
             neighbourhoods: 'שכונות',
             selectOneToThreeNeighbourhoods: 'בחר 1 עד 3 שכונות',
             street: 'רחוב',
@@ -470,8 +473,7 @@ export default {
             shortTermListings: 'רשימות טווח קצר',
             shortTermMonths: 'פחות מחודש',
             moneySavedByOurCommunity: 'כספים שחסכנו על ידי הקהילה שלנו',
-            propertiesLetThroughTivuchFree:
-                'נכסים שעברו דרך Tivuch Free',
+            propertiesLetThroughTivuchFree: 'נכסים שעברו דרך Tivuch Free',
             testimonials: 'משובים',
             leaveAReview: 'צור משוב',
             shortTermProperties: 'רשימות טווח קצר',
@@ -503,6 +505,7 @@ export default {
             results: 'תוצאות',
             to: 'עד',
             months: 'חודשים',
+            posted: 'פרסם ',
         },
         contact: {
             subject: 'נושא',

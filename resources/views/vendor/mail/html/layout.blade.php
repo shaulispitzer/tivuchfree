@@ -22,6 +22,14 @@ width: 100% !important;
 width: 100% !important;
 }
 }
+
+[dir="rtl"] .content-cell ul,
+[dir="rtl"] .content-cell ol {
+padding-right: 0;
+padding-left: 0;
+text-align: right;
+list-style-position: inside;
+}
 </style>
 {!! $head ?? '' !!}
 </head>

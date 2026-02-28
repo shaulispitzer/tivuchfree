@@ -23,7 +23,7 @@ class YourPropertyWasListed extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Property Was Listed',
+            subject: __('mail.successfully_listed.subject'),
         );
     }
 

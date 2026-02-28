@@ -40,7 +40,7 @@ class ProcessPropertyLifecycle extends Command
             foreach ($properties as $property) {
                 if ($property->user?->email) {
                     $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
-                    Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+                    Mail::to($property->user->email)->queue(new PropertyListingStatusChange(
                         $property->user->name,
                         $address,
                         'deleted',
@@ -78,7 +78,7 @@ class ProcessPropertyLifecycle extends Command
 
             if ($property->user?->email) {
                 $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
-                Mail::to($property->user->email)->locale('en')->queue(new PropertyListingStatusChange(
+                Mail::to($property->user->email)->queue(new PropertyListingStatusChange(
                     $property->user->name,
                     $address,
                     'marked_as_taken',
@@ -114,7 +114,7 @@ class ProcessPropertyLifecycle extends Command
                 continue;
             }
 
-            Mail::to($property->user->email)->locale('en')->queue(new PropertyTakenWarning($property));
+            Mail::to($property->user->email)->queue(new PropertyTakenWarning($property));
 
             $property->update([
                 'taken_warning_sent_at' => now(),

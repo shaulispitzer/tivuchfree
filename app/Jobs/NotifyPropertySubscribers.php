@@ -29,7 +29,7 @@ class NotifyPropertySubscribers implements ShouldQueue
                 sleep($throttleSeconds);
             }
 
-            Mail::to($subscription->email)->locale('en')->send(new PropertySubscriptionNotification(
+            Mail::to($subscription->email)->send(new PropertySubscriptionNotification(
                 property: $this->property,
                 subscription: $subscription,
                 propertyUrl: route('properties.show', $this->property),

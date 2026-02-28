@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'welcome' => [
+        'subject' => 'Welcome to :app!',
+        'title' => 'Welcome to :app, :name!',
+        'intro' => "We're thrilled to have you on board. **:app** is your go-to place for finding and listing properties — completely free.",
+        'what_you_can_do' => "Here's what you can do right away:",
+        'browse' => '**Browse listings** — explore the latest properties available in your area.',
+        'post' => '**Post your own property** — list a property in just a few minutes.',
+        'stay_updated' => '**Stay updated** — get notified when new listings match your interests.',
+        'browse_button' => 'Browse Properties',
+        'ready_to_post' => 'Ready to post your first listing?',
+        'create_button' => 'Create a Listing',
+        'questions' => 'If you have any questions, just reply to this email — we\'re happy to help.',
+        'signoff' => 'Welcome aboard,',
+    ],
+    'taken_warning' => [
+        'subject' => 'Your listing will be marked as taken soon',
+        'title' => 'Your listing will be marked as taken soon',
+        'body' => 'Your property listing at **:address** will be automatically marked as **taken** in :days days.',
+        'repost' => 'If your property is still available, you can repost it from the "My Properties" page after it has been marked as taken.',
+        'button' => 'View My Properties',
+        'thanks' => 'Thanks,',
+    ],
+    'listing_status_change' => [
+        'subject_deleted' => 'Your listing was deleted',
+        'subject_marked_as_taken' => 'Your listing was marked as taken',
+        'title_deleted' => 'Your listing was deleted',
+        'title_marked_as_taken' => 'Your listing was marked as taken',
+        'hi' => 'Hi :name,',
+        'deleted_automatically' => 'Your property listing at **:address** was deleted automatically by our system (e.g. after being taken for a certain period).',
+        'deleted_manually' => 'Your property listing at **:address** was deleted manually.',
+        'taken_automatically' => 'Your property listing at **:address** was marked as taken automatically by our system (e.g. after being taken for a certain period).',
+        'taken_manually' => 'Your property listing at **:address** was marked as taken manually.',
+        'repost' => 'If your property is still available, you can repost it from the "My Properties" page.',
+        'button' => 'View My Properties',
+        'thanks' => 'Thanks,',
+    ],
+    'successfully_listed' => [
+        'subject' => 'Your Property Was Listed',
+        'hi' => 'Hi, :name!',
+        'body' => 'Your property was listed successfully.',
+        'button' => 'View My Properties',
+        'thanks' => 'Thanks,',
+    ],
+];

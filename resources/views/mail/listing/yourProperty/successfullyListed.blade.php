@@ -1,12 +1,12 @@
 <x-mail::message>
-Hi, {{ $user->name }}!
+{{ __('mail.successfully_listed.hi', ['name' => $user->name]) }}
 
-Your property was listed successfully.
+{{ __('mail.successfully_listed.body') }}
 <x-mail::button :url="route('my-properties.index')">
-View My Properties
+{{ __('mail.successfully_listed.button') }}
 </x-mail::button>
 
-Thanks,<br>
+{{ __('mail.successfully_listed.thanks') }}<br>
 {{ config('app.name') }}
 
 </x-mail::message>

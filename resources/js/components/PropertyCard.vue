@@ -7,17 +7,17 @@ import { useI18n } from 'vue-i18n';
 
 import { show } from '@/routes/properties';
 import fallbackPropertyImage from '../../assets/DeafultPropertyImage.webp';
+import { formatDistanceToNow, format } from 'date-fns';
+import { he, enGB } from 'date-fns/locale';
 import takenStampImage from '../../assets/taken.webp';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import MaterialSymbolsStairs2Rounded from '~icons/material-symbols/stairs-2-rounded';
 import IconBed from '~icons/mdi/bed';
-import IconCalendarRange from '~icons/mdi/calendar-range';
 import IconCurrencyUsd from '~icons/mdi/currency-usd';
-import IconHome from '~icons/mdi/home-outline';
-import IconMapMarker from '~icons/mdi/map-marker-outline';
 import IconRulerSquare from '~icons/mdi/ruler-square';
+import SiEyeDuotone from '~icons/si/eye-duotone';
 const { t } = useI18n();
 const props = defineProps({
     property: {
@@ -25,7 +25,17 @@ const props = defineProps({
         required: true,
     },
 });
-
+const formattedDate = computed(() =>
+    formatDistanceToNow(new Date(props.property.created_at), {
+        addSuffix: true,
+        locale: dateLocale() === 'he' ? he : enGB,
+    }),
+);
+const formattedDateString = computed(() =>
+    format(new Date(props.property.created_at), 'do  MMM yyyy', {
+        locale: dateLocale() === 'he' ? he : enGB,
+    }),
+);
 const imageUrls = computed(() => {
     const urls = [
         props.property.main_image_url,
@@ -175,19 +185,35 @@ const neighbourhoodLabel = computed(() => {
                 class="space-y-4 p-4"
                 :class="property.taken ? 'opacity-80 grayscale' : ''"
             >
+                <div class="mb-1 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <SiEyeDuotone class="h-4 w-4 text-primary" />
+                        <span class="text-xs text-muted-foreground">
+                            {{ property.views }}</span
+                        >
+                    </div>
+                    <span
+                        class="font-sans text-xs text-muted-foreground"
+                        dir="ltr"
+                    >
+                        #
+                        {{
+                            property.type === 'long_term'
+                                ? '1'
+                                : '6' + property.id
+                        }}
+                    </span>
+                </div>
                 <div class="flex items-start justify-between gap-4">
                     <div class="space-y-1">
                         <div
                             class="flex items-center gap-2 text-base font-semibold"
                         >
-                            <IconHome class="h-4 w-4 text-primary" />
-
                             <span>{{ addressLine }}</span>
                         </div>
                         <div
                             class="flex items-center gap-2 text-xs text-muted-foreground"
                         >
-                            <IconMapMarker class="h-4 w-4" />
                             <span>{{ neighbourhoodLabel }}</span>
                         </div>
                     </div>
@@ -200,7 +226,6 @@ const neighbourhoodLabel = computed(() => {
                     v-if="property.type === 'medium_term'"
                     class="flex items-center gap-2 text-xs text-muted-foreground"
                 >
-                    <IconCalendarRange class="h-4 w-4" />
                     {{ formatDate(property.available_from) }} -
                     {{ formatDate(property.available_to) }}
                 </div>
@@ -209,7 +234,6 @@ const neighbourhoodLabel = computed(() => {
                     v-else
                     class="flex items-center gap-2 text-xs text-muted-foreground"
                 >
-                    <IconCalendarRange class="h-4 w-4" />
                     {{ t('common.availableFrom') }}:
                     <span class="font-medium">{{
                         formatDate(property.available_from)
@@ -257,6 +281,25 @@ const neighbourhoodLabel = computed(() => {
                         }}</span>
                     </div>
                 </div>
+
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <span class="cursor-help"
+                                ><span class="text-xs font-bold"
+                                    >{{ t('common.posted') }}: </span
+                                ><span class="text-xs text-muted-foreground">{{
+                                    formattedDate
+                                }}</span></span
+                            >
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <span class="font-medium">{{
+                                formattedDateString
+                            }}</span>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </div>
         </article>
     </Link>

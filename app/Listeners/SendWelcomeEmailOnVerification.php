@@ -13,6 +13,6 @@ class SendWelcomeEmailOnVerification
      */
     public function handle(Verified $event): void
     {
-        Mail::to($event->user)->locale('en')->send(new WelcomeEmail($event->user));
+        Mail::to($event->user)->send(new WelcomeEmail($event->user));
     }
 }

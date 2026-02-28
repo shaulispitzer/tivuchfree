@@ -497,11 +497,14 @@ function submit(): void {
                 <div class="grid gap-2">
                     <FormKit
                         v-model="form.contact_phone"
-                        type="text"
+                        type="tel"
                         name="contact_phone"
                         :label="t('common.contactPhone')"
-                        validation="required"
+                        validation="required|phone_uk_us_il"
                         label-class="required-asterisk"
+                        :validation-messages="{
+                            phone_uk_us_il: t('common.invalidPhone'),
+                        }"
                     />
                     <div
                         v-if="form.errors.contact_phone"
@@ -514,9 +517,13 @@ function submit(): void {
                 <div class="grid gap-2">
                     <FormKit
                         v-model="contactPhone2Input"
-                        type="text"
+                        type="tel"
                         name="contact_phone_2"
                         :label="t('common.contactPhone2')"
+                        validation="phone_uk_us_il"
+                        :validation-messages="{
+                            phone_uk_us: t('common.invalidPhone'),
+                        }"
                     />
                     <div
                         v-if="form.errors.contact_phone_2"
