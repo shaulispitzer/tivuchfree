@@ -197,11 +197,8 @@ const neighbourhoodLabel = computed(() => {
                         dir="ltr"
                     >
                         #
-                        {{
-                            property.type === 'long_term'
-                                ? '1'
-                                : '6' + property.id
-                        }}
+                        {{ property.type === 'long_term' ? '1' : '6'
+                        }}{{ property.id }}
                     </span>
                 </div>
                 <div class="flex items-start justify-between gap-4">
