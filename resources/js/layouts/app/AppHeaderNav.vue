@@ -26,7 +26,7 @@ const props = defineProps<{
     onNavClick: (label: string) => void;
 }>();
 
-const navItems: NavItem[] = [
+const navItems = computed<NavItem[]>(() => [
     { type: 'link', action: 'home', label: t('common.home') },
     {
         type: 'dropdown',
@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
     },
     { type: 'link', action: 'about-us', label: t('common.aboutUs') },
     { type: 'link', action: 'contact-us', label: t('common.contactUs') },
-];
+]);
 </script>
 
 <template>
