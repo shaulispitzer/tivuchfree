@@ -33,7 +33,7 @@ list-style-position: inside;
 </style>
 {!! $head ?? '' !!}
 </head>
-<body>
+<body dir="{{ app()->getLocale() === 'he' ? 'rtl' : 'ltr' }}">
 
 <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
 <tr>
@@ -47,7 +47,7 @@ list-style-position: inside;
 <table class="inner-body" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
 <!-- Body content -->
 <tr>
-<td class="content-cell">
+<td class="content-cell" dir="{{ app()->getLocale() === 'he' ? 'rtl' : 'ltr' }}">
 {!! Illuminate\Mail\Markdown::parse($slot) !!}
 
 {!! $subcopy ?? '' !!}

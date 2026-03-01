@@ -69,7 +69,7 @@ class PropertySubscriptionController extends Controller
                 'expires_at' => now()->addDays(30),
             ]);
 
-            Mail::to($subscription->email)->send(new PropertySubscriptionConfirmation(
+            Mail::to($subscription->email)->locale('en')->send(new PropertySubscriptionConfirmation(
                 subscription: $subscription,
                 unsubscribeUrl: route('subscriptions.unsubscribe', $subscription->token),
                 updateFiltersUrl: route('subscriptions.update-filters', $subscription->token),
@@ -130,7 +130,7 @@ class PropertySubscriptionController extends Controller
 
         $pending->delete();
 
-        Mail::to($subscription->email)->send(new PropertySubscriptionConfirmation(
+        Mail::to($subscription->email)->locale('en')->send(new PropertySubscriptionConfirmation(
             subscription: $subscription,
             unsubscribeUrl: route('subscriptions.unsubscribe', $subscription->token),
             updateFiltersUrl: route('subscriptions.update-filters', $subscription->token),

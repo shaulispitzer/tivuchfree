@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
-import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import type { PropertyFilterState } from '@/components/properties/PropertyFilters.vue';
+import SubscriptionSettings from '@/components/properties/SubscriptionSettings.vue';
 import { index } from '@/routes/properties';
 import { saveFilters } from '@/routes/subscriptions';
 
@@ -33,36 +33,22 @@ const props = defineProps({
 const { t } = useI18n();
 
 const filters = ref<PropertyFilterState>({ ...props.subscription.filters });
-const subscriptionNeighbourhoods = ref<string[]>(
-    filters.value.neighbourhoods ?? [],
-);
-const propertyFiltersRef = ref<InstanceType<typeof PropertyFilters> | null>(
+const subscriptionSettingsRef = ref<InstanceType<typeof SubscriptionSettings> | null>(
     null,
 );
 const processing = ref(false);
 
 function updateFilters(value: PropertyFilterState): void {
     filters.value = { ...value, neighbourhoods: [...(value.neighbourhoods ?? [])] };
-    subscriptionNeighbourhoods.value = value.neighbourhoods ?? [];
-}
-
-function updateSubscriptionNeighbourhoods(value: string[]): void {
-    subscriptionNeighbourhoods.value = value;
 }
 
 function submit(): void {
     processing.value = true;
-    const currentFilters =
-        propertyFiltersRef.value?.getFilters() ?? filters.value;
-    const filtersToSubmit = {
-        ...currentFilters,
-        neighbourhoods: subscriptionNeighbourhoods.value,
-    };
+    const filtersToSubmit =
+        subscriptionSettingsRef.value?.getFilters() ?? filters.value;
     router.post(
         saveFilters.url(props.subscription.token),
-        {
-            filters: filtersToSubmit,
-        },
+        { filters: filtersToSubmit },
         {
             preserveScroll: true,
             onFinish: () => (processing.value = false),
@@ -84,18 +70,13 @@ function submit(): void {
             {{ t('common.email') }}: <span class="font-medium text-foreground">{{ subscription.email }}</span>
         </p>
         <form @submit.prevent="submit" class="space-y-6">
-            <PropertyFilters
-                ref="propertyFiltersRef"
+            <SubscriptionSettings
+                ref="subscriptionSettingsRef"
                 :filters="filters"
-                :subscription_neighbourhoods="subscriptionNeighbourhoods"
                 :neighbourhood_options="neighbourhood_options"
                 :furnished_options="furnished_options"
                 :type_options="type_options"
-                :show_sort="false"
-                :show_hide_taken="false"
-                :subscription_mode="true"
                 @update:filters="updateFilters"
-                @update:subscription_neighbourhoods="updateSubscriptionNeighbourhoods"
             />
             <div class="flex gap-3">
                 <Button type="button" variant="outline" as-child>

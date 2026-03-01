@@ -4,8 +4,8 @@ import {
     store,
     verifyOtp,
 } from '@/actions/App/Http/Controllers/PropertySubscriptionController';
-import PropertyFilters from '@/components/properties/PropertyFilters.vue';
 import type { PropertyFilterState } from '@/components/properties/PropertyFilters.vue';
+import SubscriptionSettings from '@/components/properties/SubscriptionSettings.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,12 +50,9 @@ const props = defineProps({
 const { t } = useI18n();
 
 const filters = ref<PropertyFilterState>({ ...defaultFilters });
-const subscriptionNeighbourhoods = ref<string[]>(
-    filters.value.neighbourhoods ?? [],
-);
-const propertyFiltersRef = ref<InstanceType<typeof PropertyFilters> | null>(
-    null,
-);
+const subscriptionSettingsRef = ref<InstanceType<
+    typeof SubscriptionSettings
+> | null>(null);
 const email = ref(props.user?.email ?? '');
 
 const form = useForm<{
@@ -86,21 +83,16 @@ watch(
 );
 
 function updateFilters(value: PropertyFilterState): void {
-    filters.value = { ...value, neighbourhoods: [...(value.neighbourhoods ?? [])] };
-    subscriptionNeighbourhoods.value = value.neighbourhoods ?? [];
-}
-
-function updateSubscriptionNeighbourhoods(value: string[]): void {
-    subscriptionNeighbourhoods.value = value;
+    filters.value = {
+        ...value,
+        neighbourhoods: [...(value.neighbourhoods ?? [])],
+    };
 }
 
 function submitSubscribe(): void {
     const currentFilters =
-        propertyFiltersRef.value?.getFilters() ?? filters.value;
-    form.filters = {
-        ...currentFilters,
-        neighbourhoods: subscriptionNeighbourhoods.value,
-    };
+        subscriptionSettingsRef.value?.getFilters() ?? filters.value;
+    form.filters = { ...currentFilters };
     form.email = props.user?.email ?? email.value;
     subscribeProcessing.value = true;
     form.post(store.url(), {
@@ -184,18 +176,13 @@ function submitOtp(): void {
                 {{ t('subscription.chooseFilters') }}
             </p>
             <form @submit.prevent="submitSubscribe" class="space-y-6">
-                <PropertyFilters
-                    ref="propertyFiltersRef"
+                <SubscriptionSettings
+                    ref="subscriptionSettingsRef"
                     :filters="filters"
-                    :subscription_neighbourhoods="subscriptionNeighbourhoods"
                     :neighbourhood_options="neighbourhood_options"
                     :furnished_options="furnished_options"
                     :type_options="type_options"
-                    :show_sort="false"
-                    :show_hide_taken="false"
-                    :subscription_mode="true"
                     @update:filters="updateFilters"
-                    @update:subscription_neighbourhoods="updateSubscriptionNeighbourhoods"
                 />
 
                 <div v-if="!user" class="space-y-2">

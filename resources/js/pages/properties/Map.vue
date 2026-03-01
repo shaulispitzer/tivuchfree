@@ -4,8 +4,8 @@ import type { DivIcon, LayerGroup, Map as LeafletMap } from 'leaflet';
 import type { PropType } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import PropertyFilters from '@/components/properties/PropertyFilters.vue';
+import SubscriptionSubscribeButton from '@/components/SubscriptionSubscribeButton.vue';
 import { Button } from '@/components/ui/button';
-import { subscribe } from '@/routes';
 import { create, index, show } from '@/routes/properties';
 import IxMapAlt1 from '~icons/ix/map-alt-1';
 import PhListBold from '~icons/ph/list-bold';
@@ -434,18 +434,7 @@ onBeforeUnmount(() => {
         </div>
     </div>
 
-    <Teleport to="body">
-        <div class="fixed top-1/2 left-9 z-50 -translate-y-1/2">
-            <Button
-                as-child
-                class="max-w-[calc(100dvh-4rem)] origin-top-left -translate-y-full rotate-90 shadow-md"
-            >
-                <Link :href="subscribe().url">{{
-                    t('subscription.subscribeToUpdates')
-                }}</Link>
-            </Button>
-        </div>
-    </Teleport>
+    <SubscriptionSubscribeButton />
 
     <div class="relative z-10">
         <PropertyFilters

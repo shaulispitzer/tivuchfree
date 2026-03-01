@@ -4,49 +4,12 @@ import Slider from '@vueform/slider';
 import '@vueform/slider/themes/default.css';
 import type { DateValue } from 'reka-ui';
 import DatePicker from '@/components/DatePicker.vue';
-
+import type { PropertyFilterState } from '@/components/properties/PropertyFilters.vue';
 import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
-type Option = {
-    value: string;
-    label: string;
-};
+type Option = { value: string; label: string };
 
-export type PropertyFilterState = {
-    neighbourhoods: string[];
-    hide_taken_properties: boolean;
-    bedrooms_range: [number, number];
-    furnished: string;
-    type: string;
-    available_from: string;
-    available_to: string;
-    sort: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
-};
-const { t } = useI18n();
-const LeaseType = {
-    MediumTerm: 'medium_term',
-} as const;
-
-const SortValue = {
-    PriceAsc: 'price_asc',
-    PriceDesc: 'price_desc',
-    Newest: 'newest',
-    Oldest: 'oldest',
-} as const;
-
-const sortOptions = computed<Option[]>(() => [
-    {
-        value: SortValue.PriceAsc,
-        label: t('propertyFilters.priceLowestToHighest'),
-    },
-    {
-        value: SortValue.PriceDesc,
-        label: t('propertyFilters.priceHighestToLowest'),
-    },
-    { value: SortValue.Newest, label: t('propertyFilters.latestToOldest') },
-    { value: SortValue.Oldest, label: t('propertyFilters.oldestToLatest') },
-]);
-
+const LeaseType = { MediumTerm: 'medium_term' } as const;
 const ALL_FURNISHED_VALUE = '__all_furnished__';
 const ALL_TYPES_VALUE = '__all_types__';
 
@@ -72,21 +35,17 @@ function isSameBedroomsRange(
     return first[0] === second[0] && first[1] === second[1];
 }
 
-function isSameNeighbourhoods(a: string[], b: string[]): boolean {
-    if (a.length !== b.length) return false;
-    const set = new Set(b);
-    return a.every((n) => set.has(n));
-}
-
 function isSameFilterState(
     first: PropertyFilterState,
     second: PropertyFilterState,
 ): boolean {
+    const sameNeighbourhoods =
+        (first.neighbourhoods ?? []).length === (second.neighbourhoods ?? []).length &&
+        (first.neighbourhoods ?? []).every((n) =>
+            (second.neighbourhoods ?? []).includes(n),
+        );
     return (
-        isSameNeighbourhoods(
-            first.neighbourhoods ?? [],
-            second.neighbourhoods ?? [],
-        ) &&
+        sameNeighbourhoods &&
         first.hide_taken_properties === second.hide_taken_properties &&
         isSameBedroomsRange(first.bedrooms_range, second.bedrooms_range) &&
         first.furnished === second.furnished &&
@@ -118,47 +77,15 @@ function normalizeBedroomsRange(value: number | number[]): [number, number] {
     if (Array.isArray(value)) {
         const min = value[0] ?? 1;
         const max = value[1] ?? min;
-
         return [clampBedrooms(min), clampBedrooms(max)];
     }
-
     const exact = clampBedrooms(value);
     return [exact, exact];
 }
 
-const props = withDefaults(
-    defineProps<{
-        filters: PropertyFilterState;
-        neighbourhood_options: string[];
-        furnished_options: Option[];
-        type_options: Option[];
-        show_sort?: boolean;
-        show_hide_taken?: boolean;
-    }>(),
-    {
-        show_sort: true,
-        show_hide_taken: true,
-    },
-);
-
-const emit = defineEmits<{
-    'update:filters': [value: PropertyFilterState];
-}>();
-
-const localFilters = ref<PropertyFilterState>(cloneFilters(props.filters));
-
-const bedroomsRangeDraft = ref<[number, number]>([
-    ...localFilters.value.bedrooms_range,
-]);
-
-const isMediumTerm = computed(
-    () => localFilters.value.type === LeaseType.MediumTerm,
-);
-
 function toDateValue(value: string): DateValue | undefined {
     const trimmed = value?.trim();
     if (!trimmed) return undefined;
-
     const normalized = trimmed.includes('T') ? trimmed.slice(0, 10) : trimmed;
     try {
         return parseDate(normalized);
@@ -166,6 +93,28 @@ function toDateValue(value: string): DateValue | undefined {
         return undefined;
     }
 }
+
+const { t } = useI18n();
+
+const props = defineProps<{
+    filters: PropertyFilterState;
+    neighbourhood_options: string[];
+    furnished_options: Option[];
+    type_options: Option[];
+}>();
+
+const emit = defineEmits<{
+    'update:filters': [value: PropertyFilterState];
+}>();
+
+const localFilters = ref<PropertyFilterState>(cloneFilters(props.filters));
+const bedroomsRangeDraft = ref<[number, number]>([
+    ...localFilters.value.bedrooms_range,
+]);
+
+const isMediumTerm = computed(
+    () => localFilters.value.type === LeaseType.MediumTerm,
+);
 
 const availableFromDate = computed<DateValue | undefined>({
     get: () => toDateValue(localFilters.value.available_from),
@@ -192,10 +141,7 @@ function formatNeighbourhoodsDisplay(arr: string[]): string {
 const neighbourhoodsModel = computed({
     get: () => localFilters.value.neighbourhoods ?? [],
     set: (value: string[]) => {
-        localFilters.value = {
-            ...localFilters.value,
-            neighbourhoods: value,
-        };
+        localFilters.value = { ...localFilters.value, neighbourhoods: value };
     },
 });
 
@@ -220,21 +166,19 @@ const typeSelectValue = computed({
 
 function commitBedroomsRange(value: number | number[]): void {
     const nextRange = normalizeBedroomsRange(value);
-
     if (isSameBedroomsRange(localFilters.value.bedrooms_range, nextRange)) {
         return;
     }
-
     localFilters.value.bedrooms_range = nextRange;
 }
+
+const subscriptionTriggerClass =
+    'group h-11! w-full items-center justify-between border-input bg-transparent px-4 text-base shadow-xs hover:bg-accent data-[state=open]:bg-accent';
 
 watch(
     () => props.filters,
     (value) => {
-        if (isSameFilterState(value, localFilters.value)) {
-            return;
-        }
-
+        if (isSameFilterState(value, localFilters.value)) return;
         localFilters.value = cloneFilters(value);
         bedroomsRangeDraft.value = [...value.bedrooms_range];
     },
@@ -244,11 +188,9 @@ watch(
 watch(
     () => localFilters.value.bedrooms_range,
     (value) => {
-        if (isSameBedroomsRange(value, bedroomsRangeDraft.value)) {
-            return;
+        if (!isSameBedroomsRange(value, bedroomsRangeDraft.value)) {
+            bedroomsRangeDraft.value = [...value];
         }
-
-        bedroomsRangeDraft.value = [...value];
     },
     { deep: true },
 );
@@ -259,46 +201,25 @@ watch(
     { deep: true },
 );
 
-const defaultFilterState = (): PropertyFilterState => ({
-    neighbourhoods: [],
-    hide_taken_properties: false,
-    bedrooms_range: [1, 10],
-    furnished: '',
-    type: '',
-    available_from: '',
-    available_to: '',
-    sort: SortValue.Newest,
-});
-
-function clearFilters(): void {
-    const next = defaultFilterState();
-    localFilters.value = cloneFilters(next);
-    bedroomsRangeDraft.value = [...next.bedrooms_range];
-}
-
 defineExpose({
     getFilters: (): PropertyFilterState => cloneFilters(localFilters.value),
-    clearFilters,
 });
-
-const triggerClass =
-    'group h-9 w-full hover:bg-accent data-[state=open]:bg-accent';
-const gridClass = 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7';
 </script>
 
 <template>
     <form class="mt-4">
-        <div :class="gridClass">
-            <div class="min-w-0 overflow-hidden">
-                <NeighbourhoodCheckboxes
-                    v-model="neighbourhoodsModel"
-                    :options="neighbourhood_options"
-                    :trigger-class="triggerClass"
-                />
-            </div>
-            <div class="min-w-0">
+        <div class="grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-6">
+            <div class="col-span-full flex w-full min-w-0 flex-wrap items-center gap-4">
+                <div class="min-w-72 shrink-0 overflow-hidden">
+                    <NeighbourhoodCheckboxes
+                        v-model="neighbourhoodsModel"
+                        :options="neighbourhood_options"
+                        :trigger-class="subscriptionTriggerClass"
+                    />
+                </div>
+                <div class="w-72 shrink-0 overflow-hidden sm:w-56">
                     <Select v-model="furnishedSelectValue" name="furnished">
-                        <SelectTrigger :class="triggerClass">
+                        <SelectTrigger :class="subscriptionTriggerClass">
                             <SelectValue
                                 :placeholder="
                                     t('propertyFilters.allFurnishedOptions')
@@ -323,23 +244,21 @@ const gridClass = 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7';
                             </SelectItem>
                         </SelectContent>
                     </Select>
-            </div>
-            <div class="w-full min-w-0 sm:w-auto">
-                <Popover>
+                </div>
+                <div class="w-72 shrink-0 sm:w-56">
+                    <Popover>
                         <PopoverTrigger as-child>
                             <Button
                                 type="button"
                                 variant="outline"
-                                :class="triggerClass"
+                                :class="subscriptionTriggerClass"
                                 class="font-normal"
                             >
                                 <span class="truncate">{{
                                     t('propertyFilters.bedrooms')
                                 }}</span>
                                 <span class="truncate text-muted-foreground">
-                                    {{
-                                        formatBedroomsRange(bedroomsRangeDraft)
-                                    }}
+                                    {{ formatBedroomsRange(bedroomsRangeDraft) }}
                                 </span>
                                 <ChevronDown16
                                     class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
@@ -363,10 +282,10 @@ const gridClass = 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7';
                             />
                         </PopoverContent>
                     </Popover>
-            </div>
-            <div class="min-w-0 sm:col-span-2 sm:w-1/2 lg:col-span-1 lg:w-auto">
-                <Select v-model="typeSelectValue" name="type">
-                    <SelectTrigger :class="triggerClass">
+                </div>
+                <div class="w-72 shrink-0 sm:w-44">
+                    <Select v-model="typeSelectValue" name="type">
+                        <SelectTrigger :class="subscriptionTriggerClass">
                             <SelectValue
                                 :placeholder="t('propertyFilters.allTypes')"
                             />
@@ -388,7 +307,8 @@ const gridClass = 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7';
                                 {{ t(`propertyLeaseType.${option.value}`) }}
                             </SelectItem>
                         </SelectContent>
-                </Select>
+                    </Select>
+                </div>
             </div>
 
             <DatePicker
@@ -396,56 +316,15 @@ const gridClass = 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7';
                 name="available_from"
                 v-model="availableFromDate"
                 clearable
-                trigger-class="rounded-md border border-input bg-background h-9 px-3 text-sm"
+                trigger-class="rounded-md border border-input bg-background h-11! px-4 text-base"
             />
             <DatePicker
                 v-if="isMediumTerm"
                 name="available_to"
                 v-model="availableToDate"
                 clearable
-                trigger-class="rounded-md border border-input bg-background h-9 px-3 text-sm"
+                trigger-class="rounded-md border border-input bg-background h-11! px-4 text-base"
             />
-            <Select v-if="show_sort" v-model="localFilters.sort" name="sort">
-                <SelectTrigger :class="triggerClass">
-                    <SelectValue />
-                    <template #trigger-icon>
-                        <ChevronDown16
-                            class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                        />
-                    </template>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem
-                        v-for="option in sortOptions"
-                        :key="option.value"
-                        :value="option.value"
-                    >
-                        {{ option.label }}
-                    </SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-        <div class="mt-3 flex flex-wrap items-center gap-3">
-            <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                class="text-muted-foreground hover:text-foreground"
-                @click="clearFilters"
-            >
-                {{ t('propertyFilters.clearFilters') }}
-            </Button>
-        </div>
-        <div v-if="show_hide_taken" class="my-3">
-            <label class="flex items-center gap-2 text-sm">
-                <input
-                    type="checkbox"
-                    name="hide_taken_properties"
-                    v-model="localFilters.hide_taken_properties"
-                    class="h-4 w-4 rounded border-input"
-                />
-                {{ t('propertyFilters.hideTakenProperties') }}
-            </label>
         </div>
     </form>
 </template>

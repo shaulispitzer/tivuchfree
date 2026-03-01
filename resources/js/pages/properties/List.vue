@@ -1,13 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
 import type { PropType } from 'vue';
-import { useI18n } from 'vue-i18n';
-import PaginationNav from '@/components/PaginationNav.vue';
-import PropertyFilters from '@/components/properties/PropertyFilters.vue';
-import PropertyCard from '@/components/PropertyCard.vue';
-import { Button } from '@/components/ui/button';
-import { subscribe } from '@/routes';
-import { create, index } from '@/routes/properties';
+import { index } from '@/routes/properties';
 import type { Paginator } from '@/types';
 import IxMapAlt1 from '~icons/ix/map-alt-1';
 import PhListBold from '~icons/ph/list-bold';
@@ -226,16 +219,7 @@ watch(activeView, () => {
         </div>
     </div>
 
-    <Teleport to="body">
-        <Button
-            as-child
-            class="fixed top-1/2 left-9 z-50 max-w-[calc(100dvh-2rem)] origin-top-left -translate-y-1/2 rotate-90 shadow-md"
-        >
-            <Link :href="subscribe().url">{{
-                t('subscription.subscribeToUpdates')
-            }}</Link>
-        </Button>
-    </Teleport>
+    <SubscriptionSubscribeButton />
 
     <PropertyFilters
         :filters="filters"

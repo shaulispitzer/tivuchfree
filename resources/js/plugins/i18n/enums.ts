@@ -42,6 +42,8 @@ export default {
         },
         neighbourhoods: {
             allNeighbourhoods: 'All neighbourhoods',
+            allNeighbourhoodsSelected: 'All neighbourhoods selected',
+            selectAll: 'Select all',
             Sanhedria: 'Sanhedria',
             SanhedriaMurchavet: 'Sanhedria Murchavet',
             BarIlan: 'Bar Ilan',
@@ -150,6 +152,8 @@ export default {
         },
         neighbourhoods: {
             allNeighbourhoods: 'כל השכונות',
+            allNeighbourhoodsSelected: 'כל השכונות נבחרו',
+            selectAll: 'בחר הכל',
             Sanhedria: 'סנהדריה',
             SanhedriaMurchavet: 'סנהדריה מורחבת',
             BarIlan: 'בר אילן',

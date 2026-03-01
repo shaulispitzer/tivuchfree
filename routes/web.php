@@ -78,6 +78,9 @@ Route::middleware('auth', 'verified')->group(function () {
 
 // mails routes
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/mailable-property-listed', function () {
+        return new \App\Mail\YourPropertyWasListed(\App\Models\User::firstOrFail());
+    });
     Route::get('/mailable-taken-warning', function () {
         $property = \App\Models\Property::findOrFail(34);
 
