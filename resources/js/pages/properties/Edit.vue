@@ -301,6 +301,13 @@ const bathroomsInput = computed<number | undefined>({
     },
 });
 
+const priceInput = computed<number | undefined>({
+    get: () => form.price ?? undefined,
+    set: (value) => {
+        form.price = value ?? null;
+    },
+});
+
 const additionalInfoInput = computed<string | undefined>({
     get: () => form.additional_info ?? undefined,
     set: (value) => {
@@ -879,6 +886,24 @@ function submit(): void {
                         class="text-sm text-red-600"
                     >
                         {{ form.errors.bathrooms }}
+                    </div>
+                </div>
+
+                <div class="grid gap-2">
+                    <FormKit
+                        v-model="priceInput"
+                        type="number"
+                        name="price"
+                        :label="t('common.price')"
+                        step="1"
+                        number
+                        validation="number|min:0"
+                    />
+                    <div
+                        v-if="form.errors.price"
+                        class="text-sm text-red-600"
+                    >
+                        {{ form.errors.price }}
                     </div>
                 </div>
 
