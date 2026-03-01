@@ -4,6 +4,7 @@ import { index } from '@/routes/properties';
 import type { Paginator } from '@/types';
 import IxMapAlt1 from '~icons/ix/map-alt-1';
 import PhListBold from '~icons/ph/list-bold';
+import UilFilter from '~icons/uil/filter';
 type Option = {
     value: string;
     label: string;
@@ -71,7 +72,7 @@ const props = defineProps({
 const { t } = useI18n();
 
 const activeView = ref<ViewModeValue>(props.filters.view ?? ViewMode.List);
-
+const showFilters = ref(true);
 function initialBedroomsRange(): [number, number] {
     const min = props.filters.bedrooms_min;
     const max = props.filters.bedrooms_max;
@@ -186,11 +187,14 @@ watch(activeView, () => {
 </script>
 
 <template>
-    <Head :title="t('common.properties')" />
+    <Head :title="t('common.properties', 2)" />
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-lg font-semibold">{{ t('common.properties') }}</h1>
+        <h1 class="text-lg font-semibold">{{ t('common.properties', 2) }}</h1>
         <div class="flex items-center gap-2">
+            <Button variant="outline" @click="showFilters = !showFilters">
+                <UilFilter />
+            </Button>
             <div
                 class="inline-flex items-center rounded-md border border-input p-0.5"
             >
@@ -227,6 +231,7 @@ watch(activeView, () => {
         :furnished_options="furnished_options"
         :type_options="type_options"
         @update:filters="updateFilters"
+        v-if="showFilters"
     />
 
     <div

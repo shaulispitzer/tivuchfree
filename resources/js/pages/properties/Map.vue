@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { create, index, show } from '@/routes/properties';
 import IxMapAlt1 from '~icons/ix/map-alt-1';
 import PhListBold from '~icons/ph/list-bold';
+import UilFilter from '~icons/uil/filter';
 const { t } = useI18n();
 type Option = {
     value: string;
@@ -85,7 +86,7 @@ const props = defineProps({
         required: true,
     },
 });
-
+const showFilters = ref(true);
 function initialBedroomsRange(): [number, number] {
     const min = props.filters.bedrooms_min;
     const max = props.filters.bedrooms_max;
@@ -400,11 +401,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <Head :title="t('common.properties')" />
+    <Head :title="t('common.properties', 2)" />
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-lg font-semibold">{{ t('common.properties') }}</h1>
+        <h1 class="text-lg font-semibold">{{ t('common.properties', 2) }}</h1>
         <div class="flex items-center gap-2">
+            <Button variant="outline" @click="showFilters = !showFilters">
+                <UilFilter />
+            </Button>
             <div
                 class="inline-flex items-center rounded-md border border-input p-0.5"
             >
@@ -443,6 +447,7 @@ onBeforeUnmount(() => {
             :furnished_options="furnished_options"
             :type_options="type_options"
             @update:filters="updateFilters"
+            v-if="showFilters"
         />
     </div>
 

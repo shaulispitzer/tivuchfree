@@ -283,13 +283,15 @@ defineExpose({
 
 const triggerClass =
     'group h-9 w-full hover:bg-accent data-[state=open]:bg-accent';
-const gridClass = 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7';
+const gridClass =
+    'grid min-w-0 grid-cols-2 gap-x-2 gap-y-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6';
 </script>
 
 <template>
-    <form class="mt-4">
+    <form class="mt-3">
         <div :class="gridClass">
             <div class="min-w-0 overflow-hidden">
+                <Label class="mb-1">{{ t('common.neighbourhood') }}</Label>
                 <NeighbourhoodCheckboxes
                     v-model="neighbourhoodsModel"
                     :options="neighbourhood_options"
@@ -297,152 +299,159 @@ const gridClass = 'grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-7';
                 />
             </div>
             <div class="min-w-0">
-                    <Select v-model="furnishedSelectValue" name="furnished">
-                        <SelectTrigger :class="triggerClass">
-                            <SelectValue
-                                :placeholder="
-                                    t('propertyFilters.allFurnishedOptions')
-                                "
-                            />
-                            <template #trigger-icon>
-                                <ChevronDown16
-                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                                />
-                            </template>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem :value="ALL_FURNISHED_VALUE">
-                                {{ t('propertyFilters.allFurnishedOptions') }}
-                            </SelectItem>
-                            <SelectItem
-                                v-for="option in furnished_options"
-                                :key="option.value"
-                                :value="option.value"
-                            >
-                                {{ t(`propertyFurnished.${option.value}`) }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-            </div>
-            <div class="w-full min-w-0 sm:w-auto">
-                <Popover>
-                        <PopoverTrigger as-child>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                :class="triggerClass"
-                                class="font-normal"
-                            >
-                                <span class="truncate">{{
-                                    t('propertyFilters.bedrooms')
-                                }}</span>
-                                <span class="truncate text-muted-foreground">
-                                    {{
-                                        formatBedroomsRange(bedroomsRangeDraft)
-                                    }}
-                                </span>
-                                <ChevronDown16
-                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                                />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                            class="w-80 space-y-3 pt-12"
-                            align="end"
-                        >
-                            <Slider
-                                v-model="bedroomsRangeDraft"
-                                @set="commitBedroomsRange"
-                                class="slider-red"
-                                :min="1"
-                                :max="10"
-                                :step="0.5"
-                                :tooltips="true"
-                                :lazy="false"
-                                :format="formatBedrooms"
-                            />
-                        </PopoverContent>
-                    </Popover>
-            </div>
-            <div class="min-w-0 sm:col-span-2 sm:w-1/2 lg:col-span-1 lg:w-auto">
-                <Select v-model="typeSelectValue" name="type">
+                <Label class="mb-1">{{ t('common.furnished') }}</Label>
+                <Select v-model="furnishedSelectValue" name="furnished">
                     <SelectTrigger :class="triggerClass">
-                            <SelectValue
-                                :placeholder="t('propertyFilters.allTypes')"
+                        <SelectValue
+                            :placeholder="
+                                t('propertyFilters.allFurnishedOptions')
+                            "
+                        />
+                        <template #trigger-icon>
+                            <ChevronDown16
+                                class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
                             />
-                            <template #trigger-icon>
-                                <ChevronDown16
-                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                                />
-                            </template>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem :value="ALL_TYPES_VALUE">
-                                {{ t('propertyFilters.allTypes') }}
-                            </SelectItem>
-                            <SelectItem
-                                v-for="option in type_options"
-                                :key="option.value"
-                                :value="option.value"
-                            >
-                                {{ t(`propertyLeaseType.${option.value}`) }}
-                            </SelectItem>
-                        </SelectContent>
+                        </template>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="ALL_FURNISHED_VALUE">
+                            {{ t('propertyFilters.allFurnishedOptions') }}
+                        </SelectItem>
+                        <SelectItem
+                            v-for="option in furnished_options"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ t(`propertyFurnished.${option.value}`) }}
+                        </SelectItem>
+                    </SelectContent>
                 </Select>
             </div>
-
-            <DatePicker
-                v-if="isMediumTerm"
-                name="available_from"
-                v-model="availableFromDate"
-                clearable
-                trigger-class="rounded-md border border-input bg-background h-9 px-3 text-sm"
-            />
-            <DatePicker
-                v-if="isMediumTerm"
-                name="available_to"
-                v-model="availableToDate"
-                clearable
-                trigger-class="rounded-md border border-input bg-background h-9 px-3 text-sm"
-            />
-            <Select v-if="show_sort" v-model="localFilters.sort" name="sort">
-                <SelectTrigger :class="triggerClass">
-                    <SelectValue />
-                    <template #trigger-icon>
-                        <ChevronDown16
-                            class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+            <div class="min-w-0">
+                <Label class="mb-1">{{ t('common.bedrooms') }}</Label>
+                <Popover>
+                    <PopoverTrigger as-child>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            :class="triggerClass"
+                            class="font-normal"
+                        >
+                            <span class="truncate">{{
+                                t('propertyFilters.bedrooms')
+                            }}</span>
+                            <span class="truncate text-muted-foreground">
+                                {{ formatBedroomsRange(bedroomsRangeDraft) }}
+                            </span>
+                            <ChevronDown16
+                                class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+                            />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent class="w-72 space-y-3 pt-10 sm:w-80">
+                        <Slider
+                            v-model="bedroomsRangeDraft"
+                            @set="commitBedroomsRange"
+                            class="slider-red"
+                            :min="1"
+                            :max="10"
+                            :step="0.5"
+                            :tooltips="true"
+                            :lazy="false"
+                            :format="formatBedrooms"
                         />
-                    </template>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem
-                        v-for="option in sortOptions"
-                        :key="option.value"
-                        :value="option.value"
-                    >
-                        {{ option.label }}
-                    </SelectItem>
-                </SelectContent>
-            </Select>
+                    </PopoverContent>
+                </Popover>
+            </div>
+            <div class="min-w-0">
+                <Label class="mb-1">{{ t('common.termType') }}</Label>
+                <Select v-model="typeSelectValue" name="type">
+                    <SelectTrigger :class="triggerClass">
+                        <SelectValue
+                            :placeholder="t('propertyFilters.allTypes')"
+                        />
+                        <template #trigger-icon>
+                            <ChevronDown16
+                                class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+                            />
+                        </template>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="ALL_TYPES_VALUE">
+                            {{ t('propertyFilters.allTypes') }}
+                        </SelectItem>
+                        <SelectItem
+                            v-for="option in type_options"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ t(`propertyLeaseType.${option.value}`) }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+            <div class="min-w-0" v-if="isMediumTerm">
+                <Label class="mb-1">{{ t('common.availableFrom') }}</Label>
+                <DatePicker
+                    name="available_from"
+                    v-model="availableFromDate"
+                    clearable
+                    trigger-class="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                />
+            </div>
+            <div class="min-w-0" v-if="isMediumTerm">
+                <Label class="mb-1">{{ t('common.availableTo') }}</Label>
+                <DatePicker
+                    name="available_to"
+                    v-model="availableToDate"
+                    clearable
+                    trigger-class="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                />
+            </div>
+            <div class="min-w-0" v-if="show_sort">
+                <Label class="mb-1">{{ t('common.sort') }}</Label>
+                <Select v-model="localFilters.sort" name="sort">
+                    <SelectTrigger :class="triggerClass">
+                        <SelectValue />
+                        <template #trigger-icon>
+                            <ChevronDown16
+                                class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
+                            />
+                        </template>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            v-for="option in sortOptions"
+                            :key="option.value"
+                            :value="option.value"
+                        >
+                            {{ option.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
         </div>
-        <div class="mt-3 flex flex-wrap items-center gap-3">
+        <div
+            class="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between"
+        >
             <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                class="text-muted-foreground hover:text-foreground"
+                class="w-fit px-2 text-muted-foreground hover:text-foreground"
                 @click="clearFilters"
             >
                 {{ t('propertyFilters.clearFilters') }}
             </Button>
-        </div>
-        <div v-if="show_hide_taken" class="my-3">
-            <label class="flex items-center gap-2 text-sm">
+            <label
+                v-if="show_hide_taken"
+                class="flex items-center gap-2 text-sm"
+            >
                 <input
                     type="checkbox"
                     name="hide_taken_properties"
                     v-model="localFilters.hide_taken_properties"
-                    class="h-4 w-4 rounded border-input"
+                    class="size-4 rounded border-input"
                 />
                 {{ t('propertyFilters.hideTakenProperties') }}
             </label>

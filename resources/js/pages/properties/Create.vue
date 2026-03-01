@@ -551,7 +551,7 @@ function submit(): void {
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div class="grid gap-3 md:col-span-2">
                     <Label :requiredStar="true">
-                        {{ t('common.neighbourhoods') }}
+                        {{ t('common.neighbourhood', 2) }}
                     </Label>
                     <Select v-model="form.neighbourhoods" multiple>
                         <SelectTrigger class="w-full border-0 shadow-sm">
