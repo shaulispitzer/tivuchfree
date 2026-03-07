@@ -176,20 +176,28 @@ function handleConfirmDelete() {
                             {{ t(`propertyLeaseType.${property.type ?? '-'}`) }}
                         </td>
                         <td class="px-4 py-3">
-                            <span
-                                class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                                :class="
-                                    property.taken
-                                        ? 'bg-red-100 text-red-700'
-                                        : 'bg-green-100 text-green-700'
-                                "
-                            >
-                                {{
-                                    property.taken
-                                        ? t('common.taken')
-                                        : t('common.available')
-                                }}
-                            </span>
+                            <div class="flex flex-col gap-1">
+                                <span
+                                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                                    :class="
+                                        property.taken
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-green-100 text-green-700'
+                                    "
+                                >
+                                    {{
+                                        property.taken
+                                            ? t('common.taken')
+                                            : t('common.available')
+                                    }}
+                                </span>
+                                <span
+                                    v-if="(property as any).reported_taken_at && !property.taken"
+                                    class="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700"
+                                >
+                                    {{ t('common.reportedTaken') }}
+                                </span>
+                            </div>
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end">

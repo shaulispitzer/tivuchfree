@@ -20,7 +20,8 @@ import {
 import { EffectFade, Navigation, Thumbs } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import type { Component } from 'vue';
-import { computed, ref } from 'vue';
+
+import { useToast } from 'vue-toastification';
 import { useModal } from '../../../../vendor/emargareten/inertia-modal';
 import SmartHomeBoiler from '~icons/gg/smart-home-boiler';
 import BedroomChildOutlineRounded from '~icons/material-symbols/bedroom-child-outline-rounded';
@@ -28,15 +29,28 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
-
+import { router } from '@inertiajs/vue3';
+import { reportTaken } from '@/routes/properties';
 const props = defineProps<{
     property: Omit<App.Data.PropertyData, 'user' | 'user_id'>;
 }>();
 
 const { close: closeModal } = useModal();
 const { t } = useI18n();
+const page = usePage();
+const toast = useToast();
 const open = ref(true);
 const notSpecifiedLabel = 'not specified';
+const reportingTaken = ref(false);
+
+function submitReportTaken(): void {
+    const route = reportTaken({ property: props.property.id });
+    reportingTaken.value = true;
+    router.post(route.url, {}, {
+        preserveScroll: true,
+        onFinish: () => (reportingTaken.value = false),
+    });
+}
 
 const imageUrls = computed(() => {
     const urls = [
@@ -95,7 +109,13 @@ function formatBoolean(value: boolean): string {
 
 function formatEnum(
     value: string | null | undefined,
-    namespace: 'propertyAccess' | 'propertyAirConditioning' | 'propertyApartmentCondition' | 'propertyFurnished' | 'propertyKitchenDiningRoom' | 'propertyPorchGarden',
+    namespace:
+        | 'propertyAccess'
+        | 'propertyAirConditioning'
+        | 'propertyApartmentCondition'
+        | 'propertyFurnished'
+        | 'propertyKitchenDiningRoom'
+        | 'propertyPorchGarden',
 ): string {
     if (value == null || value === '') {
         return t('common.notSpecified');
@@ -155,22 +175,34 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
         },
         {
             label: t('common.condition'),
-            value: formatEnum(props.property.apartment_condition, 'propertyApartmentCondition'),
+            value: formatEnum(
+                props.property.apartment_condition,
+                'propertyApartmentCondition',
+            ),
             icon: Home,
         },
         {
             label: t('common.kitchenDining'),
-            value: formatEnum(props.property.kitchen_dining_room, 'propertyKitchenDiningRoom'),
+            value: formatEnum(
+                props.property.kitchen_dining_room,
+                'propertyKitchenDiningRoom',
+            ),
             icon: ChefHat,
         },
         {
             label: t('common.porchGarden'),
-            value: formatEnum(props.property.porch_garden, 'propertyPorchGarden'),
+            value: formatEnum(
+                props.property.porch_garden,
+                'propertyPorchGarden',
+            ),
             icon: Trees,
         },
         {
             label: t('common.airConditioning'),
-            value: formatEnum(props.property.air_conditioning, 'propertyAirConditioning'),
+            value: formatEnum(
+                props.property.air_conditioning,
+                'propertyAirConditioning',
+            ),
             icon: AirVent,
         },
         {
@@ -435,10 +467,19 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                     {{ property.additional_info ?? t('common.notSpecified') }}
                 </p>
             </div>
+
+            <div class="flex justify-end border-t pt-4">
+                <Button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-500 px-3 py-1.5 text-xs font-medium text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    :disabled="reportingTaken"
+                    @click="submitReportTaken"
+                >
+                    {{ t('common.reportTaken') }}</Button
+                >
+            </div>
         </div>
     </Modal>
 </template>
-
 <style scoped>
 .property-show-swiper :deep(.swiper-button-next),
 .property-show-swiper :deep(.swiper-button-prev) {

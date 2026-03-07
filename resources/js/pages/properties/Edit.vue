@@ -32,6 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { router } from '@inertiajs/vue3';
 import { cn } from '@/lib/utils';
 import { index, update } from '@/routes/properties';
 
@@ -518,6 +519,41 @@ function submit(): void {
     form.clearErrors('neighbourhoods');
     form.put(update.url(props.property.id));
 }
+
+const reportedTakenDaysRemaining = computed(() => {
+    if (!props.property.reported_taken_at) return null;
+    const reportedAt = new Date(
+        props.property.reported_taken_at as unknown as string,
+    );
+    const expiresAt = new Date(reportedAt.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const diff = Math.ceil(
+        (expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+    return Math.max(0, diff);
+});
+
+const reportedTakenDate = computed(() => {
+    if (!props.property.reported_taken_at) return null;
+    return new Date(
+        props.property.reported_taken_at as unknown as string,
+    ).toLocaleDateString();
+});
+
+const cancellingReport = ref(false);
+
+function cancelReport(): void {
+    cancellingReport.value = true;
+    router.patch(
+        `/my-properties/${props.property.id}/cancel-report-taken`,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                cancellingReport.value = false;
+            },
+        },
+    );
+}
 </script>
 
 <template>
@@ -564,6 +600,45 @@ function submit(): void {
                     {{ lifecycle.days_remaining === 1 ? 'day' : 'days' }}.
                 </p>
             </div>
+        </div>
+    </div>
+
+    <div
+        v-if="property.reported_taken_at && !lifecycle.taken"
+        class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+    >
+        <div class="flex items-start justify-between gap-3">
+            <div class="space-y-1">
+                <p class="font-semibold">
+                    {{ t('common.reportedTakenWarningTitle') }}
+                </p>
+                <p>
+                    {{
+                        t('common.reportedTakenWarningBody', {
+                            date: reportedTakenDate,
+                            days: reportedTakenDaysRemaining,
+                            multipledays:
+                                reportedTakenDaysRemaining &&
+                                reportedTakenDaysRemaining > 1
+                                    ? t('common.days')
+                                    : t('common.day'),
+                        })
+                    }}
+                </p>
+            </div>
+            <Button
+                size="sm"
+                variant="outline"
+                class="shrink-0 border-red-300 text-red-700 hover:bg-red-100"
+                :disabled="cancellingReport"
+                @click="cancelReport"
+            >
+                {{
+                    cancellingReport
+                        ? t('common.sending')
+                        : t('common.cancelReport')
+                }}
+            </Button>
         </div>
     </div>
 
@@ -899,10 +974,7 @@ function submit(): void {
                         number
                         validation="number|min:0"
                     />
-                    <div
-                        v-if="form.errors.price"
-                        class="text-sm text-red-600"
-                    >
+                    <div v-if="form.errors.price" class="text-sm text-red-600">
                         {{ form.errors.price }}
                     </div>
                 </div>

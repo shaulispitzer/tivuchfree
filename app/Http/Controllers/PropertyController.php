@@ -17,6 +17,7 @@ use App\Http\Requests\MarkPropertyAsTakenRequest;
 use App\Jobs\NotifyPropertySubscribers;
 use App\Jobs\TranslatePropertyAdditionalInfo;
 use App\Mail\PropertyListingStatusChange;
+use App\Mail\PropertyReportedTaken;
 use App\Mail\YourPropertyWasListed;
 use App\Models\Property;
 use App\Models\Street;
@@ -513,6 +514,7 @@ class PropertyController extends Controller
                 'type' => $property->type?->value,
                 'taken' => $property->taken,
                 'taken_at' => $property->taken_at?->toDateTimeString(),
+                'reported_taken_at' => $property->reported_taken_at?->toDateTimeString(),
                 'created_at' => $property->created_at?->toDateTimeString(),
             ]);
 
@@ -566,11 +568,45 @@ class PropertyController extends Controller
                 'taken' => false,
                 'taken_at' => null,
                 'taken_warning_sent_at' => null,
+                'reported_taken_at' => null,
                 'created_at' => now(),
             ])->save();
         }
 
         return back()->success('Property reposted successfully');
+    }
+
+    public function reportTaken(Request $request, Property $property): RedirectResponse
+    {
+        // Property owners cannot report their own property
+        if ($request->user()?->id === $property->user_id) {
+            return back()->error('You cannot report your own property as taken');
+        }
+
+        // If already reported or already taken, silently succeed (no duplicate email and same response)
+        if ($property->reported_taken_at !== null || $property->taken) {
+            return back()->success('We have informed the property owner that it is taken');
+        }
+
+        $property->update(['reported_taken_at' => now()]);
+
+        $property->loadMissing('user');
+        if ($property->user?->email) {
+            Mail::to($property->user->email)->queue(new PropertyReportedTaken($property));
+        }
+
+        return back()->success('We have informed the property owner that it is taken');
+    }
+
+    public function cancelReportTaken(Request $request, Property $property): RedirectResponse
+    {
+        if ($property->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $property->update(['reported_taken_at' => null]);
+
+        return back()->success(__('message.reportCancelledSuccessfully'));
     }
 
     public function destroyMyProperty(Request $request, Property $property): RedirectResponse
@@ -604,7 +640,7 @@ class PropertyController extends Controller
 
         return Inertia::modal('properties/Show', [
             'property' => PropertyData::fromModel($property)
-                ->except('user', 'user_id', 'taken', 'lon', 'lat')
+                ->except('user', 'user_id', 'taken', 'lon', 'lat', 'reported_taken_at')
                 ->toArray(),
         ])->baseRoute('properties.index', $isMapView ? ['view' => 'map'] : []);
     }

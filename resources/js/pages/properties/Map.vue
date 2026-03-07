@@ -301,6 +301,7 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
                     >
                         &times;
                     </button>
+                    <p class="property-map-tooltip-id">#${property.id}</p>
                     <p>${formatMapBedrooms(property.bedrooms)}</p>
                     <p>${formatMapPrice(property.price)}</p>
                 </div>
@@ -497,11 +498,15 @@ onBeforeUnmount(() => {
 }
 
 :deep(.property-map-tooltip) {
-    border: 0;
+    border: 2px solid var(--primary);
     border-radius: 0.5rem;
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 8px 24px rgb(15 23 42 / 0.2);
+    background: white;
+    color: var(--primary);
+    box-shadow:
+        0 0 0 1px rgb(15 23 42 / 0.15),
+        0 2px 4px rgb(15 23 42 / 0.25),
+        0 4px 12px rgb(15 23 42 / 0.45),
+        0 8px 24px rgb(15 23 42 / 0.35);
 }
 
 :deep(.property-map-tooltip.leaflet-tooltip-top:before) {
@@ -546,8 +551,8 @@ onBeforeUnmount(() => {
     height: 1.25rem;
     border: 0;
     border-radius: 9999px;
-    background: rgb(255 255 255 / 0.2);
-    color: white;
+    background: rgb(20 184 166 / 0.15);
+    color: rgb(17 94 89);
     font-size: 0.9rem;
     line-height: 1;
     cursor: pointer;
@@ -555,15 +560,22 @@ onBeforeUnmount(() => {
 }
 
 :deep(.property-map-tooltip-close:hover) {
-    background: rgb(255 255 255 / 0.35);
+    background: rgb(20 184 166 / 0.3);
 }
 
 :deep(.property-map-tooltip-close:focus-visible) {
-    outline: 2px solid rgb(255 255 255 / 0.9);
+    outline: 2px solid rgb(20 184 166);
     outline-offset: 1px;
 }
 
 :deep(.property-map-tooltip-content p) {
     margin: 0;
+}
+
+:deep(.property-map-tooltip-id) {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgb(17 94 89);
+    letter-spacing: 0.02em;
 }
 </style>

@@ -840,10 +840,7 @@ function submit(): void {
                         number
                         validation="number|min:0"
                     />
-                    <div
-                        v-if="form.errors.price"
-                        class="text-sm text-red-600"
-                    >
+                    <div v-if="form.errors.price" class="text-sm text-red-600">
                         {{ form.errors.price }}
                     </div>
                 </div>
@@ -1027,8 +1024,14 @@ function submit(): void {
             <div class="grid gap-4">
                 <div class="grid gap-2">
                     <p class="text-sm text-muted-foreground">
-                        Please enter text in {{ currentLocale }}. We will handle
-                        the translation automatically.
+                        {{
+                            t('common.pleaseEnterTextInEtc', {
+                                locale:
+                                    currentLocale === 'he'
+                                        ? 'עברית'
+                                        : 'English',
+                            })
+                        }}
                     </p>
                     <FormKit
                         v-model="additionalInfoInput"

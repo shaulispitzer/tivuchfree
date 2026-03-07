@@ -71,10 +71,14 @@ Route::middleware('auth', 'verified')->group(function () {
         ->name('my-properties.mark-as-taken');
     Route::patch('my-properties/{property}/repost', [PropertyController::class, 'repost'])
         ->name('my-properties.repost');
+    Route::patch('my-properties/{property}/cancel-report-taken', [PropertyController::class, 'cancelReportTaken'])
+        ->name('my-properties.cancel-report-taken');
     Route::delete('my-properties/{property}', [PropertyController::class, 'destroyMyProperty'])
         ->name('my-properties.destroy');
-
 });
+
+Route::post('properties/{property}/report-taken', [PropertyController::class, 'reportTaken'])
+    ->name('properties.report-taken');
 
 // mails routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -104,6 +108,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $subscription = \App\Models\PropertySubscription::firstOrFail();
 
         return new \App\Mail\PropertySubscriptionExpired($subscription, route('properties.index'));
+    });
+    Route::get('/mailable/reported-taken', function () {
+        $property = \App\Models\Property::with('user')->firstOrFail();
+
+        return new \App\Mail\PropertyReportedTaken($property);
     });
     Route::get('/mailable/listing-status-change', function () {
         $user = \App\Models\User::firstOrFail();

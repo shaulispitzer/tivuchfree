@@ -243,6 +243,26 @@ export default {
             posted: 'Posted',
             sort: 'Sort',
             termType: 'Term Type',
+            reportTaken: 'Report Taken',
+            reportTakenSuccess:
+                'We have informed the property owner that it is taken',
+            reportedTaken: 'Reported Taken',
+            reportedTakenWarningTitle: 'Your property was reported as taken',
+            reportedTakenWarningBody:
+                'This property was reported as taken on {date}. You have {days} {multipledays} to cancel this report or it will be automatically marked as taken.',
+            cancelReport: 'Cancel Report',
+            day: 'day',
+            days: 'days',
+            ourStatsShow:
+                'Our stats show that listings with images get significantly more views.',
+            uploading: 'Uploading…',
+            browse: 'Browse',
+            selectImage: 'Select an image',
+            addAnotherImage: 'Add another image',
+            maximumImagesReached: 'Maximum images reached',
+            addUpToImages: 'Add up to {max} images.',
+            pleaseEnterTextInEtc:
+                'Please enter text in {locale}. We will handle the translation automatically.',
         },
         contact: {
             subject: 'Subject',
@@ -510,6 +530,25 @@ export default {
             posted: 'פרסם ',
             sort: 'מיון',
             termType: 'סוג טווח',
+            reportTaken: 'דווח כתפוס',
+            reportTakenSuccess: 'הודענו לבעל הנכס שהוא תפוס',
+            reportedTaken: 'דווח כתפוס',
+            reportedTakenWarningTitle: 'הנכס שלך דווח כתפוס',
+            reportedTakenWarningBody:
+                'נכס זה דווח כתפוס בתאריך {date}. יש לך {days} {multipledays} לבטל את הדיווח אחרת הוא יסומן אוטומטית כתפוס.',
+            cancelReport: 'בטל דיווח',
+            day: 'יום',
+            days: 'ימים',
+            ourStatsShow:
+                'הסטטיסטיקות שלנו מראות שרשימות עם תמונות מקבלות תצפיות משמעותיות יותר.',
+            uploading: 'מעלה...',
+            browse: 'סלק',
+            selectImage: 'בחר תמונה',
+            addAnotherImage: 'הוסף תמונה נוספת',
+            maximumImagesReached: 'הגעת למספר התמונות המרבי',
+            addUpToImages: 'הוסף עד {max} תמונות. ',
+            pleaseEnterTextInEtc:
+                'נא להזין טקסט ב{locale}. ניתן להתעלם מהתרגום.',
         },
         contact: {
             subject: 'נושא',

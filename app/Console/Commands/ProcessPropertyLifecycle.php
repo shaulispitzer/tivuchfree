@@ -18,6 +18,7 @@ class ProcessPropertyLifecycle extends Command
     {
         $this->deleteTakenProperties();
         $this->markExpiredPropertiesAsTaken();
+        $this->markReportedTakenProperties();
         $this->sendTakenWarnings();
 
         return self::SUCCESS;
@@ -91,6 +92,45 @@ class ProcessPropertyLifecycle extends Command
 
         if ($count > 0) {
             $this->info("Marked {$count} properties as taken (30+ days old).");
+        }
+    }
+
+    /**
+     * Auto-mark properties as taken if they were reported taken 3+ days ago.
+     */
+    protected function markReportedTakenProperties(): void
+    {
+        $properties = Property::query()
+            ->with('user')
+            ->where('taken', false)
+            ->whereNotNull('reported_taken_at')
+            ->where('reported_taken_at', '<=', now()->subDays(3))
+            ->get();
+
+        $count = 0;
+
+        foreach ($properties as $property) {
+            $property->update([
+                'taken' => true,
+                'taken_at' => now(),
+                'reported_taken_at' => null,
+            ]);
+
+            if ($property->user?->email) {
+                $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
+                Mail::to($property->user->email)->queue(new PropertyListingStatusChange(
+                    $property->user->name,
+                    $address,
+                    'marked_as_taken',
+                    'automatically',
+                ));
+            }
+
+            $count++;
+        }
+
+        if ($count > 0) {
+            $this->info("Marked {$count} properties as taken (reported taken 3+ days ago).");
         }
     }
 

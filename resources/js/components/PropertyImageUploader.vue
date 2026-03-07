@@ -216,15 +216,17 @@ async function onFileChange(event: Event): Promise<void> {
         URL.revokeObjectURL(localUrl);
     }
 }
+
+const { t } = useI18n();
 </script>
 
 <template>
     <div class="grid max-w-80 gap-2">
         <div class="flex items-start justify-between gap-4">
             <div class="grid gap-1">
-                <p class="text-sm font-medium">Images</p>
+                <p class="text-sm font-medium">{{ t('common.image', 2) }}</p>
                 <p class="text-sm text-muted-foreground">
-                    Add up to {{ max }} images. Pick a main image (shown first).
+                    {{ t('common.ourStatsShow') }}
                 </p>
             </div>
 
@@ -252,15 +254,20 @@ async function onFileChange(event: Event): Promise<void> {
         >
             <span class="flex items-center gap-2">
                 <ImagePlus class="h-4 w-4" />
-                <span v-if="!images.length">Select an image</span>
-                <span v-else-if="canAddMore">Add another image</span>
-                <span v-else>Maximum images reached</span>
+                <span v-if="!images.length">{{ t('common.selectImage') }}</span>
+                <span v-else-if="canAddMore">{{
+                    t('common.addAnotherImage')
+                }}</span>
+                <span v-else>{{ t('common.maximumImagesReached') }}</span>
             </span>
 
             <span class="text-xs text-muted-foreground">
-                {{ isUploading ? 'Uploading…' : 'Browse' }}
+                {{ isUploading ? t('common.uploading') : t('common.browse') }}
             </span>
         </button>
+        <p class="text-sm text-muted-foreground">
+            {{ t('common.addUpToImages', { max: max }) }}
+        </p>
 
         <InputError :message="props.error" />
         <InputError :message="uploadError ?? undefined" />

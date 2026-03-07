@@ -1,6 +1,6 @@
 <template>
     <TransitionRoot appear :show="asPage ? showPage : open" as="template">
-        <Dialog as="div" class="relative z-999999" @close="handleDialogClose">
+        <Dialog as="div" class="relative z-9998" @close="handleDialogClose">
             <TransitionChild
                 @after-leave="
                     asPage

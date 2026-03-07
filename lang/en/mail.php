@@ -44,4 +44,13 @@ return [
         'button' => 'View My Properties',
         'thanks' => 'Thanks,',
     ],
+    'reported_taken' => [
+        'subject' => 'Your property has been reported as taken',
+        'title' => 'Your property was reported as taken',
+        'hi' => 'Hi :name,',
+        'body' => 'Someone reported that your property at **:address** is already taken. You have :days days to cancel this report or your property will be automatically marked as taken.',
+        'call_to_action' => 'Click the button below to manage your property and cancel the report if it is still available.',
+        'button' => 'Manage Property',
+        'thanks' => 'Thanks,',
+    ],
 ];
