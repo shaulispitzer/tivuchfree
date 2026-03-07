@@ -10,21 +10,22 @@ import { send } from '@/routes/verification';
 defineProps<{
     status?: string;
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
     <AuthLayout
-        title="Verify email"
-        description="Please verify your email address by clicking on the link we just emailed to you."
+        :title="t('auth.verifyEmailTitle')"
+        :description="t('auth.verifyEmailDescription')"
     >
-        <Head title="Email verification" />
+        <Head :title="t('auth.verifyEmailHeadTitle')" />
 
         <div
             v-if="status === 'verification-link-sent'"
             class="mb-4 text-center text-sm font-medium text-green-600"
         >
-            A new verification link has been sent to the email address you
-            provided during registration.
+            {{ t('auth.verificationLinkSent') }}
         </div>
 
         <Form
@@ -34,7 +35,7 @@ defineProps<{
         >
             <Button :disabled="processing" variant="secondary">
                 <Spinner v-if="processing" />
-                Resend verification email
+                {{ t('auth.resendVerificationEmail') }}
             </Button>
 
             <TextLink
@@ -42,7 +43,7 @@ defineProps<{
                 as="button"
                 class="mx-auto block text-sm"
             >
-                Log out
+                {{ t('auth.logout') }}
             </TextLink>
         </Form>
     </AuthLayout>

@@ -25,10 +25,10 @@ const { t } = useI18n();
 
 <template>
     <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
+        :title="t('auth.loginTitle')"
+        :description="t('auth.loginDescription')"
     >
-        <Head title="Log in" />
+        <Head :title="t('auth.loginHeadTitle')" />
 
         <div
             v-if="status"
@@ -62,7 +62,7 @@ const { t } = useI18n();
         >
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">{{ t('auth.emailAddress') }}</Label>
                     <Input
                         id="email"
                         type="email"
@@ -71,21 +71,21 @@ const { t } = useI18n();
                         autofocus
                         :tabindex="1"
                         autocomplete="email"
-                        placeholder="email@example.com"
+                        :placeholder="t('auth.emailPlaceholder')"
                     />
                     <InputError :message="errors.email" />
                 </div>
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
+                        <Label for="password">{{ t('auth.password') }}</Label>
                         <TextLink
                             v-if="canResetPassword"
                             :href="request()"
                             class="text-sm"
                             :tabindex="5"
                         >
-                            Forgot password?
+                            {{ t('auth.forgotPassword') }}
                         </TextLink>
                     </div>
                     <Input
@@ -95,7 +95,7 @@ const { t } = useI18n();
                         required
                         :tabindex="2"
                         autocomplete="current-password"
-                        placeholder="Password"
+                        :placeholder="t('auth.passwordPlaceholder')"
                     />
                     <InputError :message="errors.password" />
                 </div>
@@ -103,7 +103,7 @@ const { t } = useI18n();
                 <div class="flex items-center justify-between">
                     <Label for="remember" class="flex items-center space-x-3">
                         <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
+                        <span>{{ t('auth.remember') }}</span>
                     </Label>
                 </div>
 
@@ -115,7 +115,7 @@ const { t } = useI18n();
                     data-test="login-button"
                 >
                     <Spinner v-if="processing" />
-                    Log in
+                    {{ t('auth.logIn') }}
                 </Button>
             </div>
 
@@ -123,8 +123,8 @@ const { t } = useI18n();
                 class="text-center text-sm text-muted-foreground"
                 v-if="canRegister"
             >
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+                {{ t('auth.dontHaveAccount') }}
+                <TextLink :href="register()" :tabindex="5">{{ t('auth.signUp') }}</TextLink>
             </div>
         </Form>
     </AuthBase>

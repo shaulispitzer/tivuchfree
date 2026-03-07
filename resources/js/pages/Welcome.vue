@@ -11,10 +11,12 @@ withDefaults(
         canRegister: true,
     },
 );
+
+const { t } = useI18n();
 </script>
 
 <template>
-    <Head title="Welcome">
+    <Head :title="t('common.welcome')">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -30,21 +32,21 @@ withDefaults(
                     :href="home()"
                     class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                 >
-                    Home
+                    {{ t('common.home') }}
                 </Link>
                 <template v-else>
                     <Link
                         :href="login()"
                         class="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
                     >
-                        Log in
+                        {{ t('auth.logIn') }}
                     </Link>
                     <Link
                         v-if="canRegister"
                         :href="register()"
                         class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                     >
-                        Register
+                        {{ t('auth.register') }}
                     </Link>
                 </template>
             </nav>

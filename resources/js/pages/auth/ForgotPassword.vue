@@ -13,14 +13,16 @@ import { email } from '@/routes/password';
 defineProps<{
     status?: string;
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
     <AuthLayout
-        title="Forgot password"
-        description="Enter your email to receive a password reset link"
+        :title="t('auth.forgotPasswordTitle')"
+        :description="t('auth.forgotPasswordDescription')"
     >
-        <Head title="Forgot password" />
+        <Head :title="t('auth.forgotPasswordHeadTitle')" />
 
         <div
             v-if="status"
@@ -32,14 +34,14 @@ defineProps<{
         <div class="space-y-6">
             <Form v-bind="email.form()" v-slot="{ errors, processing }">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">{{ t('auth.emailAddress') }}</Label>
                     <Input
                         id="email"
                         type="email"
                         name="email"
                         autocomplete="off"
                         autofocus
-                        placeholder="email@example.com"
+                        :placeholder="t('auth.emailPlaceholder')"
                     />
                     <InputError :message="errors.email" />
                 </div>
@@ -51,14 +53,14 @@ defineProps<{
                         data-test="email-password-reset-link-button"
                     >
                         <Spinner v-if="processing" />
-                        Email password reset link
+                        {{ t('auth.emailPasswordResetLink') }}
                     </Button>
                 </div>
             </Form>
 
             <div class="space-x-1 text-center text-sm text-muted-foreground">
-                <span>Or, return to</span>
-                <TextLink :href="login()">log in</TextLink>
+                <span>{{ t('auth.orReturnTo') }}</span>
+                <TextLink :href="login()">{{ t('auth.logInLink') }}</TextLink>
             </div>
         </div>
     </AuthLayout>
