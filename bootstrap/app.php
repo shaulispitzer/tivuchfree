@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('properties:process-lifecycle')->daily();
         $schedule->job(new \App\Jobs\ProcessExpiredPropertySubscriptions)->daily();
+        $schedule->job(new \App\Jobs\PurgeStaleTemporaryUploads)->weekly();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');

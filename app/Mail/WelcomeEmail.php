@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Queue\SerializesModels;
 
 class WelcomeEmail extends Mailable implements ShouldQueue
@@ -33,6 +34,14 @@ class WelcomeEmail extends Mailable implements ShouldQueue
                 'createUrl' => route('properties.create'),
             ],
         );
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [new RateLimited('resend')];
     }
 
     /**

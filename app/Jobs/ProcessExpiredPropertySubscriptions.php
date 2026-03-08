@@ -6,7 +6,6 @@ use App\Mail\PropertySubscriptionExpired;
 use App\Models\PropertySubscription;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Mail;
 
 class ProcessExpiredPropertySubscriptions implements ShouldQueue
 {
@@ -14,18 +13,27 @@ class ProcessExpiredPropertySubscriptions implements ShouldQueue
 
     public function handle(): void
     {
-        $expired = PropertySubscription::query()
-            ->whereNull('unsubscribed_at')
-            ->where('expires_at', '<=', now())
-            ->get();
-
-        foreach ($expired as $subscription) {
-            Mail::to($subscription->email)->send(new PropertySubscriptionExpired(
-                subscription: $subscription,
-                subscribeUrl: route('subscribe'),
-            ));
-
-            $subscription->update(['unsubscribed_at' => now()]);
-        }
+        // Subscriptions are now permanent — expiry processing disabled.
+        // To re-enable 30-day expiry, uncomment the block below:
+        //
+        // $expired = PropertySubscription::query()
+        //     ->whereNull('unsubscribed_at')
+        //     ->where('expires_at', '<=', now())
+        //     ->get();
+        //
+        // foreach ($expired as $index => $subscription) {
+        //     // Stagger dispatch at 1 email/second, leaving headroom for synchronous sends (e.g. OTP emails).
+        //     $delaySeconds = $index;
+        //
+        //     SendEmailJob::dispatch(
+        //         $subscription->email,
+        //         new PropertySubscriptionExpired(
+        //             subscription: $subscription,
+        //             subscribeUrl: route('subscribe'),
+        //         ),
+        //     )->delay(now()->addSeconds($delaySeconds));
+        //
+        //     $subscription->update(['unsubscribed_at' => now()]);
+        // }
     }
 }

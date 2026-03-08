@@ -37,12 +37,17 @@ class PropertySubscription extends Model
 
     public function scopeActive($query)
     {
-        return $query->whereNull('unsubscribed_at')
-            ->where('expires_at', '>', now());
+        return $query->whereNull('unsubscribed_at');
+        // Subscriptions are now permanent — expiry check disabled.
+        // To re-enable 30-day expiry, restore the line below and remove the one above:
+        // return $query->whereNull('unsubscribed_at')->where('expires_at', '>', now());
     }
 
     public function isActive(): bool
     {
-        return $this->unsubscribed_at === null && $this->expires_at->isFuture();
+        return $this->unsubscribed_at === null;
+        // Subscriptions are now permanent — expiry check disabled.
+        // To re-enable 30-day expiry, restore the line below and remove the one above:
+        // return $this->unsubscribed_at === null && $this->expires_at->isFuture();
     }
 }

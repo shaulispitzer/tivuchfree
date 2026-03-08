@@ -50,7 +50,7 @@ class PropertySubscriptionController extends Controller
         $existing = PropertySubscription::query()
             ->where('email', $email)
             ->whereNull('unsubscribed_at')
-            ->where('expires_at', '>', now())
+            // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->first();
 
         if ($existing) {
@@ -66,7 +66,7 @@ class PropertySubscriptionController extends Controller
                 'filters' => $filters,
                 'token' => Str::random(64),
                 'subscribed_at' => now(),
-                'expires_at' => now()->addDays(30),
+                'expires_at' => now()->addYears(100), // Permanent; change back to addDays(30) to re-enable expiry
             ]);
 
             Mail::to($subscription->email)->locale('en')->send(new PropertySubscriptionConfirmation(
@@ -109,7 +109,7 @@ class PropertySubscriptionController extends Controller
         $existing = PropertySubscription::query()
             ->where('email', $pending->email)
             ->whereNull('unsubscribed_at')
-            ->where('expires_at', '>', now())
+            // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->first();
 
         if ($existing) {
@@ -125,7 +125,7 @@ class PropertySubscriptionController extends Controller
             'filters' => $pending->filters,
             'token' => Str::random(64),
             'subscribed_at' => now(),
-            'expires_at' => now()->addDays(30),
+            'expires_at' => now()->addYears(100), // Permanent; change back to addDays(30) to re-enable expiry
         ]);
 
         $pending->delete();
@@ -175,7 +175,7 @@ class PropertySubscriptionController extends Controller
         $subscription = PropertySubscription::query()
             ->where('token', $token)
             ->whereNull('unsubscribed_at')
-            ->where('expires_at', '>', now())
+            // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->firstOrFail();
 
         return Inertia::render('subscription/UpdateFilters', [
@@ -204,7 +204,7 @@ class PropertySubscriptionController extends Controller
         $subscription = PropertySubscription::query()
             ->where('token', $token)
             ->whereNull('unsubscribed_at')
-            ->where('expires_at', '>', now())
+            // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->firstOrFail();
 
         $subscription->update(['filters' => $request->filtersForStorage()]);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\PropertyStatController as AdminPropertyStatController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
@@ -50,6 +51,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
     Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('failed-jobs', [AdminFailedJobController::class, 'index'])->name('failed-jobs.index');
+    Route::post('failed-jobs/retry-all', [AdminFailedJobController::class, 'retryAll'])->name('failed-jobs.retry-all');
+    Route::delete('failed-jobs', [AdminFailedJobController::class, 'destroyAll'])->name('failed-jobs.destroy-all');
+    Route::post('failed-jobs/{id}/retry', [AdminFailedJobController::class, 'retry'])->name('failed-jobs.retry');
+    Route::delete('failed-jobs/{id}', [AdminFailedJobController::class, 'destroy'])->name('failed-jobs.destroy');
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
     Route::post('streets', [StreetController::class, 'store'])->name('streets.store');
