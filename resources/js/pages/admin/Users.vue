@@ -57,10 +57,7 @@ function formatDateTime(
 
     <div class="space-y-6">
         <div>
-            <h1 class="text-xl font-semibold tracking-tight">Users</h1>
-            <p class="mt-1 text-sm text-muted-foreground">
-                Manage all users. Only admins can access this page.
-            </p>
+            <h1 class="text-xl font-semibold tracking-tight">Manage Users</h1>
         </div>
 
         <div
