@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
+
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
 import { redirect as googleRedirect } from '@/routes/auth/google';
@@ -37,7 +31,10 @@ const { t } = useI18n();
             {{ status }}
         </div>
         <Button variant="outline" class="w-full" as-child>
-            <a :href="googleRedirect.url()" class="inline-flex items-center justify-center gap-2">
+            <a
+                :href="googleRedirect.url()"
+                class="inline-flex items-center justify-center gap-2"
+            >
                 <MaterialIconThemeGoogle class="h-5 w-5" />
                 {{ t('auth.google') }}
             </a>
@@ -71,7 +68,7 @@ const { t } = useI18n();
                         autofocus
                         :tabindex="1"
                         autocomplete="email"
-                        :placeholder="t('auth.emailPlaceholder')"
+                        placeholder="email@example.com"
                     />
                     <InputError :message="errors.email" />
                 </div>
@@ -95,7 +92,6 @@ const { t } = useI18n();
                         required
                         :tabindex="2"
                         autocomplete="current-password"
-                        :placeholder="t('auth.passwordPlaceholder')"
                     />
                     <InputError :message="errors.password" />
                 </div>
@@ -124,7 +120,9 @@ const { t } = useI18n();
                 v-if="canRegister"
             >
                 {{ t('auth.dontHaveAccount') }}
-                <TextLink :href="register()" :tabindex="5">{{ t('auth.signUp') }}</TextLink>
+                <TextLink :href="register()" :tabindex="5">{{
+                    t('auth.signUp')
+                }}</TextLink>
             </div>
         </Form>
     </AuthBase>
