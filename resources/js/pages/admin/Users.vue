@@ -47,7 +47,7 @@ function formatDateTime(
             addSuffix: true,
             locale,
         }),
-        fullDate: format(date, 'do MMM yyyy', { locale }),
+        fullDate: format(date, 'do MMM yyyy, HH:mm', { locale }),
     };
 }
 </script>
