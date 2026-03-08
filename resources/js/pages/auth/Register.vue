@@ -51,7 +51,7 @@ const { t } = useI18n();
                         :tabindex="2"
                         autocomplete="email"
                         name="email"
-                        :placeholder="t('auth.emailPlaceholder')"
+                        placeholder="email@example.com"
                     />
                     <InputError :message="errors.email" />
                 </div>
@@ -71,7 +71,9 @@ const { t } = useI18n();
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">{{ t('auth.confirmPassword') }}</Label>
+                    <Label for="password_confirmation">{{
+                        t('auth.confirmPassword')
+                    }}</Label>
                     <Input
                         id="password_confirmation"
                         type="password"
