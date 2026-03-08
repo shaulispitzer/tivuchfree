@@ -88,7 +88,9 @@ onMounted(() => {
             <div
                 class="relative z-10 mx-auto flex min-h-[78vh] max-w-7xl flex-col items-center px-6 py-6 text-center text-white"
             >
-                <div class="relative z-20 flex shrink-0 flex-col items-center gap-2 pt-12">
+                <div
+                    class="relative z-20 flex shrink-0 flex-col items-center gap-2 pt-12"
+                >
                     <p class="text-sm text-white" dir="rtl">
                         לע&quot;נ הצדיק ר&apos; ישעיה בן ר&apos; משה זי&quot;ע
                     </p>
@@ -162,7 +164,7 @@ onMounted(() => {
                                     <span
                                         class="text-lg font-semibold uppercase"
                                     >
-                                        {{ t('common.months') }}
+                                        {{ t('common.month', 2) }}
                                     </span>
                                 </div>
                             </span>
@@ -198,7 +200,7 @@ onMounted(() => {
                                     <span
                                         class="text-lg font-semibold uppercase"
                                     >
-                                        {{ t('common.months') }}
+                                        {{ t('common.month', 2) }}
                                     </span>
                                 </div>
                             </span>
@@ -237,7 +239,7 @@ onMounted(() => {
                                     <span
                                         class="text-lg font-semibold uppercase"
                                     >
-                                        {{ t('common.months') }}
+                                        {{ t('common.month') }}
                                     </span>
                                 </div>
                             </span>
