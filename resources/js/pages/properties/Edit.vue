@@ -1244,7 +1244,7 @@ function handleConfirmDelete(): void {
                         v-model="priceInput"
                         type="number"
                         name="price"
-                        :label="t('common.price')"
+                        :label="t('common.pricePM')"
                         step="1"
                         number
                         validation="number|min:0"

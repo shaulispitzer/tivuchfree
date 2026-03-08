@@ -244,7 +244,7 @@ const neighbourhoodLabel = computed(() => {
                             >{{ t('common.price') }}:</span
                         >
                         <span class="font-medium" v-if="property.price">{{
-                            '₪' + property.price.toFixed(2)
+                            '₪' + property.price
                         }}</span>
                         <span class="font-medium italic" v-else>{{
                             t('common.notSpecified')
