@@ -5,4 +5,6 @@ return [
     'propertyDeletedSuccessfully' => 'Property deleted successfully',
     'propertyCreatedSuccessfully' => 'Property created successfully',
     'reportCancelledSuccessfully' => 'Report cancelled successfully',
+    'reviewSubmittedSuccessfully' => 'Review submitted successfully',
+    'reviewDeletedSuccessfully' => 'Review deleted successfully',
 ];

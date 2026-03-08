@@ -5,4 +5,6 @@ return [
     'propertyDeletedSuccessfully' => 'הנכס נמחק בהצלחה',
     'propertyCreatedSuccessfully' => 'הנכס נוצר בהצלחה',
     'reportCancelledSuccessfully' => 'הדיווח בוטל בהצלחה',
+    'reviewSubmittedSuccessfully' => 'הביקורת נשלחה בהצלחה',
+    'reviewDeletedSuccessfully' => 'הביקורת נמחקה בהצלחה',
 ];

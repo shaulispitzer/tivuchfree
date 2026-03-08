@@ -3,6 +3,9 @@ import heroImage from '@assets/jerusalem-night-view.jpg';
 import { Head, Link } from '@inertiajs/vue3';
 import FluentArrowUp12Filled from '~icons/fluent/arrow-up-12-filled';
 import LineMdHomeSimple from '~icons/line-md/home-simple';
+import { Button } from '@/components/ui/button';
+import { store as reviewsStore } from '@/routes/reviews';
+
 const props = defineProps<{
     tivuchfreePropertiesCount: number;
     moneySavedByCommunity: number;
@@ -10,8 +13,16 @@ const props = defineProps<{
 
 const { t } = useI18n();
 const shortTermModalOpen = ref(false);
+const reviewModalOpen = ref(false);
 const displayedSavings = ref(0);
 const displayedPropertiesCount = ref(0);
+
+const reviewForm = useForm({
+    name: '',
+    email: '',
+    role: '',
+    message: '',
+});
 
 const testimonials = [
     {
@@ -45,6 +56,24 @@ function openShortTermModal(): void {
 
 function closeShortTermModal(): void {
     shortTermModalOpen.value = false;
+}
+
+function openReviewModal(): void {
+    reviewModalOpen.value = true;
+}
+
+function closeReviewModal(): void {
+    reviewModalOpen.value = false;
+}
+
+function submitReview(): void {
+    reviewForm.post(reviewsStore().url, {
+        preserveScroll: true,
+        onSuccess: () => {
+            reviewForm.reset();
+            closeReviewModal();
+        },
+    });
 }
 
 onMounted(() => {
@@ -298,6 +327,7 @@ onMounted(() => {
                     <button
                         type="button"
                         class="rounded-full border border-primary/40 bg-background px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10"
+                        @click="openReviewModal"
                     >
                         {{ t('common.leaveAReview') }}
                     </button>
@@ -342,6 +372,81 @@ onMounted(() => {
                     {{ t('common.goToWwwHeimisheApartments') }}
                 </a>
             </div>
+        </Modal>
+
+        <Modal
+            :open="reviewModalOpen"
+            :title="t('common.reviewModalTitle')"
+            :actions="false"
+            :as-page="false"
+            @close="closeReviewModal"
+        >
+            <FormKit
+                type="form"
+                :actions="false"
+                form-class="space-y-4"
+                @submit="submitReview"
+            >
+                <FormKit
+                    v-model="reviewForm.name"
+                    type="text"
+                    name="name"
+                    :label="t('common.name')"
+                    validation="required"
+                    :errors="
+                        reviewForm.errors.name ? [reviewForm.errors.name] : []
+                    "
+                    label-class="required-asterisk"
+                />
+
+                <FormKit
+                    v-model="reviewForm.email"
+                    type="email"
+                    name="email"
+                    :label="t('common.email')"
+                    validation="required|email"
+                    :errors="
+                        reviewForm.errors.email ? [reviewForm.errors.email] : []
+                    "
+                    label-class="required-asterisk"
+                />
+
+                <FormKit
+                    v-model="reviewForm.role"
+                    type="text"
+                    name="role"
+                    :label="t('common.reviewRole')"
+                    :errors="
+                        reviewForm.errors.role ? [reviewForm.errors.role] : []
+                    "
+                />
+
+                <FormKit
+                    v-model="reviewForm.message"
+                    type="textarea"
+                    name="message"
+                    :label="t('common.reviewMessage')"
+                    validation="required"
+                    :errors="
+                        reviewForm.errors.message
+                            ? [reviewForm.errors.message]
+                            : []
+                    "
+                    label-class="required-asterisk"
+                />
+
+                <Button
+                    type="submit"
+                    :disabled="reviewForm.processing"
+                    class="w-full"
+                >
+                    {{
+                        reviewForm.processing
+                            ? t('common.sending')
+                            : t('common.submitReview')
+                    }}
+                </Button>
+            </FormKit>
         </Modal>
     </div>
 </template>

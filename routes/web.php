@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\PropertyStatController as AdminPropertyStatController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\ContactController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\PlaygroundController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyImageUploadController;
 use App\Http\Controllers\PropertySubscriptionController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\StreetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,6 +23,7 @@ Route::get('about-us', function () {
 })->name('about-us');
 Route::get('contact', [ContactController::class, 'create'])->name('contact.create');
 Route::post('contact', [ContactController::class, 'store'])->name('contact.store');
+Route::post('reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
 Route::post('/locale', LocaleController::class)->name('locale');
 Route::get('playground', [PlaygroundController::class, 'index'])->name('playground');
@@ -45,6 +48,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('users/{user}/make-admin', [AdminUserController::class, 'makeAdmin'])->name('users.make-admin');
     Route::patch('users/{user}/revoke-admin', [AdminUserController::class, 'revokeAdmin'])->name('users.revoke-admin');
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+    Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
     Route::post('streets', [StreetController::class, 'store'])->name('streets.store');

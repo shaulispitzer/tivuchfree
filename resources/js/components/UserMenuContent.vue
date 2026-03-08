@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
-import { BarChart3, Building2, LayoutDashboard, LogOut, Users } from 'lucide-vue-next';
 import {
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import UserInfo from '@/components/UserInfo.vue';
+    BarChart3,
+    Building2,
+    LayoutDashboard,
+    LogOut,
+    MessageSquare,
+    Users,
+} from 'lucide-vue-next';
+
 import { logout } from '@/routes';
 import { index as adminPropertiesIndex } from '@/routes/admin/properties';
 import { index as adminPropertyStatsIndex } from '@/routes/admin/property-stats';
+import { index as adminReviewsIndex } from '@/routes/admin/reviews';
 import { index as adminUsersIndex } from '@/routes/admin/users';
 import { index as myPropertiesIndex } from '@/routes/my-properties';
 
@@ -73,6 +75,16 @@ defineProps<Props>();
             >
                 <BarChart3 class="mr-2 h-4 w-4" />
                 {{ t('common.admin') }} - Price Stats
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="adminReviewsIndex()"
+                prefetch
+            >
+                <MessageSquare class="mr-2 h-4 w-4" />
+                {{ t('common.admin') }} - {{ t('common.adminReviews') }}
             </Link>
         </DropdownMenuItem>
         <!-- <DropdownMenuItem :as-child="true">
