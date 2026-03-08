@@ -77,7 +77,7 @@ function formatDateTime(
             <table class="w-full text-sm">
                 <thead class="bg-muted/50">
                     <tr>
-                        <th class="px-4 py-3 text-left font-medium">Avatar</th>
+                        <th class="px-4 py-3 text-left font-medium"></th>
                         <th class="px-4 py-3 text-left font-medium">Name</th>
                         <th class="px-4 py-3 text-left font-medium">Email</th>
                         <th class="px-4 py-3 text-left font-medium">Role</th>
@@ -85,11 +85,9 @@ function formatDateTime(
                             Created at
                         </th>
                         <th class="px-4 py-3 text-left font-medium">
-                            Email verified at
+                            Verified at
                         </th>
-                        <th class="px-4 py-3 text-right font-medium">
-                            Actions
-                        </th>
+                        <th class="px-4 py-3 text-right font-medium"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-input">
