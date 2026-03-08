@@ -456,7 +456,8 @@ class PropertyController extends Controller
     {
         $this->authorize('update', $property);
 
-        $property->loadMissing(['user', 'media']);
+        $property->loadMissing(['media']);
+        $property->setRelation('user', null);
 
         return Inertia::render('properties/Edit', [
             'property' => PropertyData::fromModel($property),
@@ -525,7 +526,7 @@ class PropertyController extends Controller
 
     public function markAsTaken(MarkPropertyAsTakenRequest $request, Property $property, PropertyStatRecorder $propertyStatRecorder): RedirectResponse
     {
-        if ($property->user_id !== $request->user()->id) {
+        if ($property->user_id !== $request->user()->id && ! $request->user()->is_admin) {
             abort(403);
         }
 
@@ -559,7 +560,7 @@ class PropertyController extends Controller
 
     public function repost(Request $request, Property $property): RedirectResponse
     {
-        if ($property->user_id !== $request->user()->id) {
+        if ($property->user_id !== $request->user()->id && ! $request->user()->is_admin) {
             abort(403);
         }
 

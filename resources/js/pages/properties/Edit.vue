@@ -4,10 +4,12 @@ import axios from 'axios';
 import {
     Check,
     ChevronsUpDown,
+    CircleCheck,
     Clock,
     ImagePlus,
     Star,
     Trash2,
+    User,
 } from 'lucide-vue-next';
 import type { DateValue } from 'reka-ui';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -17,6 +19,7 @@ import { useI18n } from 'vue-i18n';
 import { useToast } from 'vue-toastification';
 
 import DatePicker from '@/components/DatePicker.vue';
+import MenuSelect from '@/components/ui/menu-select/MenuSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +37,10 @@ import {
 } from '@/components/ui/select';
 import { router } from '@inertiajs/vue3';
 import { cn } from '@/lib/utils';
+import { index as adminPropertiesIndex } from '@/routes/admin/properties';
+import { destroy, markAsTaken } from '@/routes/my-properties';
 import { index, update } from '@/routes/properties';
+import Modal from '@/components/Modal.vue';
 
 const { t } = useI18n();
 const page = usePage();
@@ -74,6 +80,10 @@ const props = defineProps({
         type: Object as PropType<LifecycleInfo>,
         required: true,
     },
+    adminEdit: {
+        type: Boolean,
+        default: false,
+    },
 });
 const toast = useToast();
 
@@ -94,6 +104,7 @@ type PropertyEditFormData = Omit<
     | 'porch_garden'
     | 'air_conditioning'
     | 'apartment_condition'
+    | 'furnished'
 > & {
     building_number: number | undefined;
     street: number | undefined;
@@ -105,6 +116,7 @@ type PropertyEditFormData = Omit<
     porch_garden: App.Enums.PropertyPorchGarden | null;
     air_conditioning: App.Enums.PropertyAirConditioning | null;
     apartment_condition: App.Enums.PropertyApartmentCondition | null;
+    furnished: App.Enums.PropertyFurnished | null;
 };
 
 function toISODateTime(dateString: string | null): string | null {
@@ -165,7 +177,7 @@ const form = useForm<PropertyEditFormData>({
     available_from: props.property.available_from,
     available_to: props.property.available_to,
     bedrooms: props.property.bedrooms ?? undefined,
-    furnished: props.property.furnished,
+    furnished: props.property.furnished ?? null,
     temp_upload_id: null,
     image_media_ids: [],
     main_image_media_id: null,
@@ -184,27 +196,131 @@ let streetsRequestId = 0;
 const canAddMoreImages = computed(() => propertyImages.value.length < 6);
 
 const isMediumTerm = computed(() => form.type === 'medium_term');
+
+const translatedLeaseTypes = computed(() =>
+    props.options.lease_types.map((option) => ({
+        value: option.value,
+        label: t(`propertyLeaseType.${option.value}`),
+    })),
+);
+
+const translatedNeighbourhoods = computed(() =>
+    props.options.neighbourhoods.map((option) => ({
+        value: option.value,
+        label: t(`neighbourhood.${option.value.replaceAll(' ', '')}`),
+    })),
+);
+
+const translatedFurnished = computed(() =>
+    props.options.furnished.map((option) => ({
+        value: option.value,
+        label: t(`propertyFurnished.${option.value}`),
+    })),
+);
+
+const translatedAccess = computed(() =>
+    props.options.access.map((option) => ({
+        value: option.value,
+        label: t(`propertyAccess.${option.value}`),
+    })),
+);
+
+const translatedKitchenDiningRoom = computed(() =>
+    props.options.kitchen_dining_room.map((option) => ({
+        value: option.value,
+        label: t(`propertyKitchenDiningRoom.${option.value}`),
+    })),
+);
+
+const translatedPorchGarden = computed(() =>
+    props.options.porch_garden.map((option) => ({
+        value: option.value,
+        label: t(`propertyPorchGarden.${option.value}`),
+    })),
+);
+
+const translatedAirConditioning = computed(() =>
+    props.options.air_conditioning.map((option) => ({
+        value: option.value,
+        label: t(`propertyAirConditioning.${option.value}`),
+    })),
+);
+
+const translatedApartmentCondition = computed(() =>
+    props.options.apartment_condition.map((option) => ({
+        value: option.value,
+        label: t(`propertyApartmentCondition.${option.value}`),
+    })),
+);
+
 const neighbourhoodClientError = computed(() => {
     if (form.neighbourhoods.length === 0) {
-        return 'Please select at least one neighbourhood.';
+        return t('common.selectAtLeastOneNeighbourhood');
     }
 
     if (form.neighbourhoods.length > 3) {
-        return 'You can select up to 3 neighbourhoods. Please remove at least one neighbourhood.';
+        return t('common.upToThreeNeighbourhoods');
     }
 
     if (new Set(form.neighbourhoods).size !== form.neighbourhoods.length) {
-        return 'Each neighbourhood can only be selected once.';
+        return t('common.neighbourhoodUnique');
     }
 
     return null;
 });
+
 const neighbourhoodLimitError = computed(() => {
     if (form.neighbourhoods.length > 3) {
-        return 'You can select up to 3 neighbourhoods. Please remove at least one neighbourhood.';
+        return t('common.upToThreeNeighbourhoods');
     }
 
     return null;
+});
+
+const furnishedSelect = computed({
+    get: () => form.furnished ?? '',
+    set: (value) => {
+        form.furnished = (value || null) as App.Enums.PropertyFurnished | null;
+    },
+});
+
+const accessSelect = computed({
+    get: () => form.access ?? '',
+    set: (value) => {
+        form.access = (value || null) as App.Enums.PropertyAccess | null;
+    },
+});
+
+const kitchenDiningRoomSelect = computed({
+    get: () => form.kitchen_dining_room ?? '',
+    set: (value) => {
+        form.kitchen_dining_room = (value ||
+            null) as App.Enums.PropertyKitchenDiningRoom | null;
+    },
+});
+
+const porchGardenSelect = computed({
+    get: () => form.porch_garden ?? '',
+    set: (value) => {
+        form.porch_garden = (value ||
+            null) as App.Enums.PropertyPorchGarden | null;
+    },
+});
+
+const airConditioningSelect = computed({
+    get: () => form.air_conditioning ?? '',
+    set: (value) => {
+        form.air_conditioning = (value ||
+            null) as App.Enums.PropertyAirConditioning | null;
+    },
+});
+
+const apartmentConditionSelect = computed({
+    get: () => form.apartment_condition ?? '',
+    set: (value) => {
+        form.apartment_condition = (value ||
+            null) as App.Enums.PropertyApartmentCondition | null;
+    },
 });
 const filteredStreetOptions = computed(() => {
     const query = streetSearch.value.trim().toLowerCase();
@@ -401,15 +517,15 @@ async function onImageInputChange(event: Event): Promise<void> {
         );
 
         propertyImages.value = response.data.images;
-        toast.success('Image uploaded successfully.');
+        toast.success(t('common.imageUploadedSuccess'));
     } catch (error) {
         if (axios.isAxiosError(error)) {
             imageUploadError.value =
                 error.response?.data?.errors?.image?.[0] ??
                 error.response?.data?.message ??
-                'Upload failed. Please try again.';
+                t('common.uploadFailedTryAgain');
         } else {
-            imageUploadError.value = 'Upload failed. Please try again.';
+            imageUploadError.value = t('common.uploadFailedTryAgain');
         }
     } finally {
         uploadingImages.value = false;
@@ -419,8 +535,8 @@ async function onImageInputChange(event: Event): Promise<void> {
 async function deleteImage(image: EditableImage): Promise<void> {
     const accepted = window.confirm(
         image.is_main
-            ? 'Delete the main image now? This action is immediate and cannot be undone.'
-            : 'Delete this image now? This action is immediate and cannot be undone.',
+            ? t('common.imageDeleteConfirmMain')
+            : t('common.imageDeleteConfirm'),
     );
 
     if (!accepted) {
@@ -438,16 +554,16 @@ async function deleteImage(image: EditableImage): Promise<void> {
         propertyImages.value = response.data.images;
         toast.success(
             image.is_main
-                ? 'Main image deleted and updated successfully.'
-                : 'Image deleted successfully.',
+                ? t('common.mainImageDeletedSuccess')
+                : t('common.imageDeletedSuccess'),
         );
     } catch (error) {
         if (axios.isAxiosError(error)) {
             imageUploadError.value =
                 error.response?.data?.message ??
-                'Delete failed. Please try again.';
+                t('common.deleteFailedTryAgain');
         } else {
-            imageUploadError.value = 'Delete failed. Please try again.';
+            imageUploadError.value = t('common.deleteFailedTryAgain');
         }
     } finally {
         imageDeleteInProgressId.value = null;
@@ -554,20 +670,139 @@ function cancelReport(): void {
         },
     );
 }
+
+const markAsTakenModalOpen = ref(false);
+const deleteModalOpen = ref(false);
+const feedbackSource = ref<string | null>(null);
+const feedbackPrice = ref('');
+const markingAsTaken = ref(false);
+const deletingId = ref<number | null>(null);
+const markAsTakenThenDelete = ref(false);
+
+const feedbackOptions = [
+    { value: 'tivuchfree', label: 'Tivuch Free' },
+    { value: 'other_non_paid', label: 'Other (non-paid)' },
+    { value: 'agent', label: 'Tivuch (agent)' },
+    { value: 'other', label: 'Other' },
+];
+
+function openMarkAsTakenModal(): void {
+    markAsTakenThenDelete.value = false;
+    markAsTakenModalOpen.value = true;
+    feedbackSource.value = null;
+    feedbackPrice.value = '';
+}
+
+function openDeleteModal(): void {
+    if (!props.lifecycle.taken) {
+        markAsTakenThenDelete.value = true;
+        markAsTakenModalOpen.value = true;
+        feedbackSource.value = null;
+        feedbackPrice.value = '';
+    } else {
+        deleteModalOpen.value = true;
+    }
+}
+
+function handleMarkAsTaken(): void {
+    const priceString =
+        typeof feedbackPrice.value === 'string'
+            ? feedbackPrice.value
+            : String(feedbackPrice.value ?? '');
+    const priceTrimmed = priceString.trim();
+    const parsedPrice =
+        priceTrimmed !== '' && Number.isFinite(Number(priceTrimmed))
+            ? Number(priceTrimmed)
+            : null;
+
+    markingAsTaken.value = true;
+    const propertyId = props.property.id;
+    const thenDelete = markAsTakenThenDelete.value;
+
+    router.patch(
+        markAsTaken(propertyId).url,
+        {
+            how_got_taken: feedbackSource.value,
+            price_taken_at: parsedPrice,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                markAsTakenModalOpen.value = false;
+                markAsTakenThenDelete.value = false;
+                if (thenDelete) {
+                    deletingId.value = propertyId;
+                    router.delete(destroy(propertyId).url, {
+                        preserveScroll: true,
+                        onSuccess: () => (deleteModalOpen.value = false),
+                        onFinish: () => (deletingId.value = null),
+                    });
+                }
+            },
+            onFinish: () => {
+                markingAsTaken.value = false;
+            },
+        },
+    );
+}
+
+function handleConfirmDelete(): void {
+    const propertyId = props.property.id;
+    deletingId.value = propertyId;
+    router.delete(destroy(propertyId).url, {
+        preserveScroll: true,
+        onSuccess: () => (deleteModalOpen.value = false),
+        onFinish: () => (deletingId.value = null),
+    });
+}
 </script>
 
 <template>
     <Head :title="t('common.editProperty')" />
 
-    <div class="flex items-center justify-between">
-        <h1 class="text-lg font-semibold">{{ t('common.editProperty') }}</h1>
-        <Button as-child>
-            <Link :href="index()">{{ t('common.backToList') }}</Link>
-        </Button>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 class="text-lg font-semibold">
+            {{ t('common.editProperty') }}{{ adminEdit ? ' (Admin)' : '' }}
+        </h1>
+        <div class="flex flex-wrap items-center gap-2">
+            <Button
+                v-if="lifecycle.next_action === 'deletion'"
+                size="sm"
+                :variant="lifecycle.taken ? 'destructive' : 'outline'"
+                :disabled="markingAsTaken || deletingId !== null"
+                @click="openDeleteModal"
+            >
+                <Trash2 class="mr-2 size-4" />
+                {{ t('common.delete') }}
+            </Button>
+            <Button as-child>
+                <Link :href="adminEdit ? adminPropertiesIndex() : index()">{{
+                    t('common.backToList')
+                }}</Link>
+            </Button>
+        </div>
     </div>
 
     <div
-        class="mt-4 rounded-lg border px-4 py-3 text-sm"
+        v-if="adminEdit && property.user"
+        class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
+    >
+        <div class="flex items-center gap-2">
+            <User class="size-4 shrink-0" />
+            <span class="font-medium">{{ t('common.postedBy') }}:</span>
+            <span>{{ property.user.name }} (ID: {{ property.user.id }})</span>
+            <a
+                v-if="property.user.email"
+                :href="`mailto:${property.user.email}`"
+                class="text-primary underline hover:no-underline"
+            >
+                {{ property.user.email }}
+            </a>
+        </div>
+    </div>
+
+    <div
+        class="rounded-lg border px-4 py-3 text-sm"
         :class="
             lifecycle.taken
                 ? 'border-red-200 bg-red-50 text-red-800'
@@ -576,30 +811,51 @@ function cancelReport(): void {
                   : 'border-blue-200 bg-blue-50 text-blue-800'
         "
     >
-        <div class="flex items-start gap-3">
+        <div class="flex w-full items-start gap-3">
             <Clock class="mt-0.5 size-4 shrink-0" />
-            <div class="space-y-1">
+            <div class="min-w-0 flex-1 space-y-1">
                 <p>
                     <span class="font-medium">{{ t('common.posted') }}:</span>
                     {{ new Date(lifecycle.posted_at).toLocaleDateString() }}
                 </p>
                 <p v-if="lifecycle.next_action === 'marked_as_taken'">
                     <span class="font-medium">{{ t('common.next') }}:</span>
-                    This listing will be automatically marked as taken in
-                    <span class="font-semibold">{{
-                        lifecycle.days_remaining
-                    }}</span>
-                    {{ lifecycle.days_remaining === 1 ? 'day' : 'days' }}.
+                    {{
+                        t('common.markedAsTakenInDays', {
+                            days: lifecycle.days_remaining,
+                            multipledays:
+                                lifecycle.days_remaining &&
+                                lifecycle.days_remaining > 1
+                                    ? t('common.days')
+                                    : t('common.day'),
+                        })
+                    }}
                 </p>
                 <p v-else>
                     <span class="font-medium">{{ t('common.next') }}:</span>
-                    This listing is marked as taken and will be deleted in
-                    <span class="font-semibold">{{
-                        lifecycle.days_remaining
-                    }}</span>
-                    {{ lifecycle.days_remaining === 1 ? 'day' : 'days' }}.
+                    {{
+                        t('common.markedAsTakenAndDeletedInDays', {
+                            days: lifecycle.days_remaining,
+                            multipledays:
+                                lifecycle.days_remaining &&
+                                lifecycle.days_remaining > 1
+                                    ? t('common.days')
+                                    : t('common.day'),
+                        })
+                    }}
                 </p>
             </div>
+            <Button
+                v-if="lifecycle.next_action === 'marked_as_taken'"
+                size="sm"
+                variant="secondary"
+                class="shrink-0"
+                :disabled="markingAsTaken"
+                @click="openMarkAsTakenModal"
+            >
+                <CircleCheck class="mr-2 size-4" />
+                {{ t('common.markAsTakenNow') }}
+            </Button>
         </div>
     </div>
 
@@ -650,15 +906,17 @@ function cancelReport(): void {
         @submit="submit"
     >
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Contact</h2>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.contactSection') }}
+            </h2>
             <div class="grid gap-4 md:grid-cols-2">
                 <div class="grid gap-2">
                     <FormKit
                         v-model="contactNameInput"
                         type="text"
                         name="contact_name"
-                        label="Contact Name"
-                        placeholder="Optional"
+                        :label="t('common.contactName')"
+                        :placeholder="t('common.optional')"
                     />
                     <div
                         v-if="form.errors.contact_name"
@@ -673,7 +931,7 @@ function cancelReport(): void {
                         v-model="form.contact_phone"
                         type="text"
                         name="contact_phone"
-                        label="Contact Phone"
+                        :label="t('common.contactPhone')"
                         validation="required"
                         label-class="required-asterisk"
                     />
@@ -703,19 +961,25 @@ function cancelReport(): void {
         </Card>
 
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Location</h2>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.location') }}
+            </h2>
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 <div class="grid gap-3 md:col-span-2">
-                    <Label class="required-asterisk">Neighbourhoods</Label>
+                    <Label class="required-asterisk">{{
+                        t('common.neighbourhood')
+                    }}</Label>
                     <Select v-model="form.neighbourhoods" multiple>
                         <SelectTrigger class="w-full border-0 shadow-sm">
                             <SelectValue
-                                placeholder="Select 1 to 3 neighbourhoods"
+                                :placeholder="
+                                    t('common.selectOneToThreeNeighbourhoods')
+                                "
                             />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem
-                                v-for="option in props.options.neighbourhoods"
+                                v-for="option in translatedNeighbourhoods"
                                 :key="option.value"
                                 :value="option.value"
                             >
@@ -744,7 +1008,9 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2 md:col-span-2 xl:col-span-1">
-                    <Label class="required-asterisk">Street</Label>
+                    <Label class="required-asterisk">{{
+                        t('common.street')
+                    }}</Label>
                     <Popover v-model:open="streetComboboxOpen">
                         <PopoverTrigger as-child>
                             <Button
@@ -757,8 +1023,10 @@ function cancelReport(): void {
                                     {{
                                         selectedStreetName ||
                                         (form.neighbourhoods.length > 0
-                                            ? 'Select street'
-                                            : 'Select neighbourhood first')
+                                            ? t('common.selectStreet')
+                                            : t(
+                                                  'common.selectNeighbourhoodFirst',
+                                              ))
                                     }}
                                 </span>
                                 <ChevronsUpDown
@@ -772,7 +1040,7 @@ function cancelReport(): void {
                             <Input
                                 v-model="streetSearch"
                                 class="mb-2 h-9"
-                                placeholder="Search street..."
+                                :placeholder="t('common.searchStreet')"
                                 :disabled="form.neighbourhoods.length === 0"
                             />
                             <div class="max-h-60 overflow-y-auto">
@@ -780,13 +1048,17 @@ function cancelReport(): void {
                                     v-if="form.neighbourhoods.length === 0"
                                     class="py-6 text-center text-sm text-muted-foreground"
                                 >
-                                    Select at least one neighbourhood first.
+                                    {{
+                                        t(
+                                            'common.selectAtLeastOneNeighbourhoodFirst',
+                                        )
+                                    }}
                                 </p>
                                 <p
                                     v-else-if="streetsLoading"
                                     class="py-6 text-center text-sm text-muted-foreground"
                                 >
-                                    Loading streets...
+                                    {{ t('common.loadingStreets') }}
                                 </p>
                                 <p
                                     v-else-if="
@@ -794,7 +1066,7 @@ function cancelReport(): void {
                                     "
                                     class="py-6 text-center text-sm text-muted-foreground"
                                 >
-                                    No street found.
+                                    {{ t('common.noStreetFound') }}
                                 </p>
                                 <div v-else class="space-y-1">
                                     <button
@@ -831,7 +1103,7 @@ function cancelReport(): void {
                         v-model="form.building_number"
                         type="number"
                         name="building_number"
-                        label="Building number"
+                        :label="t('common.buildingNumber')"
                         step="1"
                         number
                         validation="number|min:1"
@@ -850,7 +1122,7 @@ function cancelReport(): void {
                         v-model="form.floor"
                         type="number"
                         name="floor"
-                        label="Floor"
+                        :label="t('common.floor')"
                         step="0.5"
                         number
                         validation="number"
@@ -865,19 +1137,18 @@ function cancelReport(): void {
 
         <Card>
             <h2 class="text-sm font-semibold text-foreground/80">
-                Property details
+                {{ t('common.propertyDetails') }}
             </h2>
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div class="grid gap-2">
-                    <FormKit
+                    <Label class="required-asterisk">{{
+                        t('common.type')
+                    }}</Label>
+                    <MenuSelect
                         v-model="form.type"
-                        type="select"
-                        name="type"
-                        label="Type"
-                        placeholder="Select type"
-                        :options="props.options.lease_types"
-                        validation="required"
-                        label-class="required-asterisk"
+                        :options="translatedLeaseTypes"
+                        :placeholder="t('common.selectType')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div v-if="form.errors.type" class="text-sm text-red-600">
                         {{ form.errors.type }}
@@ -885,7 +1156,9 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label class="required-asterisk">Available from</Label>
+                    <Label class="required-asterisk">{{
+                        t('common.availableFrom')
+                    }}</Label>
                     <DatePicker
                         v-model="availableFromDate"
                         name="available_from"
@@ -899,7 +1172,9 @@ function cancelReport(): void {
                 </div>
 
                 <div v-if="isMediumTerm" class="grid gap-2">
-                    <Label class="required-asterisk">Available to</Label>
+                    <Label class="required-asterisk">{{
+                        t('common.availableTo')
+                    }}</Label>
                     <DatePicker v-model="availableToDate" name="available_to" />
                     <div
                         v-if="form.errors.available_to"
@@ -914,7 +1189,7 @@ function cancelReport(): void {
                         v-model="form.bedrooms"
                         type="number"
                         name="bedrooms"
-                        label="Bedrooms"
+                        :label="t('common.bedrooms')"
                         step="0.5"
                         number
                         validation="required|min:1|max:10"
@@ -933,7 +1208,7 @@ function cancelReport(): void {
                         v-model="squareMeterInput"
                         type="number"
                         name="square_meter"
-                        label="Square meter"
+                        :label="t('common.squareMeter')"
                         step="1"
                         number
                         validation="number|min:0"
@@ -951,7 +1226,7 @@ function cancelReport(): void {
                         v-model="bathroomsInput"
                         type="number"
                         name="bathrooms"
-                        label="Bathrooms"
+                        :label="t('common.bathrooms')"
                         step="1"
                         number
                         validation="number|min:0"
@@ -980,15 +1255,14 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.furnished"
-                        type="select"
-                        name="furnished"
-                        label="Furnished"
-                        placeholder="Select furnished status"
-                        :options="props.options.furnished"
-                        validation="required"
-                        label-class="required-asterisk"
+                    <Label class="required-asterisk">{{
+                        t('common.furnished')
+                    }}</Label>
+                    <MenuSelect
+                        v-model="furnishedSelect"
+                        :options="translatedFurnished"
+                        :placeholder="t('common.selectFurnishedStatus')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.furnished"
@@ -999,13 +1273,12 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.access"
-                        type="select"
-                        name="access"
-                        label="Access"
-                        placeholder="Select access"
-                        :options="props.options.access"
+                    <Label>{{ t('common.access') }}</Label>
+                    <MenuSelect
+                        v-model="accessSelect"
+                        :options="translatedAccess"
+                        :placeholder="t('common.selectAccess')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div v-if="form.errors.access" class="text-sm text-red-600">
                         {{ form.errors.access }}
@@ -1013,13 +1286,12 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.kitchen_dining_room"
-                        type="select"
-                        name="kitchen_dining_room"
-                        label="Separate kitchen dining room"
-                        placeholder="Select option"
-                        :options="props.options.kitchen_dining_room"
+                    <Label>{{ t('common.separateKitchenDiningRoom') }}</Label>
+                    <MenuSelect
+                        v-model="kitchenDiningRoomSelect"
+                        :options="translatedKitchenDiningRoom"
+                        :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.kitchen_dining_room"
@@ -1030,13 +1302,12 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.porch_garden"
-                        type="select"
-                        name="porch_garden"
-                        label="Porch/Garden"
-                        placeholder="Select option"
-                        :options="props.options.porch_garden"
+                    <Label>{{ t('common.porchGarden') }}</Label>
+                    <MenuSelect
+                        v-model="porchGardenSelect"
+                        :options="translatedPorchGarden"
+                        :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.porch_garden"
@@ -1047,13 +1318,12 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.air_conditioning"
-                        type="select"
-                        name="air_conditioning"
-                        label="Air conditioning"
-                        placeholder="Select option"
-                        :options="props.options.air_conditioning"
+                    <Label>{{ t('common.airConditioning') }}</Label>
+                    <MenuSelect
+                        v-model="airConditioningSelect"
+                        :options="translatedAirConditioning"
+                        :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.air_conditioning"
@@ -1064,13 +1334,12 @@ function cancelReport(): void {
                 </div>
 
                 <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.apartment_condition"
-                        type="select"
-                        name="apartment_condition"
-                        label="Apartment condition"
-                        placeholder="Select option"
-                        :options="props.options.apartment_condition"
+                    <Label>{{ t('common.apartmentCondition') }}</Label>
+                    <MenuSelect
+                        v-model="apartmentConditionSelect"
+                        :options="translatedApartmentCondition"
+                        :placeholder="t('common.selectOption')"
+                        trigger-class="w-full border-0 shadow-sm justify-between"
                     />
                     <div
                         v-if="form.errors.apartment_condition"
@@ -1089,8 +1358,14 @@ function cancelReport(): void {
             <div class="grid gap-4">
                 <div class="grid gap-2">
                     <p class="text-sm text-muted-foreground">
-                        Please enter text in {{ currentLocale }}. We will handle
-                        the translation automatically.
+                        {{
+                            t('common.pleaseEnterTextInEtc', {
+                                locale:
+                                    currentLocale === 'he'
+                                        ? t('common.hebrew')
+                                        : t('common.english'),
+                            })
+                        }}
                     </p>
                     <FormKit
                         v-model="additionalInfoInput"
@@ -1110,14 +1385,16 @@ function cancelReport(): void {
         </Card>
 
         <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">Amenities</h2>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.amenities') }}
+            </h2>
             <div class="grid gap-3 sm:grid-cols-2">
                 <div class="grid gap-2">
                     <FormKit
                         v-model="form.succah_porch"
                         type="checkbox"
                         name="succah_porch"
-                        label="Succah porch"
+                        :label="t('common.succahPorch')"
                     />
                     <div
                         v-if="form.errors.succah_porch"
@@ -1132,7 +1409,7 @@ function cancelReport(): void {
                         v-model="form.has_dud_shemesh"
                         type="checkbox"
                         name="has_dud_shemesh"
-                        label="Dud shemesh"
+                        :label="t('common.dudShemesh')"
                     />
                     <div
                         v-if="form.errors.has_dud_shemesh"
@@ -1147,7 +1424,7 @@ function cancelReport(): void {
                         v-model="form.has_machsan"
                         type="checkbox"
                         name="has_machsan"
-                        label="Machsan"
+                        :label="t('common.machsan')"
                     />
                     <div
                         v-if="form.errors.has_machsan"
@@ -1162,7 +1439,7 @@ function cancelReport(): void {
                         v-model="form.has_parking_spot"
                         type="checkbox"
                         name="has_parking_spot"
-                        label="Parking spot"
+                        :label="t('common.parkingSpot')"
                     />
                     <div
                         v-if="form.errors.has_parking_spot"
@@ -1178,11 +1455,10 @@ function cancelReport(): void {
             <div class="flex items-start justify-between gap-4">
                 <div class="space-y-1">
                     <h2 class="text-sm font-semibold text-foreground/80">
-                        Images
+                        {{ t('common.image') }}
                     </h2>
                     <p class="text-sm text-muted-foreground">
-                        Deleting and uploading happens immediately without
-                        clicking Update.
+                        {{ t('common.imagesEditHint') }}
                     </p>
                 </div>
                 <div class="text-sm text-muted-foreground tabular-nums">
@@ -1206,14 +1482,20 @@ function cancelReport(): void {
             >
                 <span class="flex items-center gap-2">
                     <ImagePlus class="h-4 w-4" />
-                    <span v-if="uploadingImages">Uploading...</span>
-                    <span v-else-if="!propertyImages.length">Upload image</span>
-                    <span v-else-if="canAddMoreImages"
-                        >Upload another image</span
-                    >
-                    <span v-else>Maximum images reached</span>
+                    <span v-if="uploadingImages">{{
+                        t('common.uploading')
+                    }}</span>
+                    <span v-else-if="!propertyImages.length">{{
+                        t('common.uploadImage')
+                    }}</span>
+                    <span v-else-if="canAddMoreImages">{{
+                        t('common.addAnotherImage')
+                    }}</span>
+                    <span v-else>{{ t('common.maximumImagesReached') }}</span>
                 </span>
-                <span class="text-xs text-muted-foreground">Browse</span>
+                <span class="text-xs text-muted-foreground">{{
+                    t('common.browse')
+                }}</span>
             </button>
 
             <p v-if="imageUploadError" class="text-sm text-red-600">
@@ -1238,7 +1520,7 @@ function cancelReport(): void {
                             class="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm"
                         >
                             <Star class="h-3.5 w-3.5 fill-current" />
-                            Main
+                            {{ t('common.mainImageLabel') }}
                         </span>
 
                         <button
@@ -1246,7 +1528,7 @@ function cancelReport(): void {
                             class="absolute top-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-black/60 text-white opacity-100 backdrop-blur-sm transition hover:bg-black/70 sm:opacity-0 sm:group-hover:opacity-100"
                             :disabled="imageDeleteInProgressId === image.id"
                             @click="deleteImage(image)"
-                            aria-label="Delete image"
+                            :aria-label="t('common.deleteImageAria')"
                         >
                             <Trash2 class="h-4 w-4" />
                         </button>
@@ -1254,7 +1536,7 @@ function cancelReport(): void {
                 </div>
             </div>
             <p v-else class="text-sm text-muted-foreground">
-                No images uploaded yet.
+                {{ t('common.noImagesUploadedYet') }}
             </p>
         </Card>
 
@@ -1263,8 +1545,77 @@ function cancelReport(): void {
                 type="submit"
                 :disabled="form.processing || uploadingImages"
             >
-                Update
+                {{ t('common.update') }}
             </Button>
         </div>
     </FormKit>
+
+    <Modal
+        :open="markAsTakenModalOpen"
+        :title="t('common.howWasListingTaken')"
+        :confirm-label="t('common.markAsTaken')"
+        :processing="markingAsTaken"
+        @close="
+            markAsTakenModalOpen = false;
+            markAsTakenThenDelete = false;
+        "
+        @confirm="handleMarkAsTaken"
+    >
+        <div class="space-y-4">
+            <div class="space-y-2">
+                <Label>{{ t('common.howWasListingTakenSource') }}</Label>
+                <div class="flex flex-wrap gap-2">
+                    <Button
+                        v-for="option in feedbackOptions"
+                        :key="option.value"
+                        size="sm"
+                        :variant="
+                            feedbackSource === option.value
+                                ? 'default'
+                                : 'outline'
+                        "
+                        @click="
+                            feedbackSource =
+                                feedbackSource === option.value
+                                    ? null
+                                    : option.value
+                        "
+                    >
+                        {{ option.label }}
+                    </Button>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <Label for="edit-feedback-price">{{
+                    t('common.finalPrice')
+                }}</Label>
+                <Input
+                    id="edit-feedback-price"
+                    v-model="feedbackPrice"
+                    type="number"
+                    :placeholder="t('common.optional')"
+                />
+            </div>
+            <p
+                v-if="markAsTakenThenDelete"
+                class="text-sm text-muted-foreground"
+            >
+                {{ t('common.markAsTakenBeforeDelete') }}
+            </p>
+        </div>
+    </Modal>
+
+    <Modal
+        :open="deleteModalOpen"
+        :title="t('common.actionDangerous')"
+        :confirm-label="t('common.delete')"
+        :processing="deletingId !== null"
+        @close="deleteModalOpen = false"
+        @confirm="handleConfirmDelete"
+    >
+        <p class="text-sm text-muted-foreground">
+            {{ t('common.actionDangerousConfirm') }}
+        </p>
+    </Modal>
 </template>

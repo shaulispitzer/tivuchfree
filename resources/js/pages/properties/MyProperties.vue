@@ -2,24 +2,10 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { CircleCheck, Pencil, RefreshCw, Trash2 } from 'lucide-vue-next';
 import type { PropType } from 'vue';
-import { useI18n } from 'vue-i18n';
-import Modal from '@/components/Modal.vue';
-import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
+
 import { destroy, markAsTaken, repost } from '@/routes/my-properties';
 import { edit } from '@/routes/properties';
 import PepiconsPopDotsY from '~icons/pepicons-pop/dots-y';
@@ -176,9 +162,9 @@ function handleConfirmDelete() {
                             {{ t(`propertyLeaseType.${property.type ?? '-'}`) }}
                         </td>
                         <td class="px-4 py-3">
-                            <div class="flex flex-col gap-1">
+                            <div class="flex w-fit flex-wrap items-center gap-1.5">
                                 <span
-                                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                                    class="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium"
                                     :class="
                                         property.taken
                                             ? 'bg-red-100 text-red-700'
@@ -192,8 +178,11 @@ function handleConfirmDelete() {
                                     }}
                                 </span>
                                 <span
-                                    v-if="(property as any).reported_taken_at && !property.taken"
-                                    class="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700"
+                                    v-if="
+                                        (property as any).reported_taken_at &&
+                                        !property.taken
+                                    "
+                                    class="inline-flex shrink-0 items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700"
                                 >
                                     {{ t('common.reportedTaken') }}
                                 </span>
@@ -282,7 +271,9 @@ function handleConfirmDelete() {
                                             v-else
                                             variant="destructive"
                                             class="cursor-pointer text-red-500"
-                                            @click="openDeleteModal(property.id)"
+                                            @click="
+                                                openDeleteModal(property.id)
+                                            "
                                         >
                                             <Trash2 class="mr-2 size-4" />
                                             {{ t('common.delete') }}
@@ -346,7 +337,10 @@ function handleConfirmDelete() {
         :open="deleteModalPropertyId !== null"
         :title="t('common.actionDangerous')"
         :confirm-label="t('common.delete')"
-        :processing="deleteModalPropertyId !== null && deletingId === deleteModalPropertyId"
+        :processing="
+            deleteModalPropertyId !== null &&
+            deletingId === deleteModalPropertyId
+        "
         @close="deleteModalPropertyId = null"
         @confirm="handleConfirmDelete"
     >

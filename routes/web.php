@@ -37,6 +37,7 @@ Route::post('subscriptions/update-filters/{token}', [PropertySubscriptionControl
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('properties', [AdminPropertyController::class, 'index'])->name('properties.index');
+    Route::get('properties/{property}/edit', [AdminPropertyController::class, 'edit'])->name('properties.edit');
     Route::delete('properties/{property}', [AdminPropertyController::class, 'destroy'])->name('properties.destroy');
     Route::get('property-stats', [AdminPropertyStatController::class, 'index'])->name('property-stats.index');
     Route::delete('property-stats/{propertyStat}', [AdminPropertyStatController::class, 'destroy'])->name('property-stats.destroy');

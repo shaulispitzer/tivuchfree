@@ -194,6 +194,7 @@ export default {
             actions: 'Actions',
             repost: 'Repost',
             markAsTaken: 'Mark as taken',
+            markAsTakenNow: 'Mark as taken now',
             markAsTakenBeforeDelete: 'First mark as taken, then you can delete',
             howWasListingTaken: 'How was your listing taken?',
             howWasListingTakenSource: 'Where was the listing taken from?',
@@ -242,6 +243,7 @@ export default {
             to: 'to',
             months: 'months',
             posted: 'Posted',
+            postedBy: 'Posted by',
             sort: 'Sort',
             termType: 'Term Type',
             reportTaken: 'Report Taken',
@@ -262,8 +264,28 @@ export default {
             addAnotherImage: 'Add another image',
             maximumImagesReached: 'Maximum images reached',
             addUpToImages: 'Add up to {max} images.',
+            imagesEditHint:
+                'Deleting and uploading happens immediately without clicking Update.',
+            noImagesUploadedYet: 'No images uploaded yet.',
+            mainImageLabel: 'Main',
+            deleteImageAria: 'Delete image',
+            uploadImage: 'Upload image',
+            imageUploadedSuccess: 'Image uploaded successfully.',
+            imageDeleteConfirmMain:
+                'Delete the main image now? This action is immediate and cannot be undone.',
+            imageDeleteConfirm:
+                'Delete this image now? This action is immediate and cannot be undone.',
+            mainImageDeletedSuccess:
+                'Main image deleted and updated successfully.',
+            imageDeletedSuccess: 'Image deleted successfully.',
+            uploadFailedTryAgain: 'Upload failed. Please try again.',
+            deleteFailedTryAgain: 'Delete failed. Please try again.',
             pleaseEnterTextInEtc:
                 'Please enter text in {locale}. We will handle the translation automatically.',
+            markedAsTakenInDays:
+                'This listing will be automatically marked as taken in {days} {multipledays}.',
+            markedAsTakenAndDeletedInDays:
+                'This listing is marked as taken and will be deleted in {days} {multipledays}.',
         },
         contact: {
             subject: 'Subject',
@@ -483,6 +505,7 @@ export default {
             actions: 'פעולות',
             repost: 'פרסם מחדש',
             markAsTaken: 'סמן כתפוס',
+            markAsTakenNow: 'סמן כתפוס עכשיו',
             markAsTakenBeforeDelete: 'סמן כתפוס תחילה, ואז תוכל למחוק',
             howWasListingTaken: 'איך המודעה נתפסה?',
             howWasListingTakenSource: 'מאיפה נלקחה המודעה?',
@@ -530,6 +553,7 @@ export default {
             to: 'עד',
             months: 'חודשים',
             posted: 'פרסם ',
+            postedBy: 'פורסם על ידי',
             sort: 'מיון',
             termType: 'סוג טווח',
             reportTaken: 'דווח כתפוס',
@@ -549,8 +573,28 @@ export default {
             addAnotherImage: 'הוסף תמונה נוספת',
             maximumImagesReached: 'הגעת למספר התמונות המרבי',
             addUpToImages: 'הוסף עד {max} תמונות. ',
+            imagesEditHint:
+                'מחיקה והעלאה מתבצעות מיד ללא לחיצה על עדכן.',
+            noImagesUploadedYet: 'טרם הועלו תמונות.',
+            mainImageLabel: 'עיקרי',
+            deleteImageAria: 'מחק תמונה',
+            uploadImage: 'העלה תמונה',
+            imageUploadedSuccess: 'התמונה הועלתה בהצלחה.',
+            imageDeleteConfirmMain:
+                'למחוק את התמונה הראשית כעת? פעולה זו מיידית ולא ניתנת לביטול.',
+            imageDeleteConfirm:
+                'למחוק תמונה זו כעת? פעולה זו מיידית ולא ניתנת לביטול.',
+            mainImageDeletedSuccess:
+                'התמונה הראשית נמחקה ועודכנה בהצלחה.',
+            imageDeletedSuccess: 'התמונה נמחקה בהצלחה.',
+            uploadFailedTryAgain: 'ההעלאה נכשלה. נא לנסות שוב.',
+            deleteFailedTryAgain: 'המחיקה נכשלה. נא לנסות שוב.',
             pleaseEnterTextInEtc:
                 'נא להזין טקסט ב{locale}. ניתן להתעלם מהתרגום.',
+            markedAsTakenInDays:
+                'רשימה זו תסומן אוטומטית כתפוס בתוך {days} {multipledays}.',
+            markedAsTakenAndDeletedInDays:
+                'רשימה זו סומנה כתפוס ותמחק בתוך {days} {multipledays}.',
         },
         contact: {
             subject: 'נושא',
