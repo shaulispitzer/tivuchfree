@@ -369,6 +369,13 @@ const contactPhone2Input = computed({
     },
 });
 
+const emailInput = computed<string | undefined>({
+    get: () => form.email ?? undefined,
+    set: (value: string | undefined) => {
+        form.email = value?.trim() || null;
+    },
+});
+
 function toDateValue(value: string): DateValue | undefined {
     const trimmed = value?.trim();
     if (!trimmed) return undefined;
@@ -760,151 +767,150 @@ function handleConfirmDelete(): void {
 <template>
     <Head :title="t('common.editProperty')" />
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 class="text-lg font-semibold">
-            {{ t('common.editProperty') }}{{ adminEdit ? ' (Admin)' : '' }}
-        </h1>
-        <div class="flex flex-wrap items-center gap-2">
-            <Button
-                v-if="lifecycle.next_action === 'deletion'"
-                size="sm"
-                :variant="lifecycle.taken ? 'destructive' : 'outline'"
-                :disabled="markingAsTaken || deletingId !== null"
-                @click="openDeleteModal"
-            >
-                <Trash2 class="mr-2 size-4" />
-                {{ t('common.delete') }}
-            </Button>
-            <Button as-child>
-                <Link :href="adminEdit ? adminPropertiesIndex() : index()">{{
-                    t('common.backToList')
-                }}</Link>
-            </Button>
-        </div>
-    </div>
-
-    <div
-        v-if="adminEdit && property.user"
-        class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
+    <form
+        class="mx-auto w-full max-w-5xl space-y-6 px-4 sm:px-6"
+        @submit.prevent="submit"
     >
-        <div class="flex items-center gap-2">
-            <User class="size-4 shrink-0" />
-            <span class="font-medium">{{ t('common.postedBy') }}:</span>
-            <span>{{ property.user.name }} (ID: {{ property.user.id }})</span>
-            <a
-                v-if="property.user.email"
-                :href="`mailto:${property.user.email}`"
-                class="text-primary underline hover:no-underline"
-            >
-                {{ property.user.email }}
-            </a>
-        </div>
-    </div>
-
-    <div
-        class="rounded-lg border px-4 py-3 text-sm"
-        :class="
-            lifecycle.taken
-                ? 'border-red-200 bg-red-50 text-red-800'
-                : lifecycle.days_remaining <= 3
-                  ? 'border-amber-200 bg-amber-50 text-amber-800'
-                  : 'border-blue-200 bg-blue-50 text-blue-800'
-        "
-    >
-        <div class="flex w-full items-start gap-3">
-            <Clock class="mt-0.5 size-4 shrink-0" />
-            <div class="min-w-0 flex-1 space-y-1">
-                <p>
-                    <span class="font-medium">{{ t('common.posted') }}:</span>
-                    {{ new Date(lifecycle.posted_at).toLocaleDateString() }}
-                </p>
-                <p v-if="lifecycle.next_action === 'marked_as_taken'">
-                    <span class="font-medium">{{ t('common.next') }}:</span>
-                    {{
-                        t('common.markedAsTakenInDays', {
-                            days: lifecycle.days_remaining,
-                            multipledays:
-                                lifecycle.days_remaining &&
-                                lifecycle.days_remaining > 1
-                                    ? t('common.days')
-                                    : t('common.day'),
-                        })
-                    }}
-                </p>
-                <p v-else>
-                    <span class="font-medium">{{ t('common.next') }}:</span>
-                    {{
-                        t('common.markedAsTakenAndDeletedInDays', {
-                            days: lifecycle.days_remaining,
-                            multipledays:
-                                lifecycle.days_remaining &&
-                                lifecycle.days_remaining > 1
-                                    ? t('common.days')
-                                    : t('common.day'),
-                        })
-                    }}
-                </p>
+        <div class="flex items-center justify-between">
+            <h1 class="text-lg font-semibold">
+                {{ t('common.editProperty') }}{{ adminEdit ? ' (Admin)' : '' }}
+            </h1>
+            <div class="flex flex-wrap items-center gap-2">
+                <Button
+                    v-if="lifecycle.next_action === 'deletion'"
+                    size="sm"
+                    :variant="lifecycle.taken ? 'destructive' : 'outline'"
+                    :disabled="markingAsTaken || deletingId !== null"
+                    type="button"
+                    @click="openDeleteModal"
+                >
+                    <Trash2 class="mr-2 size-4" />
+                    {{ t('common.delete') }}
+                </Button>
+                <Button as-child>
+                    <Link :href="adminEdit ? adminPropertiesIndex() : index()">{{
+                        t('common.backToList')
+                    }}</Link>
+                </Button>
             </div>
-            <Button
-                v-if="lifecycle.next_action === 'marked_as_taken'"
-                size="sm"
-                variant="secondary"
-                class="shrink-0"
-                :disabled="markingAsTaken"
-                @click="openMarkAsTakenModal"
-            >
-                <CircleCheck class="mr-2 size-4" />
-                {{ t('common.markAsTakenNow') }}
-            </Button>
         </div>
-    </div>
 
-    <div
-        v-if="property.reported_taken_at && !lifecycle.taken"
-        class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
-    >
-        <div class="flex items-start justify-between gap-3">
-            <div class="space-y-1">
-                <p class="font-semibold">
-                    {{ t('common.reportedTakenWarningTitle') }}
-                </p>
-                <p>
-                    {{
-                        t('common.reportedTakenWarningBody', {
-                            date: reportedTakenDate,
-                            days: reportedTakenDaysRemaining,
-                            multipledays:
-                                reportedTakenDaysRemaining &&
-                                reportedTakenDaysRemaining > 1
-                                    ? t('common.days')
-                                    : t('common.day'),
-                        })
-                    }}
-                </p>
+        <div
+            v-if="adminEdit && property.user"
+            class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
+        >
+            <div class="flex items-center gap-2">
+                <User class="size-4 shrink-0" />
+                <span class="font-medium">{{ t('common.postedBy') }}:</span>
+                <span>{{ property.user.name }} (ID: {{ property.user.id }})</span>
+                <a
+                    v-if="property.user.email"
+                    :href="`mailto:${property.user.email}`"
+                    class="text-primary underline hover:no-underline"
+                >
+                    {{ property.user.email }}
+                </a>
             </div>
-            <Button
-                size="sm"
-                variant="outline"
-                class="shrink-0 border-red-300 text-red-700 hover:bg-red-100"
-                :disabled="cancellingReport"
-                @click="cancelReport"
-            >
-                {{
-                    cancellingReport
-                        ? t('common.sending')
-                        : t('common.cancelReport')
-                }}
-            </Button>
         </div>
-    </div>
 
-    <FormKit
-        type="form"
-        :actions="false"
-        class="mx-auto mt-6 w-full max-w-6xl space-y-6 px-4 sm:px-6"
-        form-class="space-y-6"
-        @submit="submit"
-    >
+        <div
+            class="rounded-lg border px-4 py-3 text-sm"
+            :class="
+                lifecycle.taken
+                    ? 'border-red-200 bg-red-50 text-red-800'
+                    : lifecycle.days_remaining <= 3
+                      ? 'border-amber-200 bg-amber-50 text-amber-800'
+                      : 'border-blue-200 bg-blue-50 text-blue-800'
+            "
+        >
+            <div class="flex w-full items-start gap-3">
+                <Clock class="mt-0.5 size-4 shrink-0" />
+                <div class="min-w-0 flex-1 space-y-1">
+                    <p>
+                        <span class="font-medium">{{ t('common.posted') }}:</span>
+                        {{ new Date(lifecycle.posted_at).toLocaleDateString() }}
+                    </p>
+                    <p v-if="lifecycle.next_action === 'marked_as_taken'">
+                        <span class="font-medium">{{ t('common.next') }}:</span>
+                        {{
+                            t('common.markedAsTakenInDays', {
+                                days: lifecycle.days_remaining,
+                                multipledays:
+                                    lifecycle.days_remaining &&
+                                    lifecycle.days_remaining > 1
+                                        ? t('common.days')
+                                        : t('common.day'),
+                            })
+                        }}
+                    </p>
+                    <p v-else>
+                        <span class="font-medium">{{ t('common.next') }}:</span>
+                        {{
+                            t('common.markedAsTakenAndDeletedInDays', {
+                                days: lifecycle.days_remaining,
+                                multipledays:
+                                    lifecycle.days_remaining &&
+                                    lifecycle.days_remaining > 1
+                                        ? t('common.days')
+                                        : t('common.day'),
+                            })
+                        }}
+                    </p>
+                </div>
+                <Button
+                    v-if="lifecycle.next_action === 'marked_as_taken'"
+                    size="sm"
+                    variant="secondary"
+                    class="shrink-0"
+                    type="button"
+                    :disabled="markingAsTaken"
+                    @click="openMarkAsTakenModal"
+                >
+                    <CircleCheck class="mr-2 size-4" />
+                    {{ t('common.markAsTakenNow') }}
+                </Button>
+            </div>
+        </div>
+
+        <div
+            v-if="property.reported_taken_at && !lifecycle.taken"
+            class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
+            <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                    <p class="font-semibold">
+                        {{ t('common.reportedTakenWarningTitle') }}
+                    </p>
+                    <p>
+                        {{
+                            t('common.reportedTakenWarningBody', {
+                                date: reportedTakenDate,
+                                days: reportedTakenDaysRemaining,
+                                multipledays:
+                                    reportedTakenDaysRemaining &&
+                                    reportedTakenDaysRemaining > 1
+                                        ? t('common.days')
+                                        : t('common.day'),
+                            })
+                        }}
+                    </p>
+                </div>
+                <Button
+                    size="sm"
+                    variant="outline"
+                    class="shrink-0 border-red-300 text-red-700 hover:bg-red-100"
+                    type="button"
+                    :disabled="cancellingReport"
+                    @click="cancelReport"
+                >
+                    {{
+                        cancellingReport
+                            ? t('common.sending')
+                            : t('common.cancelReport')
+                    }}
+                </Button>
+            </div>
+        </div>
         <Card>
             <h2 class="text-sm font-semibold text-foreground/80">
                 {{ t('common.contactSection') }}
@@ -929,11 +935,14 @@ function handleConfirmDelete(): void {
                 <div class="grid gap-2">
                     <FormKit
                         v-model="form.contact_phone"
-                        type="text"
+                        type="tel"
                         name="contact_phone"
                         :label="t('common.contactPhone')"
-                        validation="required"
+                        validation="required|phone_uk_us_il"
                         label-class="required-asterisk"
+                        :validation-messages="{
+                            phone_uk_us_il: t('common.invalidPhone'),
+                        }"
                     />
                     <div
                         v-if="form.errors.contact_phone"
@@ -946,15 +955,34 @@ function handleConfirmDelete(): void {
                 <div class="grid gap-2">
                     <FormKit
                         v-model="contactPhone2Input"
-                        type="text"
+                        type="tel"
                         name="contact_phone_2"
                         :label="t('common.contactPhone2')"
+                        validation="phone_uk_us_il"
+                        :validation-messages="{
+                            phone_uk_us_il: t('common.invalidPhone'),
+                        }"
                     />
                     <div
                         v-if="form.errors.contact_phone_2"
                         class="text-sm text-red-600"
                     >
                         {{ form.errors.contact_phone_2 }}
+                    </div>
+                </div>
+                <div class="grid gap-2">
+                    <FormKit
+                        v-model="emailInput"
+                        type="email"
+                        name="email"
+                        :label="t('common.email')"
+                        validation="email"
+                    />
+                    <div
+                        v-if="form.errors.email"
+                        class="text-sm text-red-600"
+                    >
+                        {{ form.errors.email }}
                     </div>
                 </div>
             </div>
@@ -964,11 +992,11 @@ function handleConfirmDelete(): void {
             <h2 class="text-sm font-semibold text-foreground/80">
                 {{ t('common.location') }}
             </h2>
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-                <div class="grid gap-3 md:col-span-2">
-                    <Label class="required-asterisk">{{
-                        t('common.neighbourhood')
-                    }}</Label>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="grid gap-2 sm:col-span-2">
+                    <Label :requiredStar="true">
+                        {{ t('common.neighbourhood', 2) }}
+                    </Label>
                     <Select v-model="form.neighbourhoods" multiple>
                         <SelectTrigger class="w-full border-0 shadow-sm">
                             <SelectValue
@@ -1007,17 +1035,17 @@ function handleConfirmDelete(): void {
                     </div>
                 </div>
 
-                <div class="grid gap-2 md:col-span-2 xl:col-span-1">
-                    <Label class="required-asterisk">{{
-                        t('common.street')
-                    }}</Label>
+                <div class="grid gap-2 sm:col-span-2">
+                    <Label :requiredStar="true">
+                        {{ t('common.street') }}
+                    </Label>
                     <Popover v-model:open="streetComboboxOpen">
                         <PopoverTrigger as-child>
                             <Button
                                 variant="outline"
                                 role="combobox"
                                 :aria-expanded="streetComboboxOpen"
-                                class="w-full justify-between border-0 font-normal shadow-sm"
+                                class="w-full min-w-0 justify-between border-0 font-normal shadow-sm"
                             >
                                 <span class="truncate">
                                     {{
@@ -1098,7 +1126,7 @@ function handleConfirmDelete(): void {
                     </div>
                 </div>
 
-                <div class="grid gap-2">
+                <div class="grid w-full max-w-full min-w-0 gap-2 md:max-w-32">
                     <FormKit
                         v-model="form.building_number"
                         type="number"
@@ -1117,7 +1145,7 @@ function handleConfirmDelete(): void {
                     </div>
                 </div>
 
-                <div class="grid gap-2">
+                <div class="grid w-full max-w-full min-w-0 gap-2 md:max-w-32">
                     <FormKit
                         v-model="form.floor"
                         type="number"
@@ -1139,246 +1167,252 @@ function handleConfirmDelete(): void {
             <h2 class="text-sm font-semibold text-foreground/80">
                 {{ t('common.propertyDetails') }}
             </h2>
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <div class="grid gap-2">
-                    <Label class="required-asterisk">{{
-                        t('common.type')
-                    }}</Label>
-                    <MenuSelect
-                        v-model="form.type"
-                        :options="translatedLeaseTypes"
-                        :placeholder="t('common.selectType')"
-                        trigger-class="w-full border-0 shadow-sm justify-between"
-                    />
-                    <div v-if="form.errors.type" class="text-sm text-red-600">
-                        {{ form.errors.type }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <Label class="required-asterisk">{{
-                        t('common.availableFrom')
-                    }}</Label>
-                    <DatePicker
-                        v-model="availableFromDate"
-                        name="available_from"
-                    />
+            <div class="space-y-6">
+                <div class="flex flex-wrap items-start justify-start gap-5">
                     <div
-                        v-if="form.errors.available_from"
-                        class="text-sm text-red-600"
+                        class="grid w-32 max-w-full min-w-32 shrink-0 gap-2 sm:w-38"
                     >
-                        {{ form.errors.available_from }}
+                        <Label requiredStar>
+                            {{ t('common.type') }}
+                        </Label>
+                        <MenuSelect
+                            v-model="form.type"
+                            :options="translatedLeaseTypes"
+                            :placeholder="t('common.selectType')"
+                            trigger-class="w-full border-0 shadow-sm justify-between"
+                        />
+                        <div
+                            v-if="form.errors.type"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.type }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-start gap-5">
+                        <div
+                            class="grid w-44 max-w-full min-w-44 shrink-0 gap-2 sm:w-44"
+                        >
+                            <Label requiredStar>
+                                {{ t('common.availableFrom') }}
+                            </Label>
+                            <DatePicker
+                                v-model="availableFromDate"
+                                name="available_from"
+                            />
+                            <div
+                                v-if="form.errors.available_from"
+                                class="text-sm text-red-600"
+                            >
+                                {{ form.errors.available_from }}
+                            </div>
+                        </div>
+
+                        <div
+                            v-if="isMediumTerm"
+                            class="grid w-44 max-w-full min-w-44 shrink-0 gap-2 sm:w-44"
+                        >
+                            <Label :requiredStar="true">
+                                {{ t('common.availableTo') }}
+                            </Label>
+                            <DatePicker
+                                v-model="availableToDate"
+                                name="available_to"
+                            />
+                            <div
+                                v-if="form.errors.available_to"
+                                class="text-sm text-red-600"
+                            >
+                                {{ form.errors.available_to }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div v-if="isMediumTerm" class="grid gap-2">
-                    <Label class="required-asterisk">{{
-                        t('common.availableTo')
-                    }}</Label>
-                    <DatePicker v-model="availableToDate" name="available_to" />
-                    <div
-                        v-if="form.errors.available_to"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.available_to }}
+                <div class="flex flex-wrap items-start justify-start gap-5">
+                    <div class="grid w-32 max-w-full min-w-32 gap-2 sm:w-32">
+                        <FormKit
+                            v-model="form.bedrooms"
+                            type="number"
+                            name="bedrooms"
+                            :label="t('common.bedrooms')"
+                            step="0.5"
+                            number
+                            validation="required|min:1|max:10"
+                            label-class="required-asterisk"
+                        />
+                        <div
+                            v-if="form.errors.bedrooms"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.bedrooms }}
+                        </div>
+                    </div>
+
+                    <div class="grid w-32 max-w-full min-w-32 gap-2 sm:w-32">
+                        <FormKit
+                            v-model="squareMeterInput"
+                            type="number"
+                            name="square_meter"
+                            :label="t('common.squareMeter')"
+                            step="1"
+                            number
+                            validation="number|min:0"
+                        />
+                        <div
+                            v-if="form.errors.square_meter"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.square_meter }}
+                        </div>
+                    </div>
+
+                    <div class="grid w-32 max-w-full min-w-32 gap-2 sm:w-32">
+                        <FormKit
+                            v-model="bathroomsInput"
+                            type="number"
+                            name="bathrooms"
+                            :label="t('common.bathrooms')"
+                            step="1"
+                            number
+                            validation="number|min:0"
+                        />
+                        <div
+                            v-if="form.errors.bathrooms"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.bathrooms }}
+                        </div>
+                    </div>
+
+                    <div class="grid w-36 max-w-full min-w-36 gap-2 sm:w-36">
+                        <FormKit
+                            v-model="priceInput"
+                            type="number"
+                            name="price"
+                            :label="t('common.pricePM')"
+                            step="1"
+                            number
+                            validation="number|min:0"
+                        />
+                        <div
+                            v-if="form.errors.price"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.price }}
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="form.bedrooms"
-                        type="number"
-                        name="bedrooms"
-                        :label="t('common.bedrooms')"
-                        step="0.5"
-                        number
-                        validation="required|min:1|max:10"
-                        label-class="required-asterisk"
-                    />
-                    <div
-                        v-if="form.errors.bedrooms"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.bedrooms }}
+                <div
+                    class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                >
+                    <div class="grid gap-2">
+                        <Label :requiredStar="true">
+                            {{ t('common.furnished') }}
+                        </Label>
+                        <MenuSelect
+                            v-model="furnishedSelect"
+                            :options="translatedFurnished"
+                            :placeholder="t('common.selectFurnishedStatus')"
+                            trigger-class="w-full border-0 shadow-sm justify-between"
+                        />
+                        <div
+                            v-if="form.errors.furnished"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.furnished }}
+                        </div>
                     </div>
-                </div>
 
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="squareMeterInput"
-                        type="number"
-                        name="square_meter"
-                        :label="t('common.squareMeter')"
-                        step="1"
-                        number
-                        validation="number|min:0"
-                    />
-                    <div
-                        v-if="form.errors.square_meter"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.square_meter }}
+                    <div class="grid gap-2">
+                        <Label :requiredStar="true">
+                            {{ t('common.access') }}
+                        </Label>
+                        <MenuSelect
+                            v-model="accessSelect"
+                            :options="translatedAccess"
+                            :placeholder="t('common.selectAccess')"
+                            trigger-class="w-full border-0 shadow-sm justify-between"
+                        />
+                        <div
+                            v-if="form.errors.access"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.access }}
+                        </div>
                     </div>
-                </div>
 
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="bathroomsInput"
-                        type="number"
-                        name="bathrooms"
-                        :label="t('common.bathrooms')"
-                        step="1"
-                        number
-                        validation="number|min:0"
-                    />
-                    <div
-                        v-if="form.errors.bathrooms"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.bathrooms }}
+                    <div class="grid gap-2">
+                        <Label :requiredStar="true">
+                            {{ t('common.separateKitchenDiningRoom') }}
+                        </Label>
+                        <MenuSelect
+                            v-model="kitchenDiningRoomSelect"
+                            :options="translatedKitchenDiningRoom"
+                            :placeholder="t('common.selectOption')"
+                            trigger-class="w-full border-0 shadow-sm justify-between"
+                        />
+                        <div
+                            v-if="form.errors.kitchen_dining_room"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.kitchen_dining_room }}
+                        </div>
                     </div>
-                </div>
 
-                <div class="grid gap-2">
-                    <FormKit
-                        v-model="priceInput"
-                        type="number"
-                        name="price"
-                        :label="t('common.pricePM')"
-                        step="1"
-                        number
-                        validation="number|min:0"
-                    />
-                    <div v-if="form.errors.price" class="text-sm text-red-600">
-                        {{ form.errors.price }}
+                    <div class="grid gap-2">
+                        <Label :requiredStar="true">
+                            {{ t('common.porchGarden') }}
+                        </Label>
+                        <MenuSelect
+                            v-model="porchGardenSelect"
+                            :options="translatedPorchGarden"
+                            :placeholder="t('common.selectOption')"
+                            trigger-class="w-full border-0 shadow-sm justify-between"
+                        />
+                        <div
+                            v-if="form.errors.porch_garden"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.porch_garden }}
+                        </div>
                     </div>
-                </div>
 
-                <div class="grid gap-2">
-                    <Label class="required-asterisk">{{
-                        t('common.furnished')
-                    }}</Label>
-                    <MenuSelect
-                        v-model="furnishedSelect"
-                        :options="translatedFurnished"
-                        :placeholder="t('common.selectFurnishedStatus')"
-                        trigger-class="w-full border-0 shadow-sm justify-between"
-                    />
-                    <div
-                        v-if="form.errors.furnished"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.furnished }}
+                    <div class="grid gap-2">
+                        <Label :requiredStar="true">
+                            {{ t('common.airConditioning') }}
+                        </Label>
+                        <MenuSelect
+                            v-model="airConditioningSelect"
+                            :options="translatedAirConditioning"
+                            :placeholder="t('common.selectOption')"
+                            trigger-class="w-full border-0 shadow-sm justify-between"
+                        />
+                        <div
+                            v-if="form.errors.air_conditioning"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.air_conditioning }}
+                        </div>
                     </div>
-                </div>
 
-                <div class="grid gap-2">
-                    <Label>{{ t('common.access') }}</Label>
-                    <MenuSelect
-                        v-model="accessSelect"
-                        :options="translatedAccess"
-                        :placeholder="t('common.selectAccess')"
-                        trigger-class="w-full border-0 shadow-sm justify-between"
-                    />
-                    <div v-if="form.errors.access" class="text-sm text-red-600">
-                        {{ form.errors.access }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <Label>{{ t('common.separateKitchenDiningRoom') }}</Label>
-                    <MenuSelect
-                        v-model="kitchenDiningRoomSelect"
-                        :options="translatedKitchenDiningRoom"
-                        :placeholder="t('common.selectOption')"
-                        trigger-class="w-full border-0 shadow-sm justify-between"
-                    />
-                    <div
-                        v-if="form.errors.kitchen_dining_room"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.kitchen_dining_room }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <Label>{{ t('common.porchGarden') }}</Label>
-                    <MenuSelect
-                        v-model="porchGardenSelect"
-                        :options="translatedPorchGarden"
-                        :placeholder="t('common.selectOption')"
-                        trigger-class="w-full border-0 shadow-sm justify-between"
-                    />
-                    <div
-                        v-if="form.errors.porch_garden"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.porch_garden }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <Label>{{ t('common.airConditioning') }}</Label>
-                    <MenuSelect
-                        v-model="airConditioningSelect"
-                        :options="translatedAirConditioning"
-                        :placeholder="t('common.selectOption')"
-                        trigger-class="w-full border-0 shadow-sm justify-between"
-                    />
-                    <div
-                        v-if="form.errors.air_conditioning"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.air_conditioning }}
-                    </div>
-                </div>
-
-                <div class="grid gap-2">
-                    <Label>{{ t('common.apartmentCondition') }}</Label>
-                    <MenuSelect
-                        v-model="apartmentConditionSelect"
-                        :options="translatedApartmentCondition"
-                        :placeholder="t('common.selectOption')"
-                        trigger-class="w-full border-0 shadow-sm justify-between"
-                    />
-                    <div
-                        v-if="form.errors.apartment_condition"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.apartment_condition }}
-                    </div>
-                </div>
-            </div>
-        </Card>
-
-        <Card>
-            <h2 class="text-sm font-semibold text-foreground/80">
-                {{ t('common.notes') }}
-            </h2>
-            <div class="grid gap-4">
-                <div class="grid gap-2">
-                    <p class="text-sm text-muted-foreground">
-                        {{
-                            t('common.pleaseEnterTextInEtc', {
-                                locale:
-                                    currentLocale === 'he'
-                                        ? t('common.hebrew')
-                                        : t('common.english'),
-                            })
-                        }}
-                    </p>
-                    <FormKit
-                        v-model="additionalInfoInput"
-                        type="textarea"
-                        name="additional_info"
-                        :label="t('common.additionalInfo')"
-                        rows="4"
-                    />
-                    <div
-                        v-if="form.errors.additional_info"
-                        class="text-sm text-red-600"
-                    >
-                        {{ form.errors.additional_info }}
+                    <div class="grid gap-2">
+                        <Label :requiredStar="true">
+                            {{ t('common.apartmentCondition') }}
+                        </Label>
+                        <MenuSelect
+                            v-model="apartmentConditionSelect"
+                            :options="translatedApartmentCondition"
+                            :placeholder="t('common.selectOption')"
+                            trigger-class="w-full border-0 shadow-sm justify-between"
+                        />
+                        <div
+                            v-if="form.errors.apartment_condition"
+                            class="text-sm text-red-600"
+                        >
+                            {{ form.errors.apartment_condition }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1388,7 +1422,7 @@ function handleConfirmDelete(): void {
             <h2 class="text-sm font-semibold text-foreground/80">
                 {{ t('common.amenities') }}
             </h2>
-            <div class="grid gap-3 sm:grid-cols-2">
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div class="grid gap-2">
                     <FormKit
                         v-model="form.succah_porch"
@@ -1446,6 +1480,39 @@ function handleConfirmDelete(): void {
                         class="text-sm text-red-600"
                     >
                         {{ form.errors.has_parking_spot }}
+                    </div>
+                </div>
+            </div>
+        </Card>
+
+        <Card>
+            <h2 class="text-sm font-semibold text-foreground/80">
+                {{ t('common.notes') }}
+            </h2>
+            <div class="grid gap-4">
+                <div class="grid gap-2">
+                    <p class="text-sm text-muted-foreground">
+                        {{
+                            t('common.pleaseEnterTextInEtc', {
+                                locale:
+                                    currentLocale === 'he'
+                                        ? 'עברית'
+                                        : 'English',
+                            })
+                        }}
+                    </p>
+                    <FormKit
+                        v-model="additionalInfoInput"
+                        type="textarea"
+                        name="additional_info"
+                        :label="t('common.additionalInfo')"
+                        rows="4"
+                    />
+                    <div
+                        v-if="form.errors.additional_info"
+                        class="text-sm text-red-600"
+                    >
+                        {{ form.errors.additional_info }}
                     </div>
                 </div>
             </div>
@@ -1548,7 +1615,7 @@ function handleConfirmDelete(): void {
                 {{ t('common.update') }}
             </Button>
         </div>
-    </FormKit>
+    </form>
 
     <Modal
         :open="markAsTakenModalOpen"

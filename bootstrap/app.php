@@ -18,8 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (Schedule $schedule): void {
-        $schedule->command('properties:process-lifecycle')->daily();
-        $schedule->job(new \App\Jobs\ProcessExpiredPropertySubscriptions)->daily();
+        $schedule->command('properties:process-lifecycle')->dailyAt('13:00')->days([0, 1, 2, 3, 4, 5]);
+        $schedule->job(new \App\Jobs\ProcessExpiredPropertySubscriptions)->dailyAt('13:00')->days([0, 1, 2, 3, 4, 5]);
         $schedule->job(new \App\Jobs\PurgeStaleTemporaryUploads)->weekly();
     })
     ->withMiddleware(function (Middleware $middleware): void {
