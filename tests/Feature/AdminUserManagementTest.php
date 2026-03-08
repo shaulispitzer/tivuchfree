@@ -30,6 +30,25 @@ test('admins can mark users as admin', function () {
     expect($user->fresh()->is_admin)->toBeTrue();
 });
 
+test('admins can revoke admin status from other users', function () {
+    $admin = User::factory()->admin()->create();
+    $otherAdmin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->patch(route('admin.users.revoke-admin', $otherAdmin));
+
+    $response->assertRedirect();
+    expect($otherAdmin->fresh()->is_admin)->toBeFalse();
+});
+
+test('admins cannot revoke their own admin status', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->patch(route('admin.users.revoke-admin', $admin));
+
+    $response->assertSessionHasErrors('user');
+    expect($admin->fresh()->is_admin)->toBeTrue();
+});
+
 test('admins can delete users', function () {
     $admin = User::factory()->admin()->create();
     $user = User::factory()->create();
@@ -46,6 +65,7 @@ test('non admins cannot access users table', function () {
 
     $this->actingAs($user)->get(route('admin.users.index'))->assertForbidden();
     $this->actingAs($user)->patch(route('admin.users.make-admin', $target))->assertForbidden();
+    $this->actingAs($user)->patch(route('admin.users.revoke-admin', $target))->assertForbidden();
     $this->actingAs($user)->delete(route('admin.users.destroy', $target))->assertForbidden();
 });
 
@@ -54,5 +74,6 @@ test('guests cannot access users table', function () {
 
     $this->get(route('admin.users.index'))->assertRedirect(route('login'));
     $this->patch(route('admin.users.make-admin', $user))->assertRedirect(route('login'));
+    $this->patch(route('admin.users.revoke-admin', $user))->assertRedirect(route('login'));
     $this->delete(route('admin.users.destroy', $user))->assertRedirect(route('login'));
 });

@@ -43,6 +43,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('property-stats/{propertyStat}', [AdminPropertyStatController::class, 'destroy'])->name('property-stats.destroy');
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
     Route::patch('users/{user}/make-admin', [AdminUserController::class, 'makeAdmin'])->name('users.make-admin');
+    Route::patch('users/{user}/revoke-admin', [AdminUserController::class, 'revokeAdmin'])->name('users.revoke-admin');
     Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
