@@ -154,6 +154,8 @@ test('subscription notification email is dispatched through SendEmailJob', funct
     Queue::assertPushed(SendEmailJob::class, fn ($job) => $job->mailable instanceof PropertySubscriptionNotification);
 });
 
+// Expiry processing is currently disabled — subscriptions are permanent.
+// To re-enable, uncomment the original assertion below and remove the current one.
 test('expired subscription email is dispatched through SendEmailJob', function () {
     Queue::fake();
 
@@ -166,10 +168,13 @@ test('expired subscription email is dispatched through SendEmailJob', function (
         'expires_at' => now()->subDay(),
     ]);
 
-    // Call handle() directly so Queue::fake() captures the inner SendEmailJob dispatches.
     (new ProcessExpiredPropertySubscriptions)->handle();
 
-    Queue::assertPushed(SendEmailJob::class, fn ($job) => $job->mailable instanceof PropertySubscriptionExpired);
+    // Expiry emails are disabled; the job should not dispatch anything.
+    Queue::assertNotPushed(SendEmailJob::class);
+
+    // Original assertion — restore when re-enabling 30-day expiry:
+    // Queue::assertPushed(SendEmailJob::class, fn ($job) => $job->mailable instanceof PropertySubscriptionExpired);
 });
 
 // ─── Stagger Timing (1/second) ───────────────────────────────────────────────
