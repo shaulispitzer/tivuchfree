@@ -22,7 +22,7 @@ test('contact form can be submitted with valid data', function () {
     ])->assertRedirect(route('home'));
 
     Mail::assertSent(ContactMail::class, function (ContactMail $mail) {
-        return $mail->hasTo('shaulispitzer@gmail.com')
+        return $mail->hasTo('info@tivuchfree.com')
             && $mail->contactSubject === 'Test Subject'
             && $mail->email === 'test@example.com'
             && $mail->isAboutDira === false
