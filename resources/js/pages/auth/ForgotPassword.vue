@@ -41,7 +41,7 @@ const { t } = useI18n();
                         name="email"
                         autocomplete="off"
                         autofocus
-                        :placeholder="t('auth.emailPlaceholder')"
+                        placeholder="email@example.com"
                     />
                     <InputError :message="errors.email" />
                 </div>
