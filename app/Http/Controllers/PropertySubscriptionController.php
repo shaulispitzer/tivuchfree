@@ -66,7 +66,7 @@ class PropertySubscriptionController extends Controller
                 'filters' => $filters,
                 'token' => Str::random(64),
                 'subscribed_at' => now(),
-                'expires_at' => now()->addYears(100), // Permanent; change back to addDays(30) to re-enable expiry
+                'expires_at' => null, // Permanent; change back to addDays(30) to re-enable expiry
             ]);
 
             Mail::to($subscription->email)->locale('en')->send(new PropertySubscriptionConfirmation(
@@ -125,7 +125,7 @@ class PropertySubscriptionController extends Controller
             'filters' => $pending->filters,
             'token' => Str::random(64),
             'subscribed_at' => now(),
-            'expires_at' => now()->addYears(100), // Permanent; change back to addDays(30) to re-enable expiry
+            'expires_at' => null, // Permanent; change back to addDays(30) to re-enable expiry
         ]);
 
         $pending->delete();
