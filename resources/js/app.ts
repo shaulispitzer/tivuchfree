@@ -15,18 +15,17 @@ import { notifications } from './plugins/notifications';
 
 // import { initializeTheme } from './composables/useAppearance';
 
+const normalizeLocale = (locale?: string): AppLocale =>
+    locale === 'he' ? 'he' : 'en';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const toastOptions: PluginOptions = {
     position: POSITION.BOTTOM_CENTER,
-    rtl: true,
+    rtl: normalizeLocale(document.documentElement.lang) === 'he',
     newestOnTop: true,
     timeout: 3000,
 };
 
 type AppLocale = 'en' | 'he';
-
-const normalizeLocale = (locale?: string): AppLocale =>
-    locale === 'he' ? 'he' : 'en';
 
 const setI18nLocale = (locale: AppLocale) => {
     i18nInstance.global.locale.value = locale;
@@ -89,6 +88,11 @@ createInertiaApp({
     progress: {
         color: '#038071',
     },
+    // defaults: {
+    //     visitOptions: (href, options) => {
+    //         return { viewTransition: true };
+    //     },
+    // },
 });
 
 // This will set light / dark mode on page load...
