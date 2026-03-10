@@ -634,6 +634,10 @@ class PropertyController extends Controller
 
     public function show(Request $request, Property $property)
     {
+        if ($property->taken) {
+            abort(404);
+        }
+
         $property->increment('views');
         $property->loadMissing(['media']);
 
