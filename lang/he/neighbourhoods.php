@@ -13,4 +13,5 @@ return [
     'Geula' => 'גאולה',
     'GivatShaul' => 'גבעת שאול',
     'HarNof' => 'הר נוף',
+    'RamatEshkol' => 'רמת אשכול',
 ];

@@ -12,6 +12,7 @@ export default {
             Geula: 'Geula',
             GivatShaul: 'Givat Shaul',
             HarNof: 'Har Nof',
+            RamatEshkol: 'Ramat Eshkol',
         },
     },
     he: {
@@ -27,6 +28,7 @@ export default {
             Geula: 'גאולה',
             GivatShaul: 'גבעת שאול',
             HarNof: 'הר נוף',
+            RamatEshkol: 'רמת אשכול',
         },
     },
 };

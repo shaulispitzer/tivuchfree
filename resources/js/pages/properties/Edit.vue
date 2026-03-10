@@ -12,35 +12,15 @@ import {
     User,
 } from 'lucide-vue-next';
 import type { DateValue } from 'reka-ui';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { PropType } from 'vue';
-import { useI18n } from 'vue-i18n';
 
 import { useToast } from 'vue-toastification';
 
-import DatePicker from '@/components/DatePicker.vue';
-import MenuSelect from '@/components/ui/menu-select/MenuSelect.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { router } from '@inertiajs/vue3';
 import { cn } from '@/lib/utils';
 import { index as adminPropertiesIndex } from '@/routes/admin/properties';
 import { destroy, markAsTaken } from '@/routes/my-properties';
 import { index, update } from '@/routes/properties';
-import Modal from '@/components/Modal.vue';
 
 const { t } = useI18n();
 const page = usePage();
@@ -788,9 +768,10 @@ function handleConfirmDelete(): void {
                     {{ t('common.delete') }}
                 </Button>
                 <Button as-child>
-                    <Link :href="adminEdit ? adminPropertiesIndex() : index()">{{
-                        t('common.backToList')
-                    }}</Link>
+                    <Link
+                        :href="adminEdit ? adminPropertiesIndex() : index()"
+                        >{{ t('common.backToList') }}</Link
+                    >
                 </Button>
             </div>
         </div>
@@ -802,7 +783,9 @@ function handleConfirmDelete(): void {
             <div class="flex items-center gap-2">
                 <User class="size-4 shrink-0" />
                 <span class="font-medium">{{ t('common.postedBy') }}:</span>
-                <span>{{ property.user.name }} (ID: {{ property.user.id }})</span>
+                <span
+                    >{{ property.user.name }} (ID: {{ property.user.id }})</span
+                >
                 <a
                     v-if="property.user.email"
                     :href="`mailto:${property.user.email}`"
@@ -827,7 +810,9 @@ function handleConfirmDelete(): void {
                 <Clock class="mt-0.5 size-4 shrink-0" />
                 <div class="min-w-0 flex-1 space-y-1">
                     <p>
-                        <span class="font-medium">{{ t('common.posted') }}:</span>
+                        <span class="font-medium"
+                            >{{ t('common.posted') }}:</span
+                        >
                         {{ new Date(lifecycle.posted_at).toLocaleDateString() }}
                     </p>
                     <p v-if="lifecycle.next_action === 'marked_as_taken'">
@@ -978,10 +963,7 @@ function handleConfirmDelete(): void {
                         :label="t('common.email')"
                         validation="email"
                     />
-                    <div
-                        v-if="form.errors.email"
-                        class="text-sm text-red-600"
-                    >
+                    <div v-if="form.errors.email" class="text-sm text-red-600">
                         {{ form.errors.email }}
                     </div>
                 </div>

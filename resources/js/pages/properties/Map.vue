@@ -33,6 +33,7 @@ type MapProperty = {
     bedrooms: number;
     lat: number | null;
     lon: number | null;
+    type: App.Enums.PropertyLeaseType;
 };
 
 const ViewMode = {
@@ -301,7 +302,7 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
                     >
                         &times;
                     </button>
-                    <p class="property-map-tooltip-id">#${property.id}</p>
+                    <p class="property-map-tooltip-id">#${property.type === 'medium_term' ? '6' : '1'}${property.id}</p>
                     <p>${formatMapBedrooms(property.bedrooms)}</p>
                     <p>${formatMapPrice(property.price)}</p>
                 </div>

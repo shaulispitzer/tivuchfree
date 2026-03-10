@@ -128,7 +128,7 @@ class PropertyController extends Controller
             $properties = $propertiesQuery
                 ->get()
                 ->map(fn (Property $property) => (
-                    PropertyData::fromModel($property)->only('id', 'price', 'bedrooms', 'lat', 'lon')->toArray()
+                    PropertyData::fromModel($property)->only('id', 'price', 'bedrooms', 'lat', 'lon', 'type')->toArray()
                 ))
                 ->values()
                 ->all();
