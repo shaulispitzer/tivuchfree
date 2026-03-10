@@ -16,6 +16,11 @@ type NavItem =
               action: string;
               label: string;
           }>;
+      }
+    | {
+          type: 'external';
+          url: string;
+          label: string;
       };
 
 const props = defineProps<{
@@ -45,6 +50,11 @@ const navItems = computed<NavItem[]>(() => [
     },
     { type: 'link', action: 'about-us', label: t('common.aboutUs') },
     { type: 'link', action: 'contact-us', label: t('common.contactUs') },
+    {
+        type: 'external',
+        url: 'https://thechesedfund.com/tivuchfree/tivuch-free',
+        label: t('common.donate'),
+    },
 ]);
 </script>
 
@@ -71,6 +81,21 @@ const navItems = computed<NavItem[]>(() => [
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+            <Button
+                v-else-if="item.type === 'external'"
+                variant="ghost"
+                :class="props.buttonClass"
+                as-child
+            >
+                <a
+                    :href="item.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex h-full items-center"
+                >
+                    {{ item.label }}
+                </a>
+            </Button>
             <Button
                 v-else
                 variant="ghost"

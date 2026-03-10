@@ -11,6 +11,7 @@
 /* @custom-variant dark (&:is(.dark *)); */
 
 @theme inline {
+    --breakpoint-nav: 56.25rem; /* 900px */
     --font-sans:
         Instrument Sans, ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',

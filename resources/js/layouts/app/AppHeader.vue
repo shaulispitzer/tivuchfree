@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import { Home, Menu, Building2, Info, Mail } from 'lucide-vue-next';
-import {
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Home, Menu, Building2, Info, Mail, Heart } from 'lucide-vue-next';
+
 import { useInitials } from '@/composables/useInitials';
 import { home, locale, login } from '@/routes';
 import { create as propertiesCreate } from '@/routes/properties';
@@ -109,7 +103,7 @@ onBeforeUnmount(() => {
             >
                 <!-- Mobile: menu + logo side by side (menu left in en, right in he) -->
                 <div class="flex items-center gap-2 md:contents">
-                    <div class="md:hidden">
+                    <div class="nav:hidden">
                         <DropdownMenu>
                             <DropdownMenuTrigger :as-child="true">
                                 <Button
@@ -184,6 +178,17 @@ onBeforeUnmount(() => {
                                         <Mail class="me-2 h-4 w-4" />
                                         {{ t('common.contactUs') }}
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem as-child>
+                                        <a
+                                            href="https://thechesedfund.com/tivuchfree/tivuch-free"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="flex cursor-pointer items-center"
+                                        >
+                                            <Heart class="me-2 h-4 w-4" />
+                                            {{ t('common.donate') }}
+                                        </a>
+                                    </DropdownMenuItem>
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -197,7 +202,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- Desktop Menu -->
-                <div class="hidden h-full md:flex md:flex-1">
+                <div class="hidden h-full nav:flex nav:flex-1">
                     <AppHeaderNav
                         nav-class="ml-8 flex h-full items-center gap-2"
                         button-class="h-9 px-3"

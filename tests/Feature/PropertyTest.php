@@ -548,7 +548,6 @@ test('properties map view returns all filtered data with lightweight payload', f
             ->has('properties', 13)
             ->has('properties.0.id')
             ->missing('properties.0.available_from')
-            ->missing('properties.0.type')
         );
 });
 

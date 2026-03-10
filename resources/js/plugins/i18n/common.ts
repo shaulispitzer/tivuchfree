@@ -58,6 +58,7 @@ export default {
             faq: "FAQ's",
             contact: 'Contact',
             contactUs: 'Contact Us',
+            donate: 'Donate',
             dashboard: 'Dashboard',
             user: 'User | Users',
 
@@ -385,6 +386,7 @@ export default {
             faq: 'שאלות נפוצות',
             contact: 'צור קשר',
             contactUs: 'צור קשר',
+            donate: 'תרומה',
             privacy: 'מדיניות פרטיות',
             dashboard: 'דשבורד',
             user: 'משתמש | משתמשים',
