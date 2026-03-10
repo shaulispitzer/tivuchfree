@@ -11,4 +11,6 @@ return [
     'Sorotzkin' => 'סורוטסקין',
     'Mekor Baruch' => 'מקור ברוך',
     'Geula' => 'גאולה',
+    'GivatShaul' => 'גבעת שאול',
+    'HarNof' => 'הר נוף',
 ];

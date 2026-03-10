@@ -16,6 +16,8 @@ enum Neighbourhood: string implements PropertyOptionLabel
     case Sorotzkin = 'Sorotzkin';
     case MekorBaruch = 'Mekor Baruch';
     case Geula = 'Geula';
+    case GivatShaul = 'Givat Shaul';
+    case HarNof = 'Har Nof';
 
     public function label(): string
     {

@@ -53,6 +53,8 @@ export default {
             Sorotzkin: 'Sorotzkin',
             MekorBaruch: 'Mekor Baruch',
             Geula: 'Geula',
+            GivatShaul: 'Givat Shaul',
+            HarNof: 'Har Nof',
         },
         propertyAccess: {
             step_free_access: 'Step Free Access',
@@ -163,6 +165,8 @@ export default {
             Sorotzkin: 'סורוטסקין',
             MekorBaruch: 'מקור ברוך',
             Geula: 'גאולה',
+            GivatShaul: 'גבעת שאול',
+            HarNof: 'הר נוף',
         },
         propertyAccess: {
             step_free_access: 'גישה ללא מדרגות',

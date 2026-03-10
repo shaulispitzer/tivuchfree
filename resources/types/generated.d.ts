@@ -113,7 +113,7 @@ declare namespace App.Enums {
 export type PropertyOptionLabel = {
 };
 export type Locale = 'en' | 'he';
-export type Neighbourhood = 'Sanhedria' | 'Sanhedria Murchavet' | 'Bar Ilan' | 'Gush 80' | 'Belz' | 'Romema' | 'Sorotzkin' | 'Mekor Baruch' | 'Geula';
+export type Neighbourhood = 'Sanhedria' | 'Sanhedria Murchavet' | 'Bar Ilan' | 'Gush 80' | 'Belz' | 'Romema' | 'Sorotzkin' | 'Mekor Baruch' | 'Geula' | 'Givat Shaul' | 'Har Nof';
 export type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'default';
 export type PropertyAccess = 'step_free_access' | 'steps_only' | 'elevator_non_shabbos' | 'elevator_shabbos';
 export type PropertyAirConditioning = 'fully_airconditioned' | 'partly_airconditioned' | 'not_airconditioned';

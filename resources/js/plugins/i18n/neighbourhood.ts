@@ -10,6 +10,8 @@ export default {
             Sorotzkin: 'Sorotzkin',
             MekorBaruch: 'Mekor Baruch',
             Geula: 'Geula',
+            GivatShaul: 'Givat Shaul',
+            HarNof: 'Har Nof',
         },
     },
     he: {
@@ -23,6 +25,8 @@ export default {
             Sorotzkin: 'סורוטסקין',
             MekorBaruch: 'מקור ברוך',
             Geula: 'גאולה',
+            GivatShaul: 'גבעת שאול',
+            HarNof: 'הר נוף',
         },
     },
 };
