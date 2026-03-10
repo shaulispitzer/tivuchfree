@@ -91,7 +91,7 @@ const navItems = computed<NavItem[]>(() => [
                     :href="item.url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex h-full items-center"
+                    class="inline-flex items-center"
                 >
                     {{ item.label }}
                 </a>
