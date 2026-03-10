@@ -187,7 +187,7 @@ const neighbourhoodLabel = computed(() => {
             >
                 <div class="mb-1 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
-                        <SiEyeDuotone class="h-4 w-4 text-primary" />
+                        <SiEyeDuotone class="size-4 shrink-0 text-primary" />
                         <span class="text-xs text-muted-foreground">
                             {{ property.views }}</span
                         >
@@ -214,9 +214,6 @@ const neighbourhoodLabel = computed(() => {
                             <span>{{ neighbourhoodLabel }}</span>
                         </div>
                     </div>
-                    <span class="text-sm font-medium">{{
-                        property.price ? '₪' + property.price.toFixed(2) : ''
-                    }}</span>
                 </div>
 
                 <div
@@ -238,27 +235,25 @@ const neighbourhoodLabel = computed(() => {
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 text-sm">
-                    <div class="flex items-center gap-2">
-                        <IconCurrencyUsd class="h-4 w-4 text-primary" />
+                    <div class="flex items-center gap-1">
+                        <IconCurrencyUsd class="size-4 shrink-0 text-primary" />
                         <span class="text-muted-foreground"
                             >{{ t('common.price') }}:</span
                         >
                         <span class="font-medium" v-if="property.price">{{
-                            '₪' + property.price
+                            '₪' + Number(property.price).toLocaleString()
                         }}</span>
-                        <span class="font-medium italic" v-else>{{
-                            t('common.notSpecified')
-                        }}</span>
+                        <span class="font-medium italic" v-else>{{ '—' }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <IconBed class="h-4 w-4 text-primary" />
+                    <div class="flex items-center gap-1">
+                        <IconBed class="size-4 shrink-0 text-primary" />
                         <span class="text-muted-foreground"
                             >{{ t('common.bedrooms') }}:</span
                         >
                         <span class="font-medium">{{ property.bedrooms }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <IconRulerSquare class="h-4 w-4 text-primary" />
+                    <div class="flex items-center gap-1">
+                        <IconRulerSquare class="size-4 shrink-0 text-primary" />
                         <span class="text-muted-foreground"
                             >{{ t('common.m2') }}:</span
                         >
@@ -266,9 +261,9 @@ const neighbourhoodLabel = computed(() => {
                             property.square_meter ?? '—'
                         }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1">
                         <MaterialSymbolsStairs2Rounded
-                            class="h-4 w-4 text-primary"
+                            class="size-4 shrink-0 text-primary"
                         />
                         <span class="text-muted-foreground"
                             >{{ t('common.floor') }}:</span
