@@ -3,8 +3,6 @@ import { Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 
 import type { PropType } from 'vue';
-import { useI18n } from 'vue-i18n';
-
 import { show } from '@/routes/properties';
 import fallbackPropertyImage from '../../assets/DeafultPropertyImage.webp';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -76,7 +74,7 @@ const swiperStyles = {
     '--swiper-pagination-color': 'var(--color-primary)',
     '--swiper-pagination-bullet-inactive-color':
         'var(--color-muted-foreground)',
-    '--swiper-pagination-bullet-inactive-opacity': '0.35',
+    '--swiper-pagination-bullet-inactive-opacity': '0.8',
     '--swiper-navigation-color': 'var(--color-primary)',
 };
 
