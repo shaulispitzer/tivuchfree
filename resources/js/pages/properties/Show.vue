@@ -704,20 +704,24 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
 /* Lightbox transition */
 .lightbox-enter-active {
     transition:
-        opacity 0.28s ease,
-        transform 0.28s ease;
+        opacity 0.4s ease,
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .lightbox-leave-active {
     transition:
-        opacity 0.2s ease,
-        transform 0.2s ease;
+        opacity 0.3s ease,
+        transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.lightbox-enter-from,
+.lightbox-enter-from {
+    opacity: 0.6;
+    transform: scale(0.5);
+}
+
 .lightbox-leave-to {
     opacity: 0;
-    transform: scale(0.97);
+    transform: scale(0.3);
 }
 
 /* Lightbox main swiper */
