@@ -607,7 +607,6 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                                 :slides-per-view="5"
                                 :watch-slides-progress="true"
                                 :slide-to-clicked-slide="true"
-                                :centered-slides="true"
                                 :breakpoints="{
                                     640: { slidesPerView: 7, spaceBetween: 6 },
                                     768: { slidesPerView: 9, spaceBetween: 6 },
@@ -650,6 +649,10 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
     width: 0.7rem;
     height: 0.7rem;
     filter: drop-shadow(0 0 0.5px currentColor);
+}
+
+.property-show-thumbs-swiper :deep(.swiper-wrapper) {
+    justify-content: center;
 }
 
 .property-show-thumbs-swiper :deep(.swiper-slide) {
@@ -767,16 +770,20 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
 }
 
 /* Lightbox thumbnails */
+.lightbox-thumbs-swiper :deep(.swiper-wrapper) {
+    justify-content: center;
+}
+
 .lightbox-thumbs-swiper :deep(.swiper-slide) {
     cursor: pointer;
-    opacity: 0.45;
+    opacity: 0.95;
     transition:
         opacity 0.2s,
         transform 0.2s;
 }
 
 .lightbox-thumbs-swiper :deep(.swiper-slide:hover) {
-    opacity: 0.75;
+    opacity: 1;
 }
 
 .lightbox-thumbs-swiper :deep(.swiper-slide-thumb-active) {
