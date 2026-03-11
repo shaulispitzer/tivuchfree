@@ -534,12 +534,19 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
             <Transition name="lightbox">
                 <div
                     v-if="lightboxOpen"
-                    class="fixed inset-0 z-9999 flex items-center justify-center bg-black sm:bg-transparent sm:p-6 sm:backdrop-blur-sm"
+                    class="lightbox-outer fixed inset-0 z-9999 flex items-center justify-center bg-black sm:bg-transparent sm:p-6 sm:backdrop-blur-sm"
                     @click.self="closeLightbox"
                 >
                     <div
-                        class="flex h-full w-full flex-col overflow-hidden bg-black sm:h-[90dvh] sm:max-h-[90dvh] sm:max-w-5xl sm:rounded-2xl sm:shadow-2xl"
+                        class="lightbox-inner relative flex h-full w-full flex-col overflow-hidden bg-black sm:h-[90dvh] sm:max-h-[90dvh] sm:max-w-5xl sm:rounded-2xl sm:shadow-2xl"
                     >
+                        <button
+                            type="button"
+                            class="lightbox-landscape-close absolute top-2 right-2 z-10 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-all active:scale-95 [&>span>svg]:block [&>span>svg]:size-5 [&>span>svg]:fill-white"
+                            @click="closeLightbox"
+                        >
+                            <span v-html="FluentArrowMinimize20Filled" />
+                        </button>
                         <div
                             class="lightbox-header flex shrink-0 items-center justify-between px-3 py-2.5 sm:px-4 sm:py-3"
                         >
@@ -576,7 +583,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                                     :key="`lb-${url}-${index}`"
                                 >
                                     <div
-                                        class="flex h-full w-full items-center justify-center px-3 py-2 sm:px-12"
+                                        class="lightbox-slide-content flex h-full w-full items-center justify-center px-3 py-2 sm:px-12"
                                     >
                                         <img
                                             :src="url"
@@ -655,15 +662,42 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
         color-mix(in srgb, var(--color-primary) 35%, transparent);
 }
 
-/* Landscape mobile: give all vertical space to the image */
-@media (orientation: landscape) and (max-width: 767px) {
+/* Overlay close button — hidden by default, shown in phone landscape only */
+.lightbox-landscape-close {
+    display: none;
+}
+
+/* Phone landscape: detected by small height (phones ~360–430px tall in landscape).
+   Override sm: breakpoint styles that add padding/rounding/max-width. */
+@media (orientation: landscape) and (max-height: 500px) {
     .lightbox-thumbs-strip {
         display: none;
     }
 
     .lightbox-header {
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
+        display: none;
+    }
+
+    .lightbox-landscape-close {
+        display: flex;
+    }
+
+    .lightbox-outer {
+        padding: 0;
+        background: black;
+        backdrop-filter: none;
+    }
+
+    .lightbox-inner {
+        height: 100%;
+        max-height: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .lightbox-slide-content {
+        padding: 0;
     }
 }
 
