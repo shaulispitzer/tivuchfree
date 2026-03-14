@@ -5,6 +5,9 @@ use App\Models\PropertyStat;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
+const LEGACY_LISTINGS_COUNT = 219;
+const LEGACY_MONEY_SAVED = 1267400;
+
 test('home page renders with tivuchfree stats and money saved', function () {
     Cache::forget('home.tivuchfree_properties_count');
     Cache::forget('home.money_saved_by_community');
@@ -14,8 +17,8 @@ test('home page renders with tivuchfree stats and money saved', function () {
     $response->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Home')
-            ->where('tivuchfreePropertiesCount', 0)
-            ->where('moneySavedByCommunity', 0));
+            ->where('tivuchfreePropertiesCount', LEGACY_LISTINGS_COUNT)
+            ->where('moneySavedByCommunity', LEGACY_MONEY_SAVED));
 });
 
 test('home page tivuchfree count matches property stats where how_got_taken is tivuchfree', function () {
@@ -45,7 +48,7 @@ test('home page tivuchfree count matches property stats where how_got_taken is t
     $response->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Home')
-            ->where('tivuchfreePropertiesCount', 2));
+            ->where('tivuchfreePropertiesCount', LEGACY_LISTINGS_COUNT + 2));
 });
 
 test('home page money saved is sum of price_taken_at or price_advertised for tivuchfree stats', function () {
@@ -80,6 +83,6 @@ test('home page money saved is sum of price_taken_at or price_advertised for tiv
     $response->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Home')
-            ->where('tivuchfreePropertiesCount', 2)
-            ->where('moneySavedByCommunity', 11000));
+            ->where('tivuchfreePropertiesCount', LEGACY_LISTINGS_COUNT + 2)
+            ->where('moneySavedByCommunity', LEGACY_MONEY_SAVED + 11000));
 });

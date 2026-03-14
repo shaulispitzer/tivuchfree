@@ -160,6 +160,7 @@ declare module 'vue' {
     Spinner: typeof import('./../components/ui/spinner/Spinner.vue')['default']
     SubscriptionSettings: typeof import('./../components/properties/SubscriptionSettings.vue')['default']
     SubscriptionSubscribeButton: typeof import('./../components/SubscriptionSubscribeButton.vue')['default']
+    Switch: typeof import('./../components/ui/switch/Switch.vue')['default']
     TextLink: typeof import('./../components/TextLink.vue')['default']
     Tooltip: typeof import('./../components/ui/tooltip/Tooltip.vue')['default']
     TooltipContent: typeof import('./../components/ui/tooltip/TooltipContent.vue')['default']

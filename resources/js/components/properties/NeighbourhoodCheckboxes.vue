@@ -16,45 +16,50 @@ const emit = defineEmits<{
     'update:modelValue': [value: string[]];
 }>();
 
-/** When modelValue is [] we treat as "no filter" / all selected for display. */
-const selectedSet = computed(() => {
-    const value = props.modelValue ?? [];
-    if (value.length === 0 && props.options.length > 0) {
-        return new Set(props.options);
-    }
-    return new Set(value);
-});
+const showAll = ref((props.modelValue?.length ?? 0) === 0);
+const selectedNeighbourhoods = ref<string[]>([...(props.modelValue ?? [])]);
 
-const isAllSelected = computed(
-    () =>
-        props.options.length > 0 &&
-        props.options.every((opt) => selectedSet.value.has(opt)),
+/** Sync internal state when modelValue changes from outside (e.g. clearFilters). */
+watch(
+    () => props.modelValue,
+    (value) => {
+        if (!value || value.length === 0) {
+            showAll.value = true;
+            selectedNeighbourhoods.value = [];
+        } else {
+            showAll.value = false;
+            selectedNeighbourhoods.value = [...value];
+        }
+    },
 );
 
-const isNoneSelected = computed(
-    () => props.options.length === 0 || (props.modelValue ?? []).length === 0,
-);
-
-/** "Select all" uses only checked/unchecked so it matches other checkboxes visually. */
-const selectAllState = computed<boolean>(() => isAllSelected.value);
-
-/** When Select all is checked, emit [] so no neighbourhood filter is applied. */
-function toggleSelectAll(checked: boolean | 'indeterminate'): void {
-    if (checked === true) {
-        emit('update:modelValue', []);
-    } else {
+function toggleShowAll(checked: boolean): void {
+    showAll.value = checked;
+    if (checked) {
+        selectedNeighbourhoods.value = [];
         emit('update:modelValue', []);
     }
 }
 
-function setOption(option: string, checked: boolean): void {
-    const next = new Set(selectedSet.value);
-    if (checked) {
-        next.add(option);
+function toggleOption(option: string): void {
+    if (showAll.value) {
+        showAll.value = false;
+        selectedNeighbourhoods.value = [option];
     } else {
-        next.delete(option);
+        const next = new Set(selectedNeighbourhoods.value);
+        if (next.has(option)) {
+            next.delete(option);
+        } else {
+            next.add(option);
+        }
+        selectedNeighbourhoods.value = [...next];
     }
-    emit('update:modelValue', [...next]);
+    emit('update:modelValue', [...selectedNeighbourhoods.value]);
+}
+
+function isChecked(option: string): boolean {
+    if (showAll.value) return false;
+    return selectedNeighbourhoods.value.includes(option);
 }
 
 function labelFor(neighbourhood: string): string {
@@ -62,18 +67,17 @@ function labelFor(neighbourhood: string): string {
 }
 
 function displayText(): string {
-    const arr = props.modelValue ?? [];
-    if (arr.length === 0) {
-        return props.options.length > 0
-            ? t('neighbourhoods.allNeighbourhoodsSelected')
-            : t('neighbourhoods.allNeighbourhoods');
+    if (showAll.value || selectedNeighbourhoods.value.length === 0) {
+        return t('neighbourhoods.allNeighbourhoods');
     }
-    if (isAllSelected.value)
-        return t('neighbourhoods.allNeighbourhoodsSelected');
-    if (arr.length === 1) {
-        return t(`neighbourhoods.${arr[0].replaceAll(' ', '')}`);
+    if (selectedNeighbourhoods.value.length === 1) {
+        return t(
+            `neighbourhoods.${selectedNeighbourhoods.value[0].replaceAll(' ', '')}`,
+        );
     }
-    return t('propertyFilters.neighbourhoodsSelected', { count: arr.length });
+    return t('propertyFilters.neighbourhoodsSelected', {
+        count: selectedNeighbourhoods.value.length,
+    });
 }
 </script>
 
@@ -96,15 +100,16 @@ function displayText(): string {
         </PopoverTrigger>
         <PopoverContent class="w-72 p-0" align="start">
             <div class="flex flex-col gap-3 p-3">
-                <label
-                    class="flex cursor-pointer items-center gap-2 text-sm font-medium"
-                >
-                    <Checkbox
-                        :model-value="selectAllState"
-                        @update:model-value="toggleSelectAll"
+                <div class="flex items-center gap-2 text-sm font-medium">
+                    <Switch
+                        :model-value="showAll"
+                        @update:model-value="toggleShowAll"
                     />
-                    {{ t('neighbourhoods.selectAll') }}
-                </label>
+                    <span>{{ t('neighbourhoods.allNeighbourhoods') }}</span>
+                </div>
+                <p class="-mt-1 text-xs text-muted-foreground">
+                    {{ t('neighbourhoods.orSelectFromList') }}
+                </p>
                 <div class="flex max-h-48 flex-col gap-2 overflow-y-auto">
                     <label
                         v-for="option in options"
@@ -112,10 +117,8 @@ function displayText(): string {
                         class="flex cursor-pointer items-center gap-2 text-sm"
                     >
                         <Checkbox
-                            :model-value="selectedSet.has(option)"
-                            @update:model-value="
-                                (v) => setOption(option, v === true)
-                            "
+                            :model-value="isChecked(option)"
+                            @update:model-value="() => toggleOption(option)"
                         />
                         {{ labelFor(option) }}
                     </label>

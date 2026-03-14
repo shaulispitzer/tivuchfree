@@ -3,8 +3,6 @@ import { parseDate } from '@internationalized/date';
 import Slider from '@vueform/slider';
 import '@vueform/slider/themes/default.css';
 import type { DateValue } from 'reka-ui';
-import DatePicker from '@/components/DatePicker.vue';
-
 import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
 type Option = {

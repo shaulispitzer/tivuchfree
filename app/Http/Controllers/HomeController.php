@@ -14,18 +14,22 @@ class HomeController extends Controller
 
     private const CACHE_TTL_SECONDS = 3600;
 
+    private const LEGACY_LISTINGS_COUNT = 219;
+
+    private const LEGACY_MONEY_SAVED = 1267400;
+
     public function index()
     {
         $tivuchfreePropertiesCount = Cache::remember(
             self::TIVUCHFREE_COUNT_CACHE_KEY,
             self::CACHE_TTL_SECONDS,
-            fn () => PropertyStat::query()->where('how_got_taken', 'tivuchfree')->count(),
+            fn () => self::LEGACY_LISTINGS_COUNT + PropertyStat::query()->where('how_got_taken', 'tivuchfree')->count(),
         );
 
         $moneySavedByCommunity = Cache::remember(
             self::MONEY_SAVED_CACHE_KEY,
             self::CACHE_TTL_SECONDS,
-            fn () => (float) PropertyStat::query()
+            fn () => self::LEGACY_MONEY_SAVED + (float) PropertyStat::query()
                 ->where('how_got_taken', 'tivuchfree')
                 ->selectRaw('COALESCE(SUM(COALESCE(price_taken_at, price_advertised)), 0) as total')
                 ->value('total'),

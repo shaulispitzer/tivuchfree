@@ -1,0 +1,51 @@
+---
+globs: *.vue
+---
+
+# Auto-Imports in Vue Files
+
+This project uses two unplugin packages (configured in `vite.config.ts`) that make symbols and components globally available **without** explicit imports. Do NOT add import statements for any of them.
+
+## 1. Auto-imported functions & composables (`unplugin-auto-import`)
+
+### Vue core
+
+`ref`, `computed`, `reactive`, `readonly`, `watch`, `watchEffect`, `watchPostEffect`, `watchSyncEffect`, `toRef`, `toRefs`, `toRaw`, `toValue`, `unref`, `isRef`, `isReactive`, `isReadonly`, `isProxy`, `isShallow`, `shallowRef`, `shallowReactive`, `shallowReadonly`, `triggerRef`, `customRef`, `markRaw`, `nextTick`, `provide`, `inject`, `h`, `defineComponent`, `defineAsyncComponent`, `resolveComponent`, `createApp`, `effectScope`, `EffectScope`, `getCurrentInstance`, `getCurrentScope`, `getCurrentWatcher`, `onScopeDispose`, `onWatcherCleanup`, `useAttrs`, `useSlots`, `useCssModule`, `useCssVars`, `useId`, `useModel`, `useTemplateRef`, `onMounted`, `onBeforeMount`, `onUnmounted`, `onBeforeUnmount`, `onUpdated`, `onBeforeUpdate`, `onActivated`, `onDeactivated`, `onErrorCaptured`, `onRenderTracked`, `onRenderTriggered`, `onServerPrefetch`
+
+### Inertia.js
+
+`router`, `useForm`, `usePage`
+
+### vue-i18n
+
+`useI18n`
+
+### momentum-trail-patch
+
+`route`, `current`
+
+### momentum-lock
+
+`can`
+
+### Project composables (from `resources/js/composables/`)
+
+`useAppearance`, `initializeTheme`, `updateTheme`, `useCurrentUrl`, `useInitials`, `getInitials`, `useTwoFactorAuth`
+
+### Authoritative list
+
+`resources/js/types/auto-imports.d.ts` — if a symbol is missing from that file, it still requires an explicit import.
+
+## 2. Auto-imported components (`unplugin-vue-components`)
+
+All `.vue` files inside `resources/js/components/` (including subdirectories) are registered as global components. Use them directly in `<template>` without importing. This includes all UI primitives (`Button`, `Input`, `Card`, `Select`, `Modal`, `Sheet`, `Sidebar`, etc.), app-specific components (`PropertyCard`, `PropertyFilters`, `Heading`, `Breadcrumbs`, `PaginationNav`, etc.), and Inertia's `<Link>` and `<Head>`.
+
+Icons using the `icon-` prefix (e.g. `<icon-custom-logo />`) are also auto-resolved via `unplugin-icons`.
+
+### Authoritative list
+
+`resources/js/types/components.d.ts` — if a component is missing from that file, it still requires an explicit import.
+
+## What still needs explicit imports
+
+Types, interfaces, utilities, Wayfinder actions/routes (`@/actions/...`, `@/routes/...`), third-party libraries not listed above, and any symbol not present in the two `.d.ts` files above.
