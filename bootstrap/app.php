@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('properties:process-lifecycle')->dailyAt('13:00')->days([0, 1, 2, 3, 4, 5]);
         $schedule->job(new \App\Jobs\ProcessExpiredPropertySubscriptions)->dailyAt('13:00')->days([0, 1, 2, 3, 4, 5]);
         $schedule->job(new \App\Jobs\PurgeStaleTemporaryUploads)->weekly();
+        $schedule->job(new \App\Jobs\PurgeStalePropertySubscriptionPendings)->weekly();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
