@@ -22,7 +22,6 @@ class PropertyFormData extends Data
     public function __construct(
         public string $contact_name,
         public string $contact_phone,
-        public ?string $contact_phone_2 = null,
         public ?string $email,
         public ?float $price,
         public array $neighbourhoods,
@@ -48,8 +47,8 @@ class PropertyFormData extends Data
         public bool $has_dud_shemesh,
         public bool $has_machsan,
         public bool $has_parking_spot,
+        public ?string $contact_phone_2 = null,
         public ?int $temp_upload_id = null,
-
         #[Sometimes]
         #[Nullable]
         #[WithCast(IntegerArrayCast::class)]
