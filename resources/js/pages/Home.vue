@@ -16,6 +16,7 @@ const shortTermModalOpen = ref(false);
 const reviewModalOpen = ref(false);
 const displayedSavings = ref(0);
 const displayedPropertiesCount = ref(0);
+const statsSectionRef = ref<HTMLElement | null>(null);
 
 const reviewForm = useForm({
     name: '',
@@ -76,8 +77,8 @@ function submitReview(): void {
     });
 }
 
-onMounted(() => {
-    const durationInMs = 2200;
+function runCounterAnimation(): void {
+    const durationInMs = 2000;
     const animationStart = performance.now();
     const targetCount = props.tivuchfreePropertiesCount;
     const targetSavings = Math.round(props.moneySavedByCommunity);
@@ -99,6 +100,25 @@ onMounted(() => {
     };
 
     requestAnimationFrame(animateCounter);
+}
+
+onMounted(() => {
+    const el = statsSectionRef.value;
+    if (!el) {
+        return;
+    }
+    const observer = new IntersectionObserver(
+        (entries) => {
+            const entry = entries[0];
+            if (!entry?.isIntersecting) {
+                return;
+            }
+            observer.disconnect();
+            runCounterAnimation();
+        },
+        { threshold: 0.1 },
+    );
+    observer.observe(el);
 });
 </script>
 
@@ -283,7 +303,7 @@ onMounted(() => {
             </div>
         </section>
 
-        <section class="bg-background py-14">
+        <section ref="statsSectionRef" class="bg-background py-14">
             <div class="mx-auto max-w-7xl px-6">
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div
