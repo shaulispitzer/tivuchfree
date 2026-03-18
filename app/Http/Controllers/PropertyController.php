@@ -14,6 +14,7 @@ use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Http\Requests\MarkPropertyAsTakenRequest;
+use App\Jobs\GeocodeProperty;
 use App\Jobs\NotifyPropertySubscribers;
 use App\Jobs\TranslatePropertyAdditionalInfo;
 use App\Mail\PropertyListingStatusChange;
@@ -22,7 +23,6 @@ use App\Mail\YourPropertyWasListed;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
-use App\Services\PropertyGeocoder;
 use App\Services\PropertyStatRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -38,8 +38,6 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PropertyController extends Controller
 {
-    public function __construct(protected PropertyGeocoder $propertyGeocoder) {}
-
     /**
      * Display a listing of the resource.
      */
@@ -270,12 +268,7 @@ class PropertyController extends Controller
         if ($data->type === PropertyLeaseType::LongTerm) {
             $data->available_to = null;
         }
-        $coordinates = $this->propertyGeocoder->geocode(
-            $streetInHebrew,
-            $data->building_number !== null ? (string) $data->building_number : null,
-        );
-
-        $property = DB::transaction(function () use ($data, $request, $streetInHebrew, $coordinates) {
+        $property = DB::transaction(function () use ($data, $request, $streetInHebrew) {
             $additionalInfo = $this->resolveAdditionalInfoForImmediateSave(
                 $data->additional_info,
                 $data->additional_info_en,
@@ -291,8 +284,8 @@ class PropertyController extends Controller
                 'price' => $data->price,
                 'building_number' => $data->building_number,
                 'street' => $streetInHebrew,
-                'lat' => $coordinates['lat'] ?? null,
-                'lon' => $coordinates['lon'] ?? null,
+                'lat' => null,
+                'lon' => null,
                 'floor' => $data->floor,
                 'type' => $data->type,
                 'available_from' => $data->available_from,
@@ -391,6 +384,12 @@ class PropertyController extends Controller
 
             return $property;
         });
+
+        GeocodeProperty::dispatch(
+            $property,
+            $streetInHebrew,
+            $data->building_number !== null ? (string) $data->building_number : null,
+        );
 
         Mail::to($property->user->email)->send(new YourPropertyWasListed($property->user));
 
@@ -768,14 +767,9 @@ class PropertyController extends Controller
                 $data->available_to = null;
             }
 
-            $coordinates = $this->propertyGeocoder->geocode(
-                $streetInHebrew,
-                $data->building_number !== null ? (string) $data->building_number : null,
-            );
-
             $normalizedAdditionalInfo = is_string($data->additional_info) ? trim($data->additional_info) : '';
 
-            DB::transaction(function () use ($coordinates, $data, $property, $request, $streetInHebrew): void {
+            DB::transaction(function () use ($data, $property, $request, $streetInHebrew): void {
                 $additionalInfo = $this->resolveAdditionalInfoForImmediateSave(
                     $data->additional_info,
                     $data->additional_info_en,
@@ -790,8 +784,8 @@ class PropertyController extends Controller
                     'price' => $data->price,
                     'building_number' => $data->building_number,
                     'street' => $streetInHebrew,
-                    'lat' => $coordinates['lat'] ?? null,
-                    'lon' => $coordinates['lon'] ?? null,
+                    'lat' => null,
+                    'lon' => null,
                     'floor' => $data->floor,
                     'type' => $data->type,
                     'available_from' => $data->available_from,
@@ -820,6 +814,12 @@ class PropertyController extends Controller
                     mainImageMediaId: $data->main_image_media_id,
                 );
             });
+
+            GeocodeProperty::dispatch(
+                $property,
+                $streetInHebrew,
+                $data->building_number !== null ? (string) $data->building_number : null,
+            );
 
             if ($normalizedAdditionalInfo !== '') {
                 $sourceLocale = app()->getLocale() === 'he' ? 'he' : 'en';
@@ -873,16 +873,11 @@ class PropertyController extends Controller
             $validated['available_to'] = null;
         }
 
-        $coordinates = $this->propertyGeocoder->geocode(
-            $validated['street'],
-            isset($validated['building_number']) ? (string) $validated['building_number'] : null,
-        );
-
         $normalizedAdditionalInfo = is_string($validated['additional_info'] ?? null)
             ? trim($validated['additional_info'])
             : '';
 
-        DB::transaction(function () use ($coordinates, $property, $validated): void {
+        DB::transaction(function () use ($property, $validated): void {
             $additionalInfo = $this->resolveAdditionalInfoForImmediateSave(
                 $validated['additional_info'] ?? null,
                 null,
@@ -897,8 +892,8 @@ class PropertyController extends Controller
                 'price' => $validated['price'] ?? null,
                 'street' => $validated['street'],
                 'building_number' => $validated['building_number'] ?? null,
-                'lat' => $coordinates['lat'] ?? null,
-                'lon' => $coordinates['lon'] ?? null,
+                'lat' => null,
+                'lon' => null,
                 'floor' => (float) $validated['floor'],
                 'type' => $validated['type'],
                 'available_from' => $validated['available_from'],
@@ -919,6 +914,12 @@ class PropertyController extends Controller
                 'has_parking_spot' => (bool) ($validated['has_parking_spot'] ?? false),
             ]);
         });
+
+        GeocodeProperty::dispatch(
+            $property,
+            $validated['street'],
+            isset($validated['building_number']) ? (string) $validated['building_number'] : null,
+        );
 
         if ($normalizedAdditionalInfo !== '') {
             $sourceLocale = app()->getLocale() === 'he' ? 'he' : 'en';
