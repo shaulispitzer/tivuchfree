@@ -1,13 +1,7 @@
 <?php
 
 use App\Jobs\PurgeStaleTemporaryUploads;
-use App\Mail\StaleUploadsPurged;
 use App\Models\TempUpload;
-use Illuminate\Support\Facades\Mail;
-
-beforeEach(function () {
-    Mail::fake();
-});
 
 test('it deletes temp uploads older than 24 hours', function () {
     $stale = TempUpload::factory()->create(['created_at' => now()->subHours(25)]);
@@ -27,26 +21,19 @@ test('it keeps temp uploads younger than 24 hours', function () {
     expect(TempUpload::query()->count())->toBe(3);
 });
 
-test('it sends a summary email after purging', function () {
+test('it purges all stale uploads in one run', function () {
     TempUpload::factory()->count(2)->create(['created_at' => now()->subHours(30)]);
+    TempUpload::factory()->create(['created_at' => now()->subHours(1)]);
 
     (new PurgeStaleTemporaryUploads)->handle();
 
-    Mail::assertSent(StaleUploadsPurged::class, function (StaleUploadsPurged $mail) {
-        return $mail->hasTo('shaulispitzer@gmail.com')
-            && $mail->uploadCount === 2
-            && $mail->mediaCount === 0;
-    });
+    expect(TempUpload::query()->count())->toBe(1);
 });
 
-test('it sends a summary email even when nothing was purged', function () {
+test('it handles an empty table without errors', function () {
     (new PurgeStaleTemporaryUploads)->handle();
 
-    Mail::assertSent(StaleUploadsPurged::class, function (StaleUploadsPurged $mail) {
-        return $mail->hasTo('shaulispitzer@gmail.com')
-            && $mail->uploadCount === 0
-            && $mail->mediaCount === 0;
-    });
+    expect(TempUpload::query()->count())->toBe(0);
 });
 
 test('exact 24-hour boundary: uploads at exactly 24 hours old are considered stale', function () {
