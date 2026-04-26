@@ -5,12 +5,17 @@ use App\Models\User;
 use App\Support\Ivr;
 use Illuminate\Database\Eloquent\Model;
 
-test('ivr returns read prompt for single digit then welcome file', function () {
+test('ivr index returns street TTS for property 44', function () {
+    $user = User::factory()->create();
+    $attributes = Property::factory()->for($user)->make(['street' => 'רחוב הדגנה'])->getAttributes();
+    Model::unguarded(fn () => Property::query()->create(array_merge($attributes, ['id' => 44])));
+
     $response = $this->get(route('ivr.index'));
 
     $response->assertStatus(200);
     $response->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
-    $response->assertSee(Ivr::readWelcomeThenMenuDigit(), false);
+    $expected = Ivr::idListMessageText('שם הרחוב הוא רחוב הדגנה');
+    $response->assertSee($expected, false);
 });
 
 test('ivr menu key 2 returns street TTS for property 44', function () {
@@ -25,16 +30,26 @@ test('ivr menu key 2 returns street TTS for property 44', function () {
     $response->assertSee($expected, false);
 });
 
-test('ivr menu key 2 when property 44 is missing says not found', function () {
-    $response = $this->get(route('ivr.index', [Ivr::READ_MENU_PARAM => Ivr::MENU_KEY_STREET]));
+test('ivr when property 44 is missing says not found', function () {
+    $response = $this->get(route('ivr.index'));
 
     $response->assertStatus(200);
     $response->assertSee(Ivr::idListMessageText('הנכס לא נמצא'), false);
+});
+
+test('ivr rejects unknown menu key', function () {
+    $response = $this->get(route('ivr.index', [Ivr::READ_MENU_PARAM => '9']));
+
+    $response->assertStatus(200);
+    $response->assertSee(
+        Ivr::idListMessageText('לא הוקשה בחירה או שהבחירה אינה זמינה'),
+        false
+    );
 });
 
 test('ivr bypasses csrf', function () {
     $response = $this->post(route('ivr.index'));
 
     $response->assertStatus(200);
-    $response->assertSee('read=', false);
+    $response->assertSee('id_list_message=t-', false);
 });

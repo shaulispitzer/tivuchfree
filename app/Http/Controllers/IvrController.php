@@ -30,19 +30,15 @@ class IvrController extends Controller
     {
         $menu = $request->input(Ivr::READ_MENU_PARAM);
 
-        if (filled($menu)) {
-            if ($menu === Ivr::MENU_KEY_STREET) {
-                return $this->streetTtsForDemoProperty();
-            }
-
+        if (filled($menu) && $menu !== Ivr::MENU_KEY_STREET) {
             return Ivr::idListMessageText('לא הוקשה בחירה או שהבחירה אינה זמינה');
         }
 
-        return Ivr::readWelcomeThenMenuDigit();
+        return $this->streetTtsForDemoProperty();
     }
 
     /**
-     * TTS: street name for the demo property (press 2 in menu).
+     * TTS: street name for property {@see Ivr::PROPERTY_ID_STREET_DEMO} (44).
      */
     protected function streetTtsForDemoProperty(): string
     {
