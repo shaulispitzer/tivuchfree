@@ -6,7 +6,7 @@ use App\Models\Property;
 use Illuminate\Support\Collection;
 
 /**
- *  Yemot API Module docs
+ *  Yemot API Module documentation
  *  https://f2.freeivr.co.il/topic/56/%D7%9E%D7%95%D7%93%D7%95%D7%9C-api-%D7%AA%D7%A7%D7%A9%D7%95%D7%A8-%D7%A2%D7%9D-%D7%9E%D7%97%D7%A9%D7%91%D7%99%D7%9D-%D7%95%D7%9E%D7%9E%D7%A9%D7%A7%D7%99-%D7%A0%D7%AA%D7%95%D7%A0%D7%99%D7%9D-%D7%97%D7%99%D7%A6%D7%95%D7%A0%D7%99%D7%99%D7%9D
  */
 class Ivr
