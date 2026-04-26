@@ -10,12 +10,26 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\PostTooLargeException;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function (): void {
+            Route::middleware('web')
+                ->prefix('ivr')
+                ->name('ivr.')
+                ->group(base_path('routes/ivr.php'));
+
+            // if (app()->isLocal()) {
+            Route::middleware('web')
+                ->prefix('dev')
+                ->name('dev.')
+                ->group(base_path('routes/dev.php'));
+            // }
+        },
     )
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('properties:process-lifecycle')->dailyAt('13:00')->days([0, 1, 2, 3, 4, 5]);
@@ -31,6 +45,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        $middleware->validateCsrfTokens(except: [
+            'ivr',
+            'ivr/*',
+        ]);
 
         $middleware->web(append: [
             HandleAppearance::class,

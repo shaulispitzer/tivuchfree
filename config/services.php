@@ -46,5 +46,9 @@ return [
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
+    'yemot' => [
+        'ivr_number' => env('YEMOT_IVR_NUMBER'),
+        'ivr_password' => env('YEMOT_IVR_PASSWORD'),
+    ],
 
 ];
