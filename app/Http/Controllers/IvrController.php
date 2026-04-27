@@ -54,7 +54,7 @@ class IvrController extends Controller
             return Ivr::idListMessageText('אין שם רחוב בנכס');
         }
 
-        return Ivr::idListMessageText('שם הרחוב הוא '.$street);
+        return Ivr::idListMessageText('שם הרחוב הוא '.$street.'&');
     }
 
     /**
