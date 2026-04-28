@@ -26,6 +26,16 @@ class Ivr
      */
     public const MENU_KEY_STREET = '2';
 
+    public const PROPERTY_INDEX_PARAM = 'property_index';
+
+    public const DIGIT_PARAM = 'digit';
+
+    public const DIGIT_NEXT = '6';
+
+    public const DIGIT_PREVIOUS = '4';
+
+    public const IVR_URL = 'https://tivuchfreeyemot.laravel.cloud/ivr';
+
     // actions
     public const LIST_PROPERTIES = 1;
 
@@ -104,5 +114,18 @@ class Ivr
     public static function idListMessageText(string $text): string
     {
         return 'id_list_message=t-'.self::sanitizeTtsText($text);
+    }
+
+    public static function scrollingStreetReadCommand(string $street, int $propertyIndex): string
+    {
+        return self::readTextCommand("שם הרחוב הוא {$street}. למעבר לבא הקש 6, לקודם הקש 4.", $propertyIndex);
+    }
+
+    public static function readTextCommand(string $text, int $propertyIndex): string
+    {
+        $text = self::sanitizeTtsText($text);
+        $nextUrl = self::IVR_URL.'?'.self::PROPERTY_INDEX_PARAM.'='.$propertyIndex;
+
+        return 'read=t-'.$text.'='.self::DIGIT_PARAM.',yes,1,1,7,Number,yes,no,'.$nextUrl.'&';
     }
 }

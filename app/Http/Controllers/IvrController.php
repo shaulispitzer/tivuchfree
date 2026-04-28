@@ -21,40 +21,38 @@ class IvrController extends Controller
             default => $this->handleDefault($request),
         };
 
-        return response($body, Response::HTTP_OK, [
-            'Content-Type' => 'text/plain; charset=UTF-8',
-        ]);
+        return $this->ivrResponse($body);
     }
 
     protected function handleDefault(Request $request): string
     {
-        $menu = $request->input(Ivr::READ_MENU_PARAM);
+        $streets = Property::query()
+            ->whereNotNull('street')
+            ->where('street', '<>', '')
+            ->orderBy('id')
+            ->pluck('street')
+            ->map(fn (string $street): string => trim($street))
+            ->filter()
+            ->values();
 
-        if (filled($menu) && $menu !== Ivr::MENU_KEY_STREET) {
-            return Ivr::idListMessageText('לא הוקשה בחירה או שהבחירה אינה זמינה');
+        if ($streets->isEmpty()) {
+            return Ivr::readTextCommand('לא נמצאו רחובות', 0);
         }
 
-        return $this->streetTtsForDemoProperty();
-    }
+        $propertyIndex = $request->integer(Ivr::PROPERTY_INDEX_PARAM, 0);
+        $digit = $request->input(Ivr::DIGIT_PARAM);
 
-    /**
-     * TTS: street name for property {@see Ivr::PROPERTY_ID_STREET_DEMO} (44).
-     */
-    protected function streetTtsForDemoProperty(): string
-    {
-        $property = Property::query()->find(Ivr::PROPERTY_ID_STREET_DEMO);
-
-        if (! $property) {
-            return Ivr::idListMessageText('הנכס לא נמצא');
+        if ($digit === Ivr::DIGIT_NEXT) {
+            $propertyIndex++;
         }
 
-        $street = trim((string) $property->street);
-
-        if ($street === '') {
-            return Ivr::idListMessageText('אין שם רחוב בנכס');
+        if ($digit === Ivr::DIGIT_PREVIOUS) {
+            $propertyIndex--;
         }
 
-        return Ivr::idListMessageText('שם הרחוב הוא '.$street.'&');
+        $propertyIndex = ($propertyIndex % $streets->count() + $streets->count()) % $streets->count();
+
+        return Ivr::scrollingStreetReadCommand($streets->get($propertyIndex), $propertyIndex);
     }
 
     /**
@@ -76,8 +74,13 @@ class IvrController extends Controller
             ? 'id_list_message=f-'.Ivr::getMessagePath('file_deleted')
             : 'id_list_message=f-'.Ivr::getMessagePath('error');
 
-        return response($body, Response::HTTP_OK, [
-            'Content-Type' => 'text/plain; charset=UTF-8',
+        return $this->ivrResponse($body);
+    }
+
+    protected function ivrResponse(string $body): Response
+    {
+        return response(iconv('UTF-8', 'windows-1255', $body), Response::HTTP_OK, [
+            'Content-Type' => 'text/plain; charset=windows-1255',
         ]);
     }
 }
