@@ -2,27 +2,28 @@
 
 use App\Models\Property;
 use App\Support\Ivr;
+use Illuminate\Database\Eloquent\Model;
 
-function createIvrStreetProperties(array $streets): void
+function createIvrProperties(array $propertyIds): void
 {
-    foreach ($streets as $street) {
-        Property::factory()->create(['street' => $street]);
+    foreach ($propertyIds as $propertyId) {
+        Model::unguarded(fn () => Property::factory()->create(['id' => $propertyId]));
     }
 }
 
-test('ivr index returns scrolling street read command', function () {
-    createIvrStreetProperties(['עלי הכהן', 'רש"י', 'הרצל']);
+test('ivr index returns scrolling property id read command', function () {
+    createIvrProperties([9, 12, 20]);
 
     $response = $this->get(route('ivr.index'));
 
     $response
         ->assertSuccessful()
         ->assertHeader('Content-Type', 'text/plain; charset=windows-1255')
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('עלי הכהן', 0)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(9, 0)));
 });
 
-test('ivr digit 6 advances the scrolling street index', function () {
-    createIvrStreetProperties(['עלי הכהן', 'רש"י', 'הרצל']);
+test('ivr digit 6 advances the scrolling property index', function () {
+    createIvrProperties([9, 12, 20]);
 
     $response = $this->get(route('ivr.index', [
         Ivr::PROPERTY_INDEX_PARAM => 0,
@@ -32,11 +33,21 @@ test('ivr digit 6 advances the scrolling street index', function () {
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('רש"י', 1, 1)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(12, 1, 1)));
 });
 
-test('ivr digit 4 moves to the previous scrolling street index', function () {
-    createIvrStreetProperties(['עלי הכהן', 'רש"י', 'הרצל']);
+test('ivr advances from yemot fixed api link plus collected digit value', function () {
+    createIvrProperties([9, 12, 20]);
+
+    $response = $this->get('/ivr?property_index=0?ApiCallId=abc&digit_0=6');
+
+    $response
+        ->assertSuccessful()
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(12, 1, 1)));
+});
+
+test('ivr digit 4 moves to the previous scrolling property index', function () {
+    createIvrProperties([9, 12, 20]);
 
     $response = $this->get(route('ivr.index', [
         Ivr::PROPERTY_INDEX_PARAM => 1,
@@ -46,11 +57,11 @@ test('ivr digit 4 moves to the previous scrolling street index', function () {
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('עלי הכהן', 0, 1)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(9, 0, 1)));
 });
 
-test('ivr previous street wraps to the end of the scrolling street list', function () {
-    createIvrStreetProperties(['עלי הכהן', 'רש"י', 'הרצל']);
+test('ivr previous property wraps to the end of the scrolling property list', function () {
+    createIvrProperties([9, 12, 20]);
 
     $response = $this->get(route('ivr.index', [
         Ivr::PROPERTY_INDEX_PARAM => 0,
@@ -60,21 +71,21 @@ test('ivr previous street wraps to the end of the scrolling street list', functi
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('הרצל', 2, 1)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(20, 2, 1)));
 });
 
-test('ivr tolerates yemot appending api params after property index', function () {
-    createIvrStreetProperties(['עלי הכהן', 'רש"י', 'הרצל']);
+test('ivr replays collected yemot digits from the fixed api link', function () {
+    createIvrProperties([9, 12, 20]);
 
-    $response = $this->get('/ivr?property_index=1&read_step=0?ApiCallId=abc&digit_0=6');
+    $response = $this->get('/ivr?property_index=0?ApiCallId=abc&digit_0=6&digit_1=6');
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('הרצל', 2, 1)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(20, 2, 2)));
 });
 
 test('ivr uses the current read step digit and avoids reusing the digit parameter', function () {
-    createIvrStreetProperties(['עלי הכהן', 'רש"י', 'הרצל']);
+    createIvrProperties([9, 12, 20]);
 
     $response = $this->get(route('ivr.index', [
         Ivr::PROPERTY_INDEX_PARAM => 1,
@@ -85,33 +96,34 @@ test('ivr uses the current read step digit and avoids reusing the digit paramete
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('הרצל', 2, 4)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(12, 1, 4)));
 });
 
-test('ivr ignores properties without a street', function () {
-    createIvrStreetProperties(['', 'הרצל']);
+test('ivr includes properties without a street', function () {
+    Model::unguarded(fn () => Property::factory()->create(['id' => 9, 'street' => '']));
+    Model::unguarded(fn () => Property::factory()->create(['id' => 12, 'street' => 'הרצל']));
 
     $response = $this->get(route('ivr.index'));
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('הרצל', 0)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(9, 0)));
 });
 
-test('ivr returns a read command when no streets exist', function () {
+test('ivr returns a read command when no properties exist', function () {
     $response = $this->get(route('ivr.index'));
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::readTextCommand('לא נמצאו רחובות', 0)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::readTextCommand('לא נמצאו נכסים', 0)));
 });
 
 test('ivr bypasses csrf', function () {
-    createIvrStreetProperties(['עלי הכהן']);
+    createIvrProperties([9]);
 
     $response = $this->post(route('ivr.index'));
 
     $response
         ->assertSuccessful()
-        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingStreetReadCommand('עלי הכהן', 0)));
+        ->assertContent(iconv('UTF-8', 'windows-1255', Ivr::scrollingPropertyIdReadCommand(9, 0)));
 });

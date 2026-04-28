@@ -26,35 +26,32 @@ class IvrController extends Controller
 
     protected function handleDefault(Request $request): string
     {
-        $streets = Property::query()
-            ->whereNotNull('street')
-            ->where('street', '<>', '')
+        $propertyIds = Property::query()
             ->orderBy('id')
-            ->pluck('street')
-            ->map(fn (string $street): string => trim($street))
-            ->filter()
+            ->pluck('id')
             ->values();
 
-        if ($streets->isEmpty()) {
-            return Ivr::readTextCommand('לא נמצאו רחובות', 0);
+        if ($propertyIds->isEmpty()) {
+            return Ivr::readTextCommand('לא נמצאו נכסים', 0);
         }
 
         $propertyIndex = $this->integerFromRequest($request, Ivr::PROPERTY_INDEX_PARAM);
-        $readStep = $this->integerFromRequest($request, Ivr::READ_STEP_PARAM);
-        $digit = $this->digitFromRequest($request, $readStep);
+        $digits = $this->digitsFromRequest($request);
 
-        if ($digit === Ivr::DIGIT_NEXT) {
-            $propertyIndex++;
+        foreach ($digits as $digit) {
+            if ($digit === Ivr::DIGIT_NEXT) {
+                $propertyIndex++;
+            }
+
+            if ($digit === Ivr::DIGIT_PREVIOUS) {
+                $propertyIndex--;
+            }
         }
 
-        if ($digit === Ivr::DIGIT_PREVIOUS) {
-            $propertyIndex--;
-        }
+        $propertyIndex = ($propertyIndex % $propertyIds->count() + $propertyIds->count()) % $propertyIds->count();
+        $nextReadStep = $digits === [] ? 0 : max(array_keys($digits)) + 1;
 
-        $propertyIndex = ($propertyIndex % $streets->count() + $streets->count()) % $streets->count();
-        $nextReadStep = filled($digit) ? $readStep + 1 : $readStep;
-
-        return Ivr::scrollingStreetReadCommand($streets->get($propertyIndex), $propertyIndex, $nextReadStep);
+        return Ivr::scrollingPropertyIdReadCommand($propertyIds->get($propertyIndex), $propertyIndex, $nextReadStep);
     }
 
     protected function integerFromRequest(Request $request, string $key): int
@@ -66,25 +63,27 @@ class IvrController extends Controller
         return (int) ($matches[0] ?? 0);
     }
 
-    protected function digitFromRequest(Request $request, int $readStep): ?string
+    /**
+     * @return array<int, string>
+     */
+    protected function digitsFromRequest(Request $request): array
     {
-        $digitParam = Ivr::digitParamForReadStep($readStep);
-
-        if ($request->filled($digitParam)) {
-            return (string) $request->input($digitParam);
-        }
-
-        if ($request->filled(Ivr::DIGIT_PARAM)) {
-            return (string) $request->input(Ivr::DIGIT_PARAM);
-        }
+        $digits = [];
 
         foreach ($request->query() as $key => $value) {
-            if (preg_match('/^'.preg_quote(Ivr::DIGIT_PARAM, '/').'_\d+$/', (string) $key) === 1) {
-                return is_array($value) ? (string) end($value) : (string) $value;
+            if (preg_match('/^'.preg_quote(Ivr::DIGIT_PARAM, '/').'_(\d+)$/', (string) $key, $matches) === 1) {
+                $digits[(int) $matches[1]] = is_array($value) ? (string) end($value) : (string) $value;
             }
         }
 
-        return null;
+        ksort($digits);
+
+        if ($request->filled(Ivr::DIGIT_PARAM)) {
+            $digit = $request->input(Ivr::DIGIT_PARAM);
+            $digits[] = is_array($digit) ? (string) end($digit) : (string) $digit;
+        }
+
+        return $digits;
     }
 
     /**

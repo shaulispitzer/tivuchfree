@@ -118,9 +118,9 @@ class Ivr
         return 'id_list_message=t-'.self::sanitizeTtsText($text);
     }
 
-    public static function scrollingStreetReadCommand(string $street, int $propertyIndex, int $readStep = 0): string
+    public static function scrollingPropertyIdReadCommand(int $propertyId, int $propertyIndex, int $readStep = 0): string
     {
-        return self::readTextCommand("שם הרחוב הוא {$street}. למעבר לבא הקש 6, לקודם הקש 4.", $propertyIndex, $readStep);
+        return self::readTextCommand((string) $propertyId, $propertyIndex, $readStep);
     }
 
     public static function readTextCommand(string $text, int $propertyIndex, int $readStep = 0): string
