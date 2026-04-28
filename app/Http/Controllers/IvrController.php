@@ -39,8 +39,9 @@ class IvrController extends Controller
             return Ivr::readTextCommand('לא נמצאו רחובות', 0);
         }
 
-        $propertyIndex = $request->integer(Ivr::PROPERTY_INDEX_PARAM, 0);
-        $digit = $request->input(Ivr::DIGIT_PARAM);
+        $propertyIndex = $this->integerFromRequest($request, Ivr::PROPERTY_INDEX_PARAM);
+        $readStep = $this->integerFromRequest($request, Ivr::READ_STEP_PARAM);
+        $digit = $this->digitFromRequest($request, $readStep);
 
         if ($digit === Ivr::DIGIT_NEXT) {
             $propertyIndex++;
@@ -51,8 +52,39 @@ class IvrController extends Controller
         }
 
         $propertyIndex = ($propertyIndex % $streets->count() + $streets->count()) % $streets->count();
+        $nextReadStep = filled($digit) ? $readStep + 1 : $readStep;
 
-        return Ivr::scrollingStreetReadCommand($streets->get($propertyIndex), $propertyIndex);
+        return Ivr::scrollingStreetReadCommand($streets->get($propertyIndex), $propertyIndex, $nextReadStep);
+    }
+
+    protected function integerFromRequest(Request $request, string $key): int
+    {
+        $value = (string) $request->query($key, '0');
+
+        preg_match('/^-?\d+/', $value, $matches);
+
+        return (int) ($matches[0] ?? 0);
+    }
+
+    protected function digitFromRequest(Request $request, int $readStep): ?string
+    {
+        $digitParam = Ivr::digitParamForReadStep($readStep);
+
+        if ($request->filled($digitParam)) {
+            return (string) $request->input($digitParam);
+        }
+
+        if ($request->filled(Ivr::DIGIT_PARAM)) {
+            return (string) $request->input(Ivr::DIGIT_PARAM);
+        }
+
+        foreach ($request->query() as $key => $value) {
+            if (preg_match('/^'.preg_quote(Ivr::DIGIT_PARAM, '/').'_\d+$/', (string) $key) === 1) {
+                return is_array($value) ? (string) end($value) : (string) $value;
+            }
+        }
+
+        return null;
     }
 
     /**

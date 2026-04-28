@@ -28,6 +28,8 @@ class Ivr
 
     public const PROPERTY_INDEX_PARAM = 'property_index';
 
+    public const READ_STEP_PARAM = 'read_step';
+
     public const DIGIT_PARAM = 'digit';
 
     public const DIGIT_NEXT = '6';
@@ -116,16 +118,24 @@ class Ivr
         return 'id_list_message=t-'.self::sanitizeTtsText($text);
     }
 
-    public static function scrollingStreetReadCommand(string $street, int $propertyIndex): string
+    public static function scrollingStreetReadCommand(string $street, int $propertyIndex, int $readStep = 0): string
     {
-        return self::readTextCommand("שם הרחוב הוא {$street}. למעבר לבא הקש 6, לקודם הקש 4.", $propertyIndex);
+        return self::readTextCommand("שם הרחוב הוא {$street}. למעבר לבא הקש 6, לקודם הקש 4.", $propertyIndex, $readStep);
     }
 
-    public static function readTextCommand(string $text, int $propertyIndex): string
+    public static function readTextCommand(string $text, int $propertyIndex, int $readStep = 0): string
     {
         $text = self::sanitizeTtsText($text);
-        $nextUrl = self::IVR_URL.'?'.self::PROPERTY_INDEX_PARAM.'='.$propertyIndex;
+        $nextUrl = self::IVR_URL.'?'.http_build_query([
+            self::PROPERTY_INDEX_PARAM => $propertyIndex,
+            self::READ_STEP_PARAM => $readStep,
+        ]);
 
-        return 'read=t-'.$text.'='.self::DIGIT_PARAM.',yes,1,1,7,Number,yes,no,'.$nextUrl.'&';
+        return 'read=t-'.$text.'='.self::digitParamForReadStep($readStep).',yes,1,1,7,Number,yes,no,'.$nextUrl.'&';
+    }
+
+    public static function digitParamForReadStep(int $readStep): string
+    {
+        return self::DIGIT_PARAM.'_'.$readStep;
     }
 }
