@@ -12,13 +12,11 @@ test('owners can list property images for edit page', function () {
     ]);
 
     $main = $property
-        ->addMediaFromString('main-image')
-        ->usingFileName('main.jpg')
+        ->addMedia(UploadedFile::fake()->image('main.jpg'))
         ->toMediaCollection('main_image');
 
     $additional = $property
-        ->addMediaFromString('extra-image')
-        ->usingFileName('extra.jpg')
+        ->addMedia(UploadedFile::fake()->image('extra.jpg'))
         ->toMediaCollection('images');
 
     $response = $this->actingAs($owner)->getJson(route('properties.images.index', $property));
@@ -38,13 +36,11 @@ test('deleting main image immediately promotes next image to main', function () 
     ]);
 
     $main = $property
-        ->addMediaFromString('main-image')
-        ->usingFileName('main.jpg')
+        ->addMedia(UploadedFile::fake()->image('main.jpg'))
         ->toMediaCollection('main_image');
 
     $next = $property
-        ->addMediaFromString('next-image')
-        ->usingFileName('next.jpg')
+        ->addMedia(UploadedFile::fake()->image('next.jpg'))
         ->toMediaCollection('images');
 
     $this->actingAs($owner)

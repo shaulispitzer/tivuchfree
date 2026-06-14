@@ -380,7 +380,7 @@ class PropertyController extends Controller
                 $order++;
             }
 
-            $tempUpload->delete();
+            TempUpload::destroy($tempUpload->getKey());
 
             return $property;
         });
@@ -626,7 +626,7 @@ class PropertyController extends Controller
             ));
         }
 
-        $property->delete();
+        Property::destroy($property->getKey());
 
         return redirect()->route('my-properties.index')->success(__('message.propertyDeletedSuccessfully'));
     }
@@ -637,7 +637,7 @@ class PropertyController extends Controller
             abort(404);
         }
 
-        $property->increment('views');
+        $property->increment('views', 1);
         $property->loadMissing(['media']);
 
         $isMapView = $request->query('view') === 'map';
@@ -1067,7 +1067,7 @@ class PropertyController extends Controller
             $order++;
         }
 
-        $tempUpload->delete();
+        TempUpload::destroy($tempUpload->getKey());
     }
 
     protected function formOptions(): PropertyFormOptionsData
@@ -1131,9 +1131,10 @@ class PropertyController extends Controller
         }
 
         $locale = app()->getLocale();
+        $neighbourhoodValues = array_values(array_unique($neighbourhoods));
 
         return Street::query()
-            ->whereIn('neighbourhood', array_values(array_unique($neighbourhoods)))
+            ->whereIn('neighbourhood', $neighbourhoodValues, 'and', false)
             ->get()
             ->map(function (Street $street) use ($locale): array {
                 $localizedName = $street->getTranslation('name', $locale, false);
