@@ -37,6 +37,8 @@ has_parking_spot: boolean;
 user: App.Data.UserData | null;
 main_image_url: string | null;
 image_urls: Array<any>;
+main_image_thumb_url: string | null;
+image_thumb_urls: Array<any>;
 created_at: string;
 reported_taken_at: string | null;
 };

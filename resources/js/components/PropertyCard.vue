@@ -36,8 +36,8 @@ const formattedDateString = computed(() =>
 );
 const imageUrls = computed(() => {
     const urls = [
-        props.property.main_image_url,
-        ...props.property.image_urls,
+        props.property.main_image_thumb_url,
+        ...props.property.image_thumb_urls,
     ].filter((url): url is string => typeof url === 'string' && url.length > 0);
 
     return Array.from(new Set(urls));

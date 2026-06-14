@@ -18,6 +18,7 @@ class PropertyData extends Data
 {
     /**
      * @param  array<int, string>  $image_urls
+     * @param  array<int, string>  $image_thumb_urls
      * @param  array<int, string>  $neighbourhoods
      */
     public function __construct(
@@ -55,6 +56,8 @@ class PropertyData extends Data
         public ?UserData $user,
         public ?string $main_image_url,
         public array $image_urls,
+        public ?string $main_image_thumb_url,
+        public array $image_thumb_urls,
         public CarbonInterface $created_at,
         public ?CarbonInterface $reported_taken_at,
     ) {}
@@ -98,6 +101,12 @@ class PropertyData extends Data
             user: $property->user !== null ? UserData::fromModel($property->user) : null,
             main_image_url: $property->getFirstMediaUrl('main_image') ?: null,
             image_urls: $property->getMedia('images')->map(fn ($media) => $media->getUrl())->all(),
+            main_image_thumb_url: ($mainImage = $property->getFirstMedia('main_image'))
+                ? $mainImage->getAvailableUrl(['card'])
+                : null,
+            image_thumb_urls: $property->getMedia('images')
+                ->map(fn ($media) => $media->getAvailableUrl(['card']))
+                ->all(),
             created_at: $property->created_at,
             reported_taken_at: $property->reported_taken_at,
         );
