@@ -525,7 +525,7 @@ test('properties index returns paginated data', function () {
             ->component('properties/List')
             ->has('properties.data', 13)
             ->where('properties.total', 13)
-            ->where('properties.per_page', 15)
+            ->where('properties.per_page', 24)
             ->where('properties.current_page', 1)
             ->where('properties.last_page', 1)
             ->where('properties.from', 1)
