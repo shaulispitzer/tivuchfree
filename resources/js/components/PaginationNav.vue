@@ -64,7 +64,6 @@ const cleanedLinks = computed(() =>
                 <Link
                     v-else
                     :href="link.url"
-                    preserve-scroll
                     preserve-state
                     class="inline-flex h-9 items-center justify-center rounded-md border px-3 text-sm transition-colors hover:bg-accent"
                     :class="

@@ -169,7 +169,7 @@ class PropertyController extends Controller
         }
 
         $properties = $propertiesQuery
-            ->paginate(15)
+            ->paginate(24)
             ->withQueryString()
             ->through(fn (Property $property) => (
                 PropertyData::fromModel($property)->only('id', 'price', 'neighbourhoods', 'street', 'lat', 'lon', 'building_number', 'floor', 'type', 'available_from', 'available_to', 'bedrooms', 'square_meter', 'views', 'furnished', 'taken', 'image_thumb_urls', 'main_image_thumb_url', 'created_at')->toArray()
