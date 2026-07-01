@@ -120,6 +120,8 @@ export default {
             he: 'Hebrew',
             addListing: 'Add Listing',
             createProperty: 'Create property',
+            confirmNoTivuchFee:
+                'Confirm that no tivuch fee will be taken for this property',
             backToList: 'Back to list',
             contactSection: 'Contact',
             contactName: 'Contact Name',
@@ -128,7 +130,7 @@ export default {
             invalidPhone: 'Must be a valid phone number.',
             neighbourhood: 'Neighbourhood | Neighbourhoods',
             selectOneToThreeNeighbourhoods: 'Select 1 to 3 neighbourhoods',
-            street: 'Street',
+            street: 'Street | Streets',
             selectStreet: 'Select street',
             selectNeighbourhoodFirst: 'Select neighbourhood first',
             searchStreet: 'Search street...',
@@ -190,6 +192,10 @@ export default {
             shortTermRental: 'Short Term',
             myProperties: 'My Properties',
             myPropertiesDescription: 'Properties that you have posted.',
+            existingListingPromptTitle: 'You already have a listing',
+            existingListingPromptDescription:
+                'We noticed you already have an existing listing. Would you like to manage it or add another one?',
+            addAnotherListing: 'Add another listing',
             noPropertiesPosted: 'You have not posted any properties yet.',
             taken: 'Taken',
             available: 'Available',
@@ -261,6 +267,20 @@ export default {
             reportTaken: 'Report Taken',
             reportTakenSuccess:
                 'We have informed the property owner that it is taken',
+            reportTivuchFee: 'Report Tivuch Fee',
+            reportTivuchFeeSuccess:
+                'We have informed the Tivuch Free admin about this report',
+            reportTivuchFeeMessage:
+                'Report that this listing has a tivuch fee. The Tivuch Free admin will be informed.',
+            reportedTivuchFee: 'Reported Tivuch Fee',
+            tivuchFee: 'Tivuch Fee',
+            markAsTivuchFee: 'Mark as Tivuch Fee',
+            markAsNotTaken: 'Mark as not taken',
+            markAsNotTivuchFee: 'Mark as not tivuch fee',
+            tivuchFeePropertyStampAlt: 'Property with tivuch fee',
+            adminActions: 'Admin actions',
+            alreadyMarkedAsTaken: 'Already marked as taken',
+            alreadyMarkedAsTivuchFee: 'Already marked as tivuch fee',
             reportedTaken: 'Reported Taken',
             reportedTakenWarningTitle: 'Your property was reported as taken',
             reportedTakenWarningBody:
@@ -298,6 +318,10 @@ export default {
                 'This listing will be automatically marked as taken in {days} {multipledays}.',
             markedAsTakenAndDeletedInDays:
                 'This listing is marked as taken and will be deleted in {days} {multipledays}.',
+            report: 'Report',
+            reportTakenMessage:
+                'Report that you know this listing is no longer available (eg. you have called the owner and they have told you so). Reporting a listing, will wait for 3 days, then mark it as taken. The owner will receive an email and can cancel the report.',
+            subscriptions: 'Subscriptions',
         },
         contact: {
             subject: 'Subject',
@@ -447,6 +471,7 @@ export default {
             contactForm: 'טופס יצירת קשר | טפסים ליצירת קשר',
             addListing: 'הוסף רשימה',
             createProperty: 'צור נכס',
+            confirmNoTivuchFee: 'אני מאשר/ת שלא ייגבה דמי תיווך עבור נכס זה',
             backToList: 'חזרה לרשימה',
             contactSection: 'פרטי קשר',
             contactName: 'שם איש קשר',
@@ -455,7 +480,7 @@ export default {
             invalidPhone: 'חייב להיות מספר טלפון תקין.',
             neighbourhood: 'שכונה | שכונות',
             selectOneToThreeNeighbourhoods: 'בחר 1 עד 3 שכונות',
-            street: 'רחוב',
+            street: 'רחוב | רחובות',
             selectStreet: 'בחר רחוב',
             selectNeighbourhoodFirst: 'בחר שכונה תחילה',
             searchStreet: 'חפש רחוב...',
@@ -513,6 +538,10 @@ export default {
             shortTermRental: 'קצר',
             myProperties: 'הנכסים שלי',
             myPropertiesDescription: 'נכסים שפרסמת.',
+            existingListingPromptTitle: 'כבר יש לך רשימה',
+            existingListingPromptDescription:
+                'שמנו לב שכבר יש לך רשימה קיימת. האם תרצה/י לנהל אותה או להוסיף רשימה נוספת?',
+            addAnotherListing: 'הוסף רשימה נוספת',
             noPropertiesPosted: 'עדיין לא פרסמת נכסים.',
             taken: 'תפוס',
             available: 'פנוי',
@@ -582,6 +611,20 @@ export default {
             termType: 'סוג טווח',
             reportTaken: 'דווח כתפוס',
             reportTakenSuccess: 'הודענו לבעל הנכס שהוא תפוס',
+            reportTivuchFee: 'דווח על דמי תיווך',
+            reportTivuchFeeSuccess:
+                'הודענו למנהל Tivuch Free על הדיווח',
+            reportTivuchFeeMessage:
+                'דווח על מודעה זו שיש בה דמי תיווך. מנהל Tivuch Free יקבל הודעה.',
+            reportedTivuchFee: 'דווח על דמי תיווך',
+            tivuchFee: 'דמי תיווך',
+            markAsTivuchFee: 'סמן כדמי תיווך',
+            markAsNotTaken: 'סמן כלא תפוס',
+            markAsNotTivuchFee: 'סמן כלא דמי תיווך',
+            tivuchFeePropertyStampAlt: 'נכס עם דמי תיווך',
+            adminActions: 'פעולות מנהל',
+            alreadyMarkedAsTaken: 'כבר סומן כתפוס',
+            alreadyMarkedAsTivuchFee: 'כבר סומן כדמי תיווך',
             reportedTaken: 'דווח כתפוס',
             reportedTakenWarningTitle: 'הנכס שלך דווח כתפוס',
             reportedTakenWarningBody:
@@ -617,6 +660,10 @@ export default {
                 'רשימה זו תסומן אוטומטית כתפוס בתוך {days} {multipledays}.',
             markedAsTakenAndDeletedInDays:
                 'רשימה זו סומנה כתפוס ותמחק בתוך {days} {multipledays}.',
+            report: 'דווח',
+            reportTakenMessage:
+                'דיווח על מודעה שאינה רלוונטית יותר (לדוגמה: יצרת קשר עם בעל הנכס והוא אישר זאת). לאחר הדיווח, המערכת תמתין 3 ימים ולאחר מכן תסמן את המודעה כ"לא רלוונטית". בעל הנכס יקבל על כך הודעת אימייל ויוכל לבטל את הדיווח.',
+            subscriptions: 'הרשמות',
         },
         contact: {
             subject: 'נושא',

@@ -8,6 +8,7 @@ import fallbackPropertyImage from '../../assets/DeafultPropertyImage.webp';
 import { formatDistanceToNow, format } from 'date-fns';
 import { he, enGB } from 'date-fns/locale';
 import takenStampImage from '../../assets/taken.webp';
+import reportedTivuchFeeStampImage from '../../assets/reported-tivuch-fee.webp';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -81,27 +82,18 @@ const swiperStyles = {
 const showNavigation = computed(() => imageUrls.value.length > 1);
 
 const neighbourhoodLabel = computed(() => {
-    const neighbourhoods = props.property.neighbourhoods ?? [];
+    const labels = props.property.neighbourhood_labels ?? [];
 
-    if (neighbourhoods.length === 0) {
+    if (labels.length === 0) {
         return '—';
     }
 
-    return neighbourhoods
-        .map((name) => {
-            const key = name
-                .split(/\s+/)
-                .map(
-                    (word: string) =>
-                        word.charAt(0).toUpperCase() +
-                        word.slice(1).toLowerCase(),
-                )
-                .join('');
-            const translated = t(`neighbourhood.${key}`);
-            return translated !== `neighbourhood.${key}` ? translated : name;
-        })
-        .join(', ');
+    return labels.join(', ');
 });
+
+const isUnavailable = computed(
+    () => props.property.taken === true || props.property.tivuch_fee === true,
+);
 </script>
 
 <template>
@@ -111,23 +103,30 @@ const neighbourhoodLabel = computed(() => {
         preserve-state
         class="block focus-visible:outline-none"
         :class="
-            property.taken === true
+            isUnavailable
                 ? 'pointer-events-none cursor-default'
                 : 'cursor-pointer'
         "
-        :tabindex="property.taken === true ? -1 : undefined"
-        :aria-disabled="property.taken === true || undefined"
+        :tabindex="isUnavailable ? -1 : undefined"
+        :aria-disabled="isUnavailable || undefined"
     >
-        <!-- make the taken image not grayscale -->
+        <!-- make the stamp image not grayscale -->
         <article
             class="relative overflow-hidden rounded-xl border border-input bg-card shadow-sm focus-visible:ring-2 focus-visible:ring-primary/40"
             :class="
-                !property.taken &&
+                !isUnavailable &&
                 'transition hover:-translate-y-0.5 hover:scale-101 hover:shadow-lg'
             "
         >
             <img
-                v-if="property.taken === true"
+                v-if="property.tivuch_fee === true"
+                :src="reportedTivuchFeeStampImage"
+                :alt="t('common.tivuchFeePropertyStampAlt')"
+                class="pointer-events-none absolute inset-x-0 top-7 z-20 mx-auto w-64 select-none"
+                loading="lazy"
+            />
+            <img
+                v-else-if="property.taken === true"
                 :src="takenStampImage"
                 :alt="t('common.takenPropertyStampAlt')"
                 class="pointer-events-none absolute inset-x-0 top-7 z-20 mx-auto w-40 select-none"
@@ -136,7 +135,7 @@ const neighbourhoodLabel = computed(() => {
 
             <div
                 class="relative"
-                :class="property.taken ? 'opacity-80 grayscale' : ''"
+                :class="isUnavailable ? 'opacity-80 grayscale' : ''"
             >
                 <Swiper
                     v-if="imageUrls.length > 0"
@@ -181,7 +180,7 @@ const neighbourhoodLabel = computed(() => {
 
             <div
                 class="space-y-4 p-4"
-                :class="property.taken ? 'opacity-80 grayscale' : ''"
+                :class="isUnavailable ? 'opacity-80 grayscale' : ''"
             >
                 <div class="mb-1 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2">

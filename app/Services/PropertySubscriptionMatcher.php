@@ -28,15 +28,16 @@ class PropertySubscriptionMatcher
             $filterNeighbourhoods = is_string($legacy) && $legacy !== '' ? [$legacy] : [];
         }
         if ($filterNeighbourhoods !== []) {
-            $propertyNeighbourhoods = is_array($property->neighbourhoods) ? $property->neighbourhoods : [];
-            $hasMatch = false;
-            foreach ($filterNeighbourhoods as $n) {
-                if (in_array($n, $propertyNeighbourhoods, true)) {
-                    $hasMatch = true;
-                    break;
-                }
-            }
-            if (! $hasMatch) {
+            // 1. Ensure property neighborhoods are cast cleanly to integers
+            $propertyNeighbourhoods = is_array($property->neighbourhoods)
+                ? array_map('intval', $property->neighbourhoods)
+                : [];
+
+            // 2. Ensure filter IDs are cast cleanly to integers
+            $filterIds = array_map('intval', $filterNeighbourhoods);
+
+            // 3. Use PHP's native array_intersect to see if there's any match
+            if (empty(array_intersect($filterIds, $propertyNeighbourhoods))) {
                 return false;
             }
         }

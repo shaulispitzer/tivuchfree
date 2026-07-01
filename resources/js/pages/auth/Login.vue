@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { TriangleAlert } from 'lucide-vue-next';
 
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
@@ -10,6 +11,7 @@ import MaterialIconThemeGoogle from '~icons/material-icon-theme/google';
 
 defineProps<{
     status?: string;
+    authRequired?: boolean;
     canResetPassword: boolean;
     canRegister: boolean;
 }>();
@@ -23,6 +25,11 @@ const { t } = useI18n();
         :description="t('auth.loginDescription')"
     >
         <Head :title="t('auth.loginHeadTitle')" />
+
+        <template v-if="authRequired" #banner>
+            <TriangleAlert class="size-4 shrink-0" />
+            {{ t('auth.loginRequired') }}
+        </template>
 
         <div
             v-if="status"

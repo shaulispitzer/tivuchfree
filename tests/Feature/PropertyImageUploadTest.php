@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
@@ -45,7 +44,7 @@ it('uploads images immediately and attaches them on property creation', function
         ->json();
 
     $street = Street::factory()->create([
-        'neighbourhood' => Neighbourhood::Sanhedria,
+        'neighbourhood_id' => neighbourhoodId(),
     ]);
 
     $payload = [
@@ -60,13 +59,17 @@ it('uploads images immediately and attaches them on property creation', function
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId()],
         'street' => $street->id,
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => now()->toIso8601String(),
         'available_to' => null,
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::FullyFurnished->value,
         'temp_upload_id' => (int) $upload1['temp_upload_id'],
         'image_media_ids' => [

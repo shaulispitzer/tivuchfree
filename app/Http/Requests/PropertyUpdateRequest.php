@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -34,7 +33,7 @@ class PropertyUpdateRequest extends FormRequest
     {
         return [
             'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
-            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+            'neighbourhoods.*' => ['required', 'integer', Rule::exists('neighbourhoods', 'id'), 'distinct'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'street' => ['required', 'string', 'max:255'],
             'building_number' => ['nullable', 'string', 'max:50'],

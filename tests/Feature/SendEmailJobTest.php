@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Neighbourhood;
 use App\Jobs\NotifyPropertySubscribers;
 use App\Jobs\ProcessExpiredPropertySubscriptions;
 use App\Jobs\SendEmailJob;
@@ -128,7 +127,7 @@ test('subscription notification email is dispatched through SendEmailJob', funct
         'email' => 'notify@example.com',
         'user_id' => null,
         'filters' => [
-            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+            'neighbourhoods' => [neighbourhoodId()],
             'availability' => 'all',
             'bedrooms_min' => 2,
             'bedrooms_max' => 4,
@@ -143,7 +142,7 @@ test('subscription notification email is dispatched through SendEmailJob', funct
     ]);
 
     $property = Property::factory()->create([
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'bedrooms' => 3,
         'taken' => false,
     ]);
@@ -183,7 +182,7 @@ test('NotifyPropertySubscribers staggers SendEmailJob dispatches at 1 per second
     Queue::fake();
 
     $filters = [
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'availability' => 'all',
         'bedrooms_min' => 1,
         'bedrooms_max' => 10,
@@ -205,7 +204,7 @@ test('NotifyPropertySubscribers staggers SendEmailJob dispatches at 1 per second
     }
 
     $property = Property::factory()->create([
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'bedrooms' => 3,
         'taken' => false,
     ]);

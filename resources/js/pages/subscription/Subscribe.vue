@@ -34,7 +34,7 @@ const props = defineProps({
         default: null,
     },
     neighbourhood_options: {
-        type: Array as PropType<string[]>,
+        type: Array as PropType<Option[]>,
         required: true,
     },
     furnished_options: {

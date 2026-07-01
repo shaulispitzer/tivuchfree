@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,7 +22,7 @@ class StorePropertySubscriptionRequest extends FormRequest
         $rules = [
             'filters' => ['required', 'array'],
             'filters.neighbourhoods' => ['nullable', 'array'],
-            'filters.neighbourhoods.*' => ['required', 'string', Rule::enum(Neighbourhood::class)],
+            'filters.neighbourhoods.*' => ['required', 'integer', Rule::exists('neighbourhoods', 'id')],
             'filters.hide_taken_properties' => ['nullable', 'boolean'],
             'filters.bedrooms_range' => ['nullable', 'array', 'size:2'],
             'filters.bedrooms_range.0' => ['nullable', 'numeric', 'min:1', 'max:10'],
@@ -52,7 +51,9 @@ class StorePropertySubscriptionRequest extends FormRequest
         $max = isset($bedroomsRange[1]) ? round((float) $bedroomsRange[1] * 2) / 2 : 10;
 
         $neighbourhoods = $filters['neighbourhoods'] ?? [];
-        $neighbourhoods = is_array($neighbourhoods) ? array_values(array_unique($neighbourhoods)) : [];
+        $neighbourhoods = is_array($neighbourhoods)
+            ? array_values(array_unique(array_map(static fn (mixed $id): int => (int) $id, $neighbourhoods)))
+            : [];
 
         return [
             'neighbourhoods' => $neighbourhoods,

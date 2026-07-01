@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { router } from '@inertiajs/vue3';
 import { parseDate } from '@internationalized/date';
 import axios from 'axios';
 import { Check, ChevronsUpDown } from 'lucide-vue-next';
@@ -6,7 +7,11 @@ import type { DateValue } from 'reka-ui';
 import type { PropType } from 'vue';
 import PropertyImageUploader from '@/components/PropertyImageUploader.vue';
 import { cn } from '@/lib/utils';
+import { index as myPropertiesIndex } from '@/routes/my-properties';
 import { index, store } from '@/routes/properties';
+
+const EXISTING_LISTING_PROMPT_DISMISSED_KEY =
+    'property-create-existing-listing-dismissed';
 
 type StreetOption = {
     id: number;
@@ -18,8 +23,13 @@ const props = defineProps({
         type: Object as PropType<App.Data.PropertyFormOptionsData>,
         required: true,
     },
+    hasExistingListings: {
+        type: Boolean,
+        default: false,
+    },
 });
 const { t } = useI18n();
+const showExistingListingPrompt = ref(false);
 const page = usePage();
 const currentLocale = computed(() =>
     page.props.locale === 'he' ? 'he' : 'en',
@@ -53,6 +63,7 @@ type PropertyCreateFormData = Omit<
     air_conditioning: App.Enums.PropertyAirConditioning | null;
     apartment_condition: App.Enums.PropertyApartmentCondition | null;
     furnished: App.Enums.PropertyFurnished | null;
+    confirm_no_tivuch_fee: boolean;
 };
 
 function getLocalDateString(date: Date): string {
@@ -100,6 +111,7 @@ const form = useForm<PropertyCreateFormData>({
     temp_upload_id: null,
     image_media_ids: [],
     main_image_media_id: null,
+    confirm_no_tivuch_fee: false,
 });
 const uploadingImages = ref(false);
 const streetComboboxOpen = ref(false);
@@ -121,7 +133,7 @@ const translatedLeaseTypes = computed(() =>
 const translatedNeighbourhoods = computed(() =>
     props.options.neighbourhoods.map((option) => ({
         value: option.value,
-        label: t(`neighbourhood.${option.value.replaceAll(' ', '')}`),
+        label: option.label,
     })),
 );
 
@@ -420,6 +432,24 @@ onBeforeUnmount(() => {
         clearTimeout(streetsFetchTimeout);
     }
 });
+
+onMounted(() => {
+    if (
+        props.hasExistingListings &&
+        !sessionStorage.getItem(EXISTING_LISTING_PROMPT_DISMISSED_KEY)
+    ) {
+        showExistingListingPrompt.value = true;
+    }
+});
+
+function dismissExistingListingPrompt(): void {
+    sessionStorage.setItem(EXISTING_LISTING_PROMPT_DISMISSED_KEY, '1');
+    showExistingListingPrompt.value = false;
+}
+
+function goToMyProperties(): void {
+    router.visit(myPropertiesIndex().url);
+}
 
 function selectStreet(streetId: number): void {
     form.street = streetId;
@@ -799,7 +829,8 @@ function submit(): void {
                             :label="t('common.squareMeter')"
                             step="1"
                             number
-                            validation="number|min:0"
+                            validation="required|min:0"
+                            label-class="required-asterisk"
                         />
                         <div
                             v-if="form.errors.square_meter"
@@ -817,7 +848,8 @@ function submit(): void {
                             :label="t('common.bathrooms')"
                             step="1"
                             number
-                            validation="number|min:0"
+                            validation="required|min:0"
+                            label-class="required-asterisk"
                         />
                         <div
                             v-if="form.errors.bathrooms"
@@ -835,7 +867,8 @@ function submit(): void {
                             :label="t('common.pricePM')"
                             step="1"
                             number
-                            validation="number|min:0"
+                            validation="required|min:0"
+                            label-class="required-asterisk"
                         />
                         <div
                             v-if="form.errors.price"
@@ -1072,13 +1105,46 @@ function submit(): void {
             />
         </Card>
 
+        <div class="grid gap-2">
+            <FormKit
+                v-model="form.confirm_no_tivuch_fee"
+                type="checkbox"
+                name="confirm_no_tivuch_fee"
+                :label="t('common.confirmNoTivuchFee')"
+            />
+            <div
+                v-if="form.errors.confirm_no_tivuch_fee"
+                class="text-sm text-red-600"
+            >
+                {{ form.errors.confirm_no_tivuch_fee }}
+            </div>
+        </div>
+
         <div class="flex items-center gap-4">
             <Button
                 type="submit"
-                :disabled="form.processing || uploadingImages"
+                :disabled="
+                    form.processing ||
+                    uploadingImages ||
+                    !form.confirm_no_tivuch_fee
+                "
             >
                 {{ t('common.create') }}
             </Button>
         </div>
     </form>
+
+    <Modal
+        :open="showExistingListingPrompt"
+        :title="t('common.existingListingPromptTitle')"
+        :confirm-label="t('common.myProperties')"
+        :cancel-label="t('common.addAnotherListing')"
+        :close-on-backdrop="false"
+        @close="dismissExistingListingPrompt"
+        @confirm="goToMyProperties"
+    >
+        <p class="text-sm text-muted-foreground">
+            {{ t('common.existingListingPromptDescription') }}
+        </p>
+    </Modal>
 </template>

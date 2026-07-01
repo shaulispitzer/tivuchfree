@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -21,7 +20,7 @@ function propertyPayload(array $overrides = []): array
     return array_merge([
         'contact_name' => 'Test Contact',
         'contact_phone' => '0501234567',
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'price' => 12000,
         'street' => 'Jabotinsky',
         'building_number' => '10',
@@ -44,6 +43,7 @@ function propertyPayload(array $overrides = []): array
         'has_dud_shemesh' => true,
         'has_machsan' => false,
         'has_parking_spot' => true,
+        'confirm_no_tivuch_fee' => true,
     ], $overrides);
 }
 
@@ -69,7 +69,7 @@ test('authenticated users can create properties', function () {
             'en' => 'Jabotinsky',
             'he' => 'ז׳בוטינסקי',
         ],
-        'neighbourhood' => Neighbourhood::Sanhedria,
+        'neighbourhood_id' => neighbourhoodId(),
     ]);
 
     $payload = propertyPayload([
@@ -89,6 +89,26 @@ test('authenticated users can create properties', function () {
     expect($property->getFirstMedia('main_image'))->toBeNull();
 });
 
+test('property creation requires confirming no tivuch fee', function () {
+    $user = User::factory()->create();
+    $street = Street::factory()->create([
+        'neighbourhood_id' => neighbourhoodId(),
+    ]);
+
+    $payload = propertyPayload([
+        'street' => $street->id,
+        'confirm_no_tivuch_fee' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->from(route('properties.create'))
+        ->post(route('properties.store'), $payload)
+        ->assertRedirect(route('properties.create'))
+        ->assertSessionHasErrors(['confirm_no_tivuch_fee']);
+
+    expect(Property::query()->count())->toBe(0);
+});
+
 test('property streets endpoint loads streets by selected neighbourhoods', function () {
     $user = User::factory()->create();
 
@@ -97,7 +117,7 @@ test('property streets endpoint loads streets by selected neighbourhoods', funct
             'en' => 'Bar Ilan Street',
             'he' => 'בר אילן',
         ],
-        'neighbourhood' => Neighbourhood::BarIlan,
+        'neighbourhood_id' => neighbourhoodId('Bar Ilan'),
     ]);
 
     $this->actingAs($user)
@@ -109,7 +129,7 @@ test('property streets endpoint loads streets by selected neighbourhoods', funct
 
     $this->actingAs($user)
         ->getJson(route('properties.streets', [
-            'neighbourhoods' => [Neighbourhood::BarIlan->value],
+            'neighbourhoods' => [neighbourhoodId('Bar Ilan')],
         ]))
         ->assertOk()
         ->assertJsonCount(1, 'streets')
@@ -193,16 +213,16 @@ test('property update succeeds without changing street selection', function () {
             'en' => 'Bar Ilan Street',
             'he' => 'בר אילן',
         ],
-        'neighbourhood' => Neighbourhood::BarIlan,
+        'neighbourhood_id' => neighbourhoodId('Bar Ilan'),
     ]);
     $property = Property::factory()->create([
         'user_id' => $owner->id,
         'street' => $street->getTranslation('name', 'he'),
-        'neighbourhoods' => [Neighbourhood::BarIlan->value],
+        'neighbourhoods' => [neighbourhoodId('Bar Ilan')],
     ]);
 
     $payload = propertyPayload([
-        'neighbourhoods' => [Neighbourhood::BarIlan->value],
+        'neighbourhoods' => [neighbourhoodId('Bar Ilan')],
         'building_number' => '18',
         'contact_phone' => '0509999999',
     ]);
@@ -321,15 +341,15 @@ test('properties index does not include owner details for owner listings', funct
 
 test('properties index can filter by a single neighbourhood from multi-neighbourhood properties', function () {
     $matchingProperty = Property::factory()->create([
-        'neighbourhoods' => [Neighbourhood::Geula->value, Neighbourhood::MekorBaruch->value],
+        'neighbourhoods' => [neighbourhoodId('Geula'), neighbourhoodId('Mekor Baruch')],
     ]);
 
     Property::factory()->create([
-        'neighbourhoods' => [Neighbourhood::Belz->value],
+        'neighbourhoods' => [neighbourhoodId('Belz')],
     ]);
 
     $response = $this->get(route('properties.index', [
-        'neighbourhood' => Neighbourhood::Geula->value,
+        'neighbourhood' => neighbourhoodId('Geula'),
     ]));
 
     $response

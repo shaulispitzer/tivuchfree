@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
+use App\Http\Controllers\Admin\NeighbourhoodController as AdminNeighbourhoodController;
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\PropertyStatController as AdminPropertyStatController;
+use App\Http\Controllers\Admin\PropertySubscriptionController as AdminPropertySubscriptionController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\SocialiteController;
@@ -43,6 +45,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('properties', [AdminPropertyController::class, 'index'])->name('properties.index');
     Route::get('properties/{property}/edit', [AdminPropertyController::class, 'edit'])->name('properties.edit');
     Route::delete('properties/{property}', [AdminPropertyController::class, 'destroy'])->name('properties.destroy');
+    Route::patch('properties/{property}/mark-tivuch-fee', [AdminPropertyController::class, 'markTivuchFee'])->name('properties.mark-tivuch-fee');
     Route::get('property-stats', [AdminPropertyStatController::class, 'index'])->name('property-stats.index');
     Route::delete('property-stats/{propertyStat}', [AdminPropertyStatController::class, 'destroy'])->name('property-stats.destroy');
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
@@ -56,13 +59,26 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('failed-jobs', [AdminFailedJobController::class, 'destroyAll'])->name('failed-jobs.destroy-all');
     Route::post('failed-jobs/{id}/retry', [AdminFailedJobController::class, 'retry'])->name('failed-jobs.retry');
     Route::delete('failed-jobs/{id}', [AdminFailedJobController::class, 'destroy'])->name('failed-jobs.destroy');
+    Route::get('neighbourhoods', [AdminNeighbourhoodController::class, 'index'])->name('neighbourhoods.index');
+    Route::get('neighbourhoods/create', [AdminNeighbourhoodController::class, 'create'])->name('neighbourhoods.create');
+    Route::post('neighbourhoods', [AdminNeighbourhoodController::class, 'store'])->name('neighbourhoods.store');
+    Route::get('neighbourhoods/{neighbourhood}/edit', [AdminNeighbourhoodController::class, 'edit'])->name('neighbourhoods.edit');
+    Route::put('neighbourhoods/{neighbourhood}', [AdminNeighbourhoodController::class, 'update'])->name('neighbourhoods.update');
+    Route::delete('neighbourhoods/{neighbourhood}', [AdminNeighbourhoodController::class, 'destroy'])->name('neighbourhoods.destroy');
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
     Route::post('streets', [StreetController::class, 'store'])->name('streets.store');
     Route::post('streets/import', [StreetController::class, 'import'])->name('streets.import');
+    Route::post('streets/generate-csv', [StreetController::class, 'generateCsv'])->name('streets.generate-csv');
     Route::get('streets/{street}/edit', [StreetController::class, 'edit'])->name('streets.edit');
     Route::put('streets/{street}', [StreetController::class, 'update'])->name('streets.update');
     Route::delete('streets/{street}', [StreetController::class, 'destroy'])->name('streets.destroy');
+    Route::get('subscriptions', [AdminPropertySubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::get('subscriptions/create', [AdminPropertySubscriptionController::class, 'create'])->name('subscriptions.create');
+    Route::post('subscriptions', [AdminPropertySubscriptionController::class, 'store'])->name('subscriptions.store');
+    Route::post('subscriptions/{property_subscription}/unsubscribe', [AdminPropertySubscriptionController::class, 'unsubscribe'])->name('subscriptions.unsubscribe');
+    Route::post('subscriptions/{property_subscription}/subscribe', [AdminPropertySubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
+    Route::delete('subscriptions/{property_subscription}', [AdminPropertySubscriptionController::class, 'destroy'])->name('subscriptions.destroy');
 });
 
 Route::middleware('auth', 'verified')->group(function () {
@@ -92,50 +108,65 @@ Route::middleware('auth', 'verified')->group(function () {
 
 Route::post('properties/{property}/report-taken', [PropertyController::class, 'reportTaken'])
     ->name('properties.report-taken');
+Route::post('properties/{property}/report-tivuch-fee', [PropertyController::class, 'reportTivuchFee'])
+    ->name('properties.report-tivuch-fee');
 
 // mails routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/mailable-property-listed', function () {
-        return new \App\Mail\YourPropertyWasListed(\App\Models\User::firstOrFail());
+        return new \App\Mail\YourPropertyWasListed(\App\Models\User::query()->firstOrFail());
     });
     Route::get('/mailable-taken-warning', function () {
-        $property = \App\Models\Property::findOrFail(34);
+        $property = \App\Models\Property::query()->findOrFail(34);
 
         return new \App\Mail\PropertyTakenWarning($property);
     });
     Route::get('/mailable-welcome', function () {
-        return new \App\Mail\WelcomeEmail(\App\Models\User::firstOrFail());
+        return new \App\Mail\WelcomeEmail(\App\Models\User::query()->firstOrFail());
     });
     Route::get('/mailable/subscription/notification', function () {
-        $property = \App\Models\Property::findOrFail(34);
-        $subscription = \App\Models\PropertySubscription::firstOrFail();
+        $property = \App\Models\Property::query()->findOrFail(34);
+        $subscription = \App\Models\PropertySubscription::query()->firstOrFail();
 
-        return new \App\Mail\PropertySubscriptionNotification($property, $subscription, route('properties.show', $property), route('subscriptions.unsubscribe', $subscription->token), route('subscriptions.update-filters', $subscription->token));
+        return new \App\Mail\PropertySubscriptionNotification(
+            property: $property,
+            subscription: $subscription,
+            propertyUrl: route('properties.show', ['property' => $property]),
+            unsubscribeUrl: route('subscriptions.unsubscribe', ['token' => $subscription->token]),
+            updateFiltersUrl: route('subscriptions.update-filters', ['token' => $subscription->token]),
+        );
     });
     Route::get('/mailable/subscription/confirmation', function () {
-        $subscription = \App\Models\PropertySubscription::firstOrFail();
+        $subscription = \App\Models\PropertySubscription::query()->firstOrFail();
 
-        return new \App\Mail\PropertySubscriptionConfirmation($subscription, route('subscriptions.unsubscribe', $subscription->token), route('subscriptions.update-filters', $subscription->token));
+        return new \App\Mail\PropertySubscriptionConfirmation(
+            subscription: $subscription,
+            unsubscribeUrl: route('subscriptions.unsubscribe', ['token' => $subscription->token]),
+            updateFiltersUrl: route('subscriptions.update-filters', ['token' => $subscription->token]),
+        );
     });
     Route::get('/mailable/subscription/expired', function () {
-        $subscription = \App\Models\PropertySubscription::firstOrFail();
+        $subscription = \App\Models\PropertySubscription::query()->firstOrFail();
 
-        return new \App\Mail\PropertySubscriptionExpired($subscription, route('properties.index'));
+        return new \App\Mail\PropertySubscriptionExpired(
+            subscription: $subscription,
+            subscribeUrl: route('properties.index', []),
+        );
     });
     Route::get('/mailable/reported-taken', function () {
-        $property = \App\Models\Property::with('user')->firstOrFail();
+        $property = \App\Models\Property::query()->with('user')->firstOrFail();
 
         return new \App\Mail\PropertyReportedTaken($property);
     });
     Route::get('/mailable/listing-status-change', function () {
-        $user = \App\Models\User::firstOrFail();
-        $property = \App\Models\Property::firstOrFail();
+        $user = \App\Models\User::query()->firstOrFail();
+        $property = \App\Models\Property::query()->firstOrFail();
 
         return new \App\Mail\PropertyListingStatusChange(
-            $user->name,
-            trim($property->street.($property->building_number ? ' '.$property->building_number : '')),
-            request()->query('action', 'marked_as_taken'),
-            request()->query('method', 'manually'),
+            recipientName: $user->name,
+            propertyAddress: trim($property->street.($property->building_number ? ' '.$property->building_number : '')),
+            action: request()->query('action', 'marked_as_taken'),
+            method: request()->query('method', 'manually'),
         );
     });
 });

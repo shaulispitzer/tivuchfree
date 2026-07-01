@@ -24,6 +24,7 @@ class ContactMail extends Mailable
     {
         return new Envelope(
             subject: 'Contact: '.$this->contactSubject,
+            replyTo: $this->email,
         );
     }
 

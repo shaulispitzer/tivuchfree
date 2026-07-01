@@ -3,13 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Data\PropertyOptionData;
-use App\Enums\Neighbourhood;
+use App\Http\Requests\GenerateStreetCsvRequest;
 use App\Http\Requests\StreetImportRequest;
 use App\Http\Requests\StreetStoreRequest;
 use App\Http\Requests\StreetUpdateRequest;
+use App\Models\Neighbourhood;
 use App\Models\Street;
+use App\Services\OpenStreetMapStreetCsvGenerator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response;
+use RuntimeException;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class StreetController extends Controller
@@ -17,23 +25,58 @@ class StreetController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', Street::class);
 
+        $search = trim((string) $request->query('search', ''));
+        $neighbourhoodId = $request->query('neighbourhood');
+        $neighbourhoodId = is_numeric($neighbourhoodId) ? (int) $neighbourhoodId : null;
+
         $streets = Street::query()
-            ->orderBy('neighbourhood')
+            ->with('neighbourhood')
+            ->when($neighbourhoodId, fn ($query) => $query->where('neighbourhood_id', $neighbourhoodId))
+            ->when($search !== '', function ($query) use ($search): void {
+                $needle = '%'.mb_strtolower($search).'%';
+
+                $query->where(function ($query) use ($needle, $search): void {
+                    if ($query->getConnection()->getDriverName() === 'pgsql') {
+                        $query->where('name->en', 'ilike', '%'.$search.'%')
+                            ->orWhere('name->he', 'ilike', '%'.$search.'%');
+
+                        return;
+                    }
+
+                    if ($query->getConnection()->getDriverName() === 'sqlite') {
+                        $query->whereRaw('LOWER(json_extract(`name`, \'$."en"\')) LIKE ?', [$needle])
+                            ->orWhereRaw('LOWER(json_extract(`name`, \'$."he"\')) LIKE ?', [$needle]);
+
+                        return;
+                    }
+
+                    $query->whereRaw('LOWER(json_unquote(json_extract(`name`, \'$."en"\'))) LIKE ?', [$needle])
+                        ->orWhereRaw('LOWER(json_unquote(json_extract(`name`, \'$."he"\'))) LIKE ?', [$needle]);
+                });
+            })
+            ->orderBy('neighbourhood_id')
             ->orderBy('id')
-            ->get()
-            ->map(fn (Street $street) => [
+            ->paginate(50)
+            ->withQueryString()
+            ->through(fn (Street $street) => [
                 'id' => $street->id,
-                'neighbourhood' => $street->neighbourhood?->value,
+                'neighbourhood_id' => $street->neighbourhood_id,
+                'neighbourhood' => $street->neighbourhood?->getTranslation('name', 'en'),
                 'name' => $street->getTranslations('name'),
                 'translatedName' => $street->name,
             ]);
 
         return Inertia::render('streets/Index', [
             'streets' => $streets,
+            'neighbourhoods' => $this->neighbourhoodOptions(),
+            'filters' => [
+                'search' => $search,
+                'neighbourhood' => $neighbourhoodId,
+            ],
         ]);
     }
 
@@ -62,7 +105,7 @@ class StreetController extends Controller
     /**
      * Import streets from an Excel or CSV file.
      *
-     * Expected columns: Neighbourhood (enum value), Name (EN), Name (HE)
+     * Expected columns: Neighbourhood (English name or ID), Name (EN), Name (HE)
      */
     public function import(StreetImportRequest $request): RedirectResponse
     {
@@ -77,13 +120,13 @@ class StreetController extends Controller
             ->headersToSnakeCase()
             ->getRows()
             ->each(function (array $row): void {
-                $neighbourhood = $this->resolveNeighbourhood($row);
+                $neighbourhoodId = $this->resolveNeighbourhoodId($row);
                 $nameEn = $this->resolveColumn($row, ['name_en', 'name_(en)']);
                 $nameHe = $this->resolveColumn($row, ['name_he', 'name_(he)']);
 
-                if ($neighbourhood && $nameEn && $nameHe) {
+                if ($neighbourhoodId && $nameEn && $nameHe) {
                     Street::create([
-                        'neighbourhood' => $neighbourhood,
+                        'neighbourhood_id' => $neighbourhoodId,
                         'name' => [
                             'en' => $nameEn,
                             'he' => $nameHe,
@@ -97,17 +140,61 @@ class StreetController extends Controller
     }
 
     /**
+     * Generate a CSV of streets from OpenStreetMap for the given bounding box.
+     */
+    public function generateCsv(
+        GenerateStreetCsvRequest $request,
+        OpenStreetMapStreetCsvGenerator $generator,
+    ): HttpResponse|JsonResponse {
+        $neighbourhood = Neighbourhood::query()->findOrFail($request->integer('neighbourhood_id'));
+        $neighbourhoodNameEn = $neighbourhood->getTranslation('name', 'en');
+
+        if (! is_string($neighbourhoodNameEn) || $neighbourhoodNameEn === '') {
+            return response()->json([
+                'message' => 'The selected neighbourhood is missing an English name.',
+            ], 422);
+        }
+
+        try {
+            $csv = $generator->generateCsv(
+                $neighbourhoodNameEn,
+                $request->float('south'),
+                $request->float('west'),
+                $request->float('north'),
+                $request->float('east'),
+            );
+        } catch (RuntimeException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+
+        $filename = Str::slug($neighbourhoodNameEn).'-streets-'.now()->format('Y-m-d').'.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
+    }
+
+    /**
      * @param  array<string, mixed>  $row
      */
-    protected function resolveNeighbourhood(array $row): ?Neighbourhood
+    protected function resolveNeighbourhoodId(array $row): ?int
     {
-        $value = $this->resolveColumn($row, ['neighbourhood']);
+        $value = $this->resolveColumn($row, ['neighbourhood', 'neighbourhood_id']);
 
         if (! $value) {
             return null;
         }
 
-        return Neighbourhood::tryFrom(trim($value));
+        if (ctype_digit($value)) {
+            return Neighbourhood::query()->whereKey((int) $value)->value('id');
+        }
+
+        return Neighbourhood::query()
+            ->where('name->en', trim($value))
+            ->value('id');
     }
 
     /**
@@ -136,7 +223,7 @@ class StreetController extends Controller
         return Inertia::render('streets/Edit', [
             'street' => [
                 'id' => $street->id,
-                'neighbourhood' => $street->neighbourhood?->value,
+                'neighbourhood_id' => $street->neighbourhood_id,
                 'name' => $street->getTranslations('name'),
             ],
             'neighbourhoods' => $this->neighbourhoodOptions(),
@@ -150,19 +237,24 @@ class StreetController extends Controller
     {
         $street->update($request->validated());
 
-        return redirect()->route('admin.streets.edit', $street);
+        return redirect()->route('admin.streets.edit', $street)
+            ->success('Street updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Street $street)
+    public function destroy(Street $street, Request $request): RedirectResponse
     {
         $this->authorize('delete', $street);
 
-        $street->delete();
+        Street::destroy($street->getKey());
 
-        return redirect()->route('admin.streets.index');
+        return redirect()->route('admin.streets.index', array_filter([
+            'search' => $request->query('search'),
+            'neighbourhood' => $request->query('neighbourhood'),
+            'page' => $request->query('page'),
+        ], fn ($value) => $value !== null && $value !== ''))->success('Street deleted successfully.');
     }
 
     /**
@@ -170,9 +262,6 @@ class StreetController extends Controller
      */
     protected function neighbourhoodOptions(): array
     {
-        return array_map(
-            fn (Neighbourhood $neighbourhood) => PropertyOptionData::fromEnum($neighbourhood),
-            Neighbourhood::cases(),
-        );
+        return Neighbourhood::optionData();
     }
 }

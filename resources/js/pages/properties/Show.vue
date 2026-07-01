@@ -31,18 +31,18 @@ import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
 import { router } from '@inertiajs/vue3';
-import { reportTaken } from '@/routes/properties';
+import { reportTaken, reportTivuchFee } from '@/routes/properties';
 const props = defineProps<{
     property: Omit<App.Data.PropertyData, 'user' | 'user_id'>;
 }>();
 
 const { close: closeModal } = useModal();
 const { t } = useI18n();
-const page = usePage();
-const toast = useToast();
+
 const open = ref(true);
 const notSpecifiedLabel = 'not specified';
 const reportingTaken = ref(false);
+const reportingTivuchFee = ref(false);
 
 function submitReportTaken(): void {
     const route = reportTaken({ property: props.property.id });
@@ -57,10 +57,32 @@ function submitReportTaken(): void {
     );
 }
 
+function submitReportTivuchFee(): void {
+    const route = reportTivuchFee({ property: props.property.id });
+    reportingTivuchFee.value = true;
+    router.post(
+        route.url,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => (reportingTivuchFee.value = false),
+        },
+    );
+}
+
 const imageUrls = computed(() => {
     const urls = [
         props.property.main_image_url,
         ...props.property.image_urls,
+    ].filter((url): url is string => typeof url === 'string' && url.length > 0);
+
+    return Array.from(new Set(urls));
+});
+
+const thumbImageUrls = computed(() => {
+    const urls = [
+        props.property.main_image_thumb_url,
+        ...props.property.image_thumb_urls,
     ].filter((url): url is string => typeof url === 'string' && url.length > 0);
 
     return Array.from(new Set(urls));
@@ -80,11 +102,11 @@ const fullAddress = computed(() => {
 });
 
 const neighbourhoodsLabel = computed(() => {
-    if (props.property.neighbourhoods.length === 0) {
+    if (props.property.neighbourhood_labels.length === 0) {
         return null;
     }
 
-    return props.property.neighbourhoods.map(formatLabel).join(', ');
+    return props.property.neighbourhood_labels.join(', ');
 });
 
 const isMediumTerm = computed(() => props.property.type === 'medium_term');
@@ -349,13 +371,14 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         @swiper="setThumbsSwiper"
                     >
                         <SwiperSlide
-                            v-for="(url, index) in imageUrls"
+                            v-for="(url, index) in thumbImageUrls"
                             :key="`thumb-${url}-${index}`"
                         >
                             <img
                                 :src="url"
                                 :alt="t('common.propertyThumbnailAlt')"
                                 class="h-16 w-full rounded-md border border-border/60 object-cover transition sm:h-20"
+                                loading="lazy"
                             />
                         </SwiperSlide>
                     </Swiper>
@@ -519,13 +542,28 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                 </p>
             </div>
 
-            <div class="flex justify-end border-t pt-4">
-                <Button
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <ConfirmableButton
+                    class="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white p-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    :disabled="reportingTivuchFee"
+                    @confirm="submitReportTivuchFee"
+                    @cancel="reportingTivuchFee = false"
+                    :title="t('common.reportTivuchFee')"
+                    :message="t('common.reportTivuchFeeMessage')"
+                    :confirm-label="t('common.report')"
+                >
+                    {{ t('common.reportTivuchFee') }}</ConfirmableButton
+                >
+                <ConfirmableButton
                     class="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white p-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
                     :disabled="reportingTaken"
-                    @click="submitReportTaken"
+                    @confirm="submitReportTaken"
+                    @cancel="reportingTaken = false"
+                    :title="t('common.reportTaken')"
+                    :message="t('common.reportTakenMessage')"
+                    :confirm-label="t('common.report')"
                 >
-                    {{ t('common.reportTaken') }}</Button
+                    {{ t('common.reportTaken') }}</ConfirmableButton
                 >
             </div>
         </div>
@@ -615,13 +653,14 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                                 @swiper="setLightboxThumbsSwiper"
                             >
                                 <SwiperSlide
-                                    v-for="(url, index) in imageUrls"
+                                    v-for="(url, index) in thumbImageUrls"
                                     :key="`lb-thumb-${url}-${index}`"
                                 >
                                     <img
                                         :src="url"
                                         :alt="t('common.propertyThumbnailAlt')"
                                         class="h-10 w-full rounded border-2 border-transparent object-cover transition-all sm:h-14 sm:rounded-md"
+                                        loading="lazy"
                                     />
                                 </SwiperSlide>
                             </Swiper>

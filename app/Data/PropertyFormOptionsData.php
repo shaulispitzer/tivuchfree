@@ -30,7 +30,7 @@ class PropertyFormOptionsData extends Data
     ) {}
 
     /**
-     * @param  array<int, PropertyOptionLabel>  $neighbourhoods
+     * @param  array<int, PropertyOptionData>  $neighbourhoods
      * @param  array<int, PropertyOptionLabel>  $leaseTypes
      * @param  array<int, PropertyOptionLabel>  $furnished
      * @param  array<int, PropertyOptionLabel>  $access
@@ -50,7 +50,7 @@ class PropertyFormOptionsData extends Data
         array $apartmentCondition,
     ): self {
         return new self(
-            neighbourhoods: self::map($neighbourhoods),
+            neighbourhoods: $neighbourhoods,
             lease_types: self::map($leaseTypes),
             furnished: self::map($furnished),
             access: self::map($access),

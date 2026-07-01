@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Data\Forms\PropertyFormData;
 use App\Data\PropertyData;
 use App\Data\PropertyFormOptionsData;
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -15,11 +14,12 @@ use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Http\Requests\MarkPropertyAsTakenRequest;
 use App\Jobs\GeocodeProperty;
-use App\Jobs\NotifyPropertySubscribers;
+use App\Jobs\ProcessNewPropertyListing;
 use App\Jobs\TranslatePropertyAdditionalInfo;
 use App\Mail\PropertyListingStatusChange;
 use App\Mail\PropertyReportedTaken;
-use App\Mail\YourPropertyWasListed;
+use App\Mail\PropertyReportedTivuchFee;
+use App\Models\Neighbourhood;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
@@ -49,7 +49,7 @@ class PropertyController extends Controller
         }
         $validated = Validator::make($query, [
             'neighbourhoods' => ['nullable', 'array'],
-            'neighbourhoods.*' => ['required', 'string', Rule::enum(Neighbourhood::class)],
+            'neighbourhoods.*' => ['required', 'integer', Rule::exists('neighbourhoods', 'id')],
             'availability' => ['nullable', Rule::in(['all', 'available'])],
             'bedrooms_min' => ['nullable', 'numeric', 'min:0'],
             'bedrooms_max' => ['nullable', 'numeric', 'min:0'],
@@ -69,7 +69,7 @@ class PropertyController extends Controller
         $view = $validated['view'] ?? 'list';
 
         $neighbourhoods = isset($validated['neighbourhoods']) && is_array($validated['neighbourhoods'])
-            ? array_values(array_unique($validated['neighbourhoods']))
+            ? array_values(array_unique(array_map(static fn (mixed $id): int => (int) $id, $validated['neighbourhoods'])))
             : [];
 
         $propertiesQuery = Property::query()
@@ -147,10 +147,7 @@ class PropertyController extends Controller
                     'sort' => $sort,
                     'view' => $view,
                 ],
-                'neighbourhood_options' => array_map(
-                    fn (Neighbourhood $neighbourhood) => $neighbourhood->value,
-                    Neighbourhood::cases(),
-                ),
+                'neighbourhood_options' => Neighbourhood::optionData(),
                 'furnished_options' => array_map(
                     fn (PropertyFurnished $furnished) => [
                         'value' => $furnished->value,
@@ -172,7 +169,7 @@ class PropertyController extends Controller
             ->paginate(24)
             ->withQueryString()
             ->through(fn (Property $property) => (
-                PropertyData::fromModel($property)->only('id', 'price', 'neighbourhoods', 'street', 'lat', 'lon', 'building_number', 'floor', 'type', 'available_from', 'available_to', 'bedrooms', 'square_meter', 'views', 'furnished', 'taken', 'image_thumb_urls', 'main_image_thumb_url', 'created_at')->toArray()
+                PropertyData::fromModel($property)->only('id', 'price', 'neighbourhoods', 'neighbourhood_labels', 'street', 'lat', 'lon', 'building_number', 'floor', 'type', 'available_from', 'available_to', 'bedrooms', 'square_meter', 'views', 'furnished', 'taken', 'tivuch_fee', 'image_thumb_urls', 'main_image_thumb_url', 'created_at')->toArray()
             ));
 
         return Inertia::render('properties/List', [
@@ -191,10 +188,7 @@ class PropertyController extends Controller
                 'sort' => $sort,
                 'view' => $view,
             ],
-            'neighbourhood_options' => array_map(
-                fn (Neighbourhood $neighbourhood) => $neighbourhood->value,
-                Neighbourhood::cases(),
-            ),
+            'neighbourhood_options' => Neighbourhood::optionData(),
             'furnished_options' => array_map(
                 fn (PropertyFurnished $furnished) => [
                     'value' => $furnished->value,
@@ -215,12 +209,13 @@ class PropertyController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create', Property::class);
 
         return Inertia::render('properties/Create', [
             'options' => $this->formOptions(),
+            'hasExistingListings' => $request->user()->properties()->exists(),
         ]);
     }
 
@@ -230,7 +225,7 @@ class PropertyController extends Controller
 
         $validated = Validator::make($request->query(), [
             'neighbourhoods' => ['nullable', 'array', 'min:1', 'max:3'],
-            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+            'neighbourhoods.*' => ['required', 'integer', Rule::exists('neighbourhoods', 'id'), 'distinct'],
         ])->validate();
 
         return response()->json([
@@ -243,16 +238,25 @@ class PropertyController extends Controller
      */
     public function store(PropertyFormData $data, Request $request)
     {
+        Validator::make($request->all(), [
+            'confirm_no_tivuch_fee' => ['required', 'accepted'],
+        ])->validate();
 
         Validator::make([
             'neighbourhoods' => $data->neighbourhoods,
             'street' => $data->street,
             'floor' => $data->floor,
+            'price' => $data->price,
+            'square_meter' => $data->square_meter,
+            'bathrooms' => $data->bathrooms,
         ], [
             'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
-            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+            'neighbourhoods.*' => ['required', 'integer', Rule::exists('neighbourhoods', 'id'), 'distinct'],
             'street' => ['required', 'integer', 'exists:streets,id'],
             'floor' => ['required', 'numeric', 'decimal:0,1'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'square_meter' => ['required', 'numeric', 'min:0'],
+            'bathrooms' => ['required', 'numeric', 'min:0'],
         ])->validate();
 
         $streetInHebrew = Street::query()
@@ -280,7 +284,7 @@ class PropertyController extends Controller
                 'contact_name' => $data->contact_name,
                 'contact_phone' => $data->contact_phone,
                 'contact_phone_2' => $data->contact_phone_2,
-                'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
+                'neighbourhoods' => array_values(array_unique(array_map(static fn (int $id): int => $id, $data->neighbourhoods))),
                 'price' => $data->price,
                 'building_number' => $data->building_number,
                 'street' => $streetInHebrew,
@@ -385,21 +389,15 @@ class PropertyController extends Controller
             return $property;
         });
 
-        GeocodeProperty::dispatch(
+        $normalizedAdditionalInfo = is_string($data->additional_info) ? trim($data->additional_info) : '';
+
+        ProcessNewPropertyListing::dispatch(
             $property,
             $streetInHebrew,
             $data->building_number !== null ? (string) $data->building_number : null,
+            $normalizedAdditionalInfo !== '' ? $normalizedAdditionalInfo : null,
+            app()->getLocale() === 'he' ? 'he' : 'en',
         );
-
-        Mail::to($property->user->email)->send(new YourPropertyWasListed($property->user));
-
-        NotifyPropertySubscribers::dispatchSync($property);
-
-        $normalizedAdditionalInfo = is_string($data->additional_info) ? trim($data->additional_info) : '';
-        if ($normalizedAdditionalInfo !== '') {
-            $sourceLocale = app()->getLocale() === 'he' ? 'he' : 'en';
-            TranslatePropertyAdditionalInfo::dispatch($property, $normalizedAdditionalInfo, $sourceLocale);
-        }
 
         return redirect()->route('properties.index')->success(__('message.propertyCreatedSuccessfully'));
     }
@@ -407,7 +405,7 @@ class PropertyController extends Controller
     /**
      * Resolves additional info for immediate save without calling the translation API.
      * When the user provides a single additional_info field, stores the same text in both
-     * languages. Translation runs asynchronously via TranslatePropertyAdditionalInfo job.
+     * languages. Translation runs asynchronously via ProcessNewPropertyListing job.
      *
      * @return array{en: string, he: string}|null
      */
@@ -530,10 +528,10 @@ class PropertyController extends Controller
         }
 
         if (! $property->taken) {
-            $property->update([
+            $property->forceFill([
                 'taken' => true,
                 'taken_at' => now(),
-            ]);
+            ])->save();
         }
 
         $validated = $request->validated();
@@ -580,22 +578,39 @@ class PropertyController extends Controller
     {
         // Property owners cannot report their own property
         if ($request->user()?->id === $property->user_id) {
-            return back()->error('You cannot report your own property as taken');
+            return back()->error(__('message.youCannotReportYourOwnPropertyAsTaken'));
         }
 
         // If already reported or already taken, silently succeed (no duplicate email and same response)
         if ($property->reported_taken_at !== null || $property->taken) {
-            return back()->success('We have informed the property owner that it is taken');
+            return back()->success(__('message.propertyReportedAsTakenSuccessfully'));
         }
 
-        $property->update(['reported_taken_at' => now()]);
+        $property->forceFill(['reported_taken_at' => now()])->save();
 
         $property->loadMissing('user');
         if ($property->user?->email) {
             Mail::to($property->user->email)->queue(new PropertyReportedTaken($property));
         }
 
-        return back()->success('We have informed the property owner that it is taken');
+        return back()->success(__('message.propertyReportedAsTakenSuccessfully'));
+    }
+
+    public function reportTivuchFee(Request $request, Property $property): RedirectResponse
+    {
+        if ($request->user()?->id === $property->user_id) {
+            return back()->error(__('message.youCannotReportYourOwnPropertyAsHavingATivuchFee'));
+        }
+
+        if ($property->reported_tivuch_fee_at !== null || $property->tivuch_fee) {
+            return back()->success(__('message.propertyReportedAsHavingATivuchFeeSuccessfully'));
+        }
+
+        $property->forceFill(['reported_tivuch_fee_at' => now()])->save();
+
+        Mail::to('info@tivuchfree.com')->locale('en')->queue(new PropertyReportedTivuchFee($property));
+
+        return back()->success(__('message.propertyReportedAsHavingATivuchFeeSuccessfully'));
     }
 
     public function cancelReportTaken(Request $request, Property $property): RedirectResponse
@@ -604,7 +619,7 @@ class PropertyController extends Controller
             abort(403);
         }
 
-        $property->update(['reported_taken_at' => null]);
+        $property->forceFill(['reported_taken_at' => null])->save();
 
         return back()->success(__('message.reportCancelledSuccessfully'));
     }
@@ -633,7 +648,7 @@ class PropertyController extends Controller
 
     public function show(Request $request, Property $property)
     {
-        if ($property->taken) {
+        if ($property->taken || $property->tivuch_fee) {
             abort(404);
         }
 
@@ -748,7 +763,7 @@ class PropertyController extends Controller
                 'floor' => $data->floor,
             ], [
                 'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
-                'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+                'neighbourhoods.*' => ['required', 'integer', Rule::exists('neighbourhoods', 'id'), 'distinct'],
                 'street' => ['required', 'integer', 'exists:streets,id'],
                 'floor' => ['required', 'numeric', 'decimal:0,1'],
             ])->validate();
@@ -776,11 +791,11 @@ class PropertyController extends Controller
                     $data->additional_info_he,
                 );
 
-                $property->update([
+                $property->forceFill([
                     'contact_name' => $data->contact_name,
                     'contact_phone' => $data->contact_phone,
                     'contact_phone_2' => $data->contact_phone_2,
-                    'neighbourhoods' => array_values(array_unique($data->neighbourhoods)),
+                    'neighbourhoods' => array_values(array_unique(array_map(static fn (int $id): int => $id, $data->neighbourhoods))),
                     'price' => $data->price,
                     'building_number' => $data->building_number,
                     'street' => $streetInHebrew,
@@ -804,7 +819,7 @@ class PropertyController extends Controller
                     'has_dud_shemesh' => $data->has_dud_shemesh,
                     'has_machsan' => $data->has_machsan,
                     'has_parking_spot' => $data->has_parking_spot,
-                ]);
+                ])->save();
 
                 $this->syncUploadedImages(
                     property: $property,
@@ -845,7 +860,7 @@ class PropertyController extends Controller
             'contact_phone' => ['required', 'string', 'max:255'],
             'contact_phone_2' => ['nullable', 'string', 'max:255'],
             'neighbourhoods' => ['required', 'array', 'min:1', 'max:3'],
-            'neighbourhoods.*' => ['required', Rule::enum(Neighbourhood::class), 'distinct'],
+            'neighbourhoods.*' => ['required', 'integer', Rule::exists('neighbourhoods', 'id'), 'distinct'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'street' => ['required', 'string', 'max:255'],
             'building_number' => ['nullable'],
@@ -884,11 +899,11 @@ class PropertyController extends Controller
                 null,
             );
 
-            $property->update([
+            $property->forceFill([
                 'contact_name' => $validated['contact_name'] ?? null,
                 'contact_phone' => $validated['contact_phone'],
                 'contact_phone_2' => $validated['contact_phone_2'] ?? null,
-                'neighbourhoods' => array_values(array_unique($validated['neighbourhoods'])),
+                'neighbourhoods' => array_values(array_unique(array_map(static fn (mixed $id): int => (int) $id, $validated['neighbourhoods']))),
                 'price' => $validated['price'] ?? null,
                 'street' => $validated['street'],
                 'building_number' => $validated['building_number'] ?? null,
@@ -912,7 +927,7 @@ class PropertyController extends Controller
                 'has_dud_shemesh' => (bool) ($validated['has_dud_shemesh'] ?? false),
                 'has_machsan' => (bool) ($validated['has_machsan'] ?? false),
                 'has_parking_spot' => (bool) ($validated['has_parking_spot'] ?? false),
-            ]);
+            ])->save();
         });
 
         GeocodeProperty::dispatch(
@@ -962,17 +977,17 @@ class PropertyController extends Controller
 
         $requestedNeighbourhoods = $request->input('neighbourhoods');
         $neighbourhoods = is_array($requestedNeighbourhoods)
-            ? array_values(array_filter($requestedNeighbourhoods, static fn (mixed $value): bool => is_string($value) && $value !== ''))
+            ? array_values(array_filter($requestedNeighbourhoods, static fn (mixed $value): bool => is_numeric($value)))
             : [];
 
         if ($neighbourhoods === []) {
             $neighbourhoods = is_array($property->neighbourhoods)
-                ? array_values(array_filter($property->neighbourhoods, static fn (mixed $value): bool => is_string($value) && $value !== ''))
+                ? array_values(array_filter($property->neighbourhoods, static fn (mixed $value): bool => is_numeric($value)))
                 : [];
         }
 
         return Street::query()
-            ->when($neighbourhoods !== [], static fn ($query) => $query->whereIn('neighbourhood', $neighbourhoods))
+            ->when($neighbourhoods !== [], static fn ($query) => $query->whereIn('neighbourhood_id', $neighbourhoods))
             ->where(function ($query) use ($streetName): void {
                 $query
                     ->where('name->he', $streetName)
@@ -1073,7 +1088,7 @@ class PropertyController extends Controller
     protected function formOptions(): PropertyFormOptionsData
     {
         return PropertyFormOptionsData::fromEnums(
-            Neighbourhood::cases(),
+            Neighbourhood::optionData(),
             PropertyLeaseType::cases(),
             PropertyFurnished::cases(),
             PropertyAccess::cases(),
@@ -1121,7 +1136,7 @@ class PropertyController extends Controller
     }
 
     /**
-     * @param  array<int, string>  $neighbourhoods
+     * @param  array<int, int>  $neighbourhoods
      * @return array<int, array{id: int, name: string}>
      */
     protected function streetOptions(array $neighbourhoods = []): array
@@ -1131,10 +1146,10 @@ class PropertyController extends Controller
         }
 
         $locale = app()->getLocale();
-        $neighbourhoodValues = array_values(array_unique($neighbourhoods));
+        $neighbourhoodIds = array_values(array_unique(array_map(static fn (mixed $id): int => (int) $id, $neighbourhoods)));
 
         return Street::query()
-            ->whereIn('neighbourhood', $neighbourhoodValues, 'and', false)
+            ->whereIn('neighbourhood_id', $neighbourhoodIds, 'and', false)
             ->get()
             ->map(function (Street $street) use ($locale): array {
                 $localizedName = $street->getTranslation('name', $locale, false);

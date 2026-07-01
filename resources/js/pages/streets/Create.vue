@@ -36,10 +36,10 @@ defineProps({
         v-slot="{ errors, processing }"
     >
         <div class="grid gap-2">
-            <Label for="neighbourhood">Neighbourhood</Label>
+            <Label for="neighbourhood_id">Neighbourhood</Label>
             <select
-                id="neighbourhood"
-                name="neighbourhood"
+                id="neighbourhood_id"
+                name="neighbourhood_id"
                 required
                 class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
             >
@@ -52,7 +52,7 @@ defineProps({
                     {{ option.label }}
                 </option>
             </select>
-            <InputError :message="errors.neighbourhood" />
+            <InputError :message="errors.neighbourhood_id" />
         </div>
 
         <div class="grid gap-2">

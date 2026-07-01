@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -10,6 +9,7 @@ use App\Enums\PropertyFurnished;
 use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
+use App\Models\Neighbourhood;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -37,7 +37,8 @@ class PropertyFactory extends Factory
             'contact_phone' => fake()->phoneNumber(),
             'contact_phone_2' => fake()->optional(0.3)->phoneNumber(),
             'neighbourhoods' => [
-                fake()->randomElement(Neighbourhood::values()),
+                Neighbourhood::query()->inRandomOrder(null)->first()?->id
+                    ?? Neighbourhood::factory(1)->create()->id,
             ],
             'price' => fake()->randomFloat(2, 2500, 18000),
             'street' => fake()->streetName(),
@@ -51,6 +52,7 @@ class PropertyFactory extends Factory
             'views' => fake()->numberBetween(0, 200),
             'furnished' => fake()->randomElement(PropertyFurnished::values()),
             'taken' => false,
+            'tivuch_fee' => false,
             'bathrooms' => fake()->numberBetween(1, 3),
             'access' => fake()->randomElement(PropertyAccess::values()),
             'kitchen_dining_room' => fake()->randomElement(PropertyKitchenDiningRoom::values()),
@@ -70,6 +72,13 @@ class PropertyFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'taken' => true,
             'taken_at' => now(),
+        ]);
+    }
+
+    public function tivuchFee(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tivuch_fee' => true,
         ]);
     }
 }

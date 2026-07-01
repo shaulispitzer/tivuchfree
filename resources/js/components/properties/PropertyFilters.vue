@@ -127,7 +127,7 @@ function normalizeBedroomsRange(value: number | number[]): [number, number] {
 const props = withDefaults(
     defineProps<{
         filters: PropertyFilterState;
-        neighbourhood_options: string[];
+        neighbourhood_options: Option[];
         furnished_options: Option[];
         type_options: Option[];
         show_sort?: boolean;
@@ -182,7 +182,11 @@ const availableToDate = computed<DateValue | undefined>({
 function formatNeighbourhoodsDisplay(arr: string[]): string {
     if (arr.length === 0) return t('neighbourhoods.allNeighbourhoods');
     if (arr.length === 1) {
-        return t(`neighbourhoods.${arr[0].replaceAll(' ', '')}`);
+        const selected = props.neighbourhood_options.find(
+            (option) => option.value === arr[0],
+        );
+
+        return selected?.label ?? arr[0];
     }
     return t('propertyFilters.neighbourhoodsSelected', { count: arr.length });
 }

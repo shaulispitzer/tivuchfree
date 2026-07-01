@@ -31,22 +31,10 @@ const cleanedLinks = computed(() =>
 </script>
 
 <template>
-    <div
-        class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-    >
-        <p class="text-sm text-muted-foreground">
-            {{ t('common.showing') }}
-            <span class="font-medium text-foreground">{{ from ?? 0 }}</span>
-            {{ t('common.to') }}
-            <span class="font-medium text-foreground">{{ to ?? 0 }}</span>
-            {{ t('common.of') }}
-            <span class="font-medium text-foreground">{{ total }}</span>
-            {{ t('common.results') }}
-        </p>
-
+    <div class="mt-8 flex flex-col items-center gap-3">
         <nav
             v-if="cleanedLinks.length > 3"
-            class="flex flex-wrap items-center gap-2"
+            class="flex flex-wrap items-center justify-center gap-2"
             aria-label="Pagination"
         >
             <template
@@ -77,5 +65,15 @@ const cleanedLinks = computed(() =>
                 </Link>
             </template>
         </nav>
+
+        <p class="text-center text-sm text-muted-foreground">
+            {{ t('common.showing') }}
+            <span class="font-medium text-foreground">{{ from ?? 0 }}</span>
+            {{ t('common.to') }}
+            <span class="font-medium text-foreground">{{ to ?? 0 }}</span>
+            {{ t('common.of') }}
+            <span class="font-medium text-foreground">{{ total }}</span>
+            {{ t('common.results') }}
+        </p>
     </div>
 </template>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Neighbourhood;
 use App\Models\PropertyStat;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -19,7 +20,9 @@ class PropertyStatController extends Controller
                 'id' => $stat->id,
                 'property_id' => $stat->property_id,
                 'type' => $stat->type,
-                'neighbourhoods' => $stat->neighbourhoods,
+                'neighbourhoods' => is_array($stat->neighbourhoods)
+                    ? Neighbourhood::labelsForIds(array_map(static fn (mixed $id): int => (int) $id, $stat->neighbourhoods))
+                    : null,
                 'address' => $stat->address,
                 'how_got_taken' => $stat->how_got_taken,
                 'price_advertised' => $stat->price_advertised,
@@ -38,8 +41,8 @@ class PropertyStatController extends Controller
     {
         $this->authorize('delete', $propertyStat);
 
-        $propertyStat->delete();
+        PropertyStat::destroy($propertyStat->getKey());
 
-        return redirect()->route('admin.property-stats.index')->success('Property stat deleted successfully');
+        return redirect()->route('admin.property-stats.index', [])->success('Property stat deleted successfully');
     }
 }

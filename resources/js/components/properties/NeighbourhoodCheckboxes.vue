@@ -3,10 +3,15 @@ import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
 const { t } = useI18n();
 
+type Option = {
+    value: string;
+    label: string;
+};
+
 const props = withDefaults(
     defineProps<{
         modelValue: string[];
-        options: string[];
+        options: Option[];
         triggerClass?: string;
     }>(),
     { triggerClass: '' },
@@ -19,7 +24,6 @@ const emit = defineEmits<{
 const showAll = ref((props.modelValue?.length ?? 0) === 0);
 const selectedNeighbourhoods = ref<string[]>([...(props.modelValue ?? [])]);
 
-/** Sync internal state when modelValue changes from outside (e.g. clearFilters). */
 watch(
     () => props.modelValue,
     (value) => {
@@ -62,8 +66,8 @@ function isChecked(option: string): boolean {
     return selectedNeighbourhoods.value.includes(option);
 }
 
-function labelFor(neighbourhood: string): string {
-    return t(`neighbourhoods.${neighbourhood.replaceAll(' ', '')}`);
+function labelFor(option: Option): string {
+    return option.label;
 }
 
 function displayText(): string {
@@ -71,9 +75,11 @@ function displayText(): string {
         return t('neighbourhoods.allNeighbourhoods');
     }
     if (selectedNeighbourhoods.value.length === 1) {
-        return t(
-            `neighbourhoods.${selectedNeighbourhoods.value[0].replaceAll(' ', '')}`,
+        const selected = props.options.find(
+            (option) => option.value === selectedNeighbourhoods.value[0],
         );
+
+        return selected?.label ?? selectedNeighbourhoods.value[0];
     }
     return t('propertyFilters.neighbourhoodsSelected', {
         count: selectedNeighbourhoods.value.length,
@@ -113,12 +119,12 @@ function displayText(): string {
                 <div class="flex max-h-48 flex-col gap-2 overflow-y-auto">
                     <label
                         v-for="option in options"
-                        :key="option"
+                        :key="option.value"
                         class="flex cursor-pointer items-center gap-2 text-sm"
                     >
                         <Checkbox
-                            :model-value="isChecked(option)"
-                            @update:model-value="() => toggleOption(option)"
+                            :model-value="isChecked(option.value)"
+                            @update:model-value="() => toggleOption(option.value)"
                         />
                         {{ labelFor(option) }}
                     </label>

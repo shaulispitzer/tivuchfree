@@ -53,4 +53,11 @@ return [
         'button' => 'Manage Property',
         'thanks' => 'Thanks,',
     ],
+    'reported_tivuch_fee' => [
+        'subject' => 'Property reported as having a tivuch fee',
+        'title' => 'A property was reported as having a tivuch fee',
+        'body' => 'Someone reported that property **#:id** at **:address** has a tivuch fee. Please review the listing and mark it as tivuch fee if appropriate.',
+        'button' => 'Review Property',
+        'thanks' => 'Thanks,',
+    ],
 ];

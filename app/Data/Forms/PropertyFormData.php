@@ -24,6 +24,7 @@ class PropertyFormData extends Data
         public string $contact_phone,
         public ?string $email,
         public ?float $price,
+        #[WithCast(IntegerArrayCast::class)]
         public array $neighbourhoods,
         public ?int $building_number,
         public int $street,

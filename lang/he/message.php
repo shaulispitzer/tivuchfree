@@ -7,4 +7,8 @@ return [
     'reportCancelledSuccessfully' => 'הדיווח בוטל בהצלחה',
     'reviewSubmittedSuccessfully' => 'הביקורת נשלחה בהצלחה',
     'reviewDeletedSuccessfully' => 'הביקורת נמחקה בהצלחה',
+    'youCannotReportYourOwnPropertyAsTaken' => 'אינך יכול לדווח על הנכס שלך כנסוג.',
+    'propertyReportedAsTakenSuccessfully' => 'אנו דיווחנו את בעל הנכס שהנכס נסוג.',
+    'youCannotReportYourOwnPropertyAsHavingATivuchFee' => 'אינך יכול לדווח על הנכס שלך כדמי תיווך.',
+    'propertyReportedAsHavingATivuchFeeSuccessfully' => 'אנו דיווחנו את מנהל Tivuch Free על הדיווח.',
 ];

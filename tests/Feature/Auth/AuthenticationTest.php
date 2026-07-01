@@ -10,6 +10,28 @@ test('login screen can be rendered', function () {
     $response->assertOk();
 });
 
+test('login screen does not show auth required banner when visited directly', function () {
+    $response = $this->get(route('login'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('auth/Login')
+        ->where('authRequired', false)
+    );
+});
+
+test('guests redirected from protected routes see auth required banner on login', function () {
+    $response = $this->get(route('properties.create'));
+
+    $response->assertRedirect(route('login'));
+
+    $response = $this->get(route('login'));
+
+    $response->assertInertia(fn ($page) => $page
+        ->component('auth/Login')
+        ->where('authRequired', true)
+    );
+});
+
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 

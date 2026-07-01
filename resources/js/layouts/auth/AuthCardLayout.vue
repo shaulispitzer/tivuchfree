@@ -9,20 +9,30 @@ defineProps<{
 
 <template>
     <div
-        class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10"
+        class="flex min-h-svh items-center justify-center bg-muted p-6 md:p-10"
     >
-        <div class="flex w-full max-w-md flex-col gap-6">
+        <div class="flex w-full max-w-md flex-col items-center">
             <Link
                 :href="home()"
-                class="flex items-center gap-2 self-center font-medium"
+                class="mb-8 flex items-center justify-center font-medium"
             >
-                <div class="flex items-center justify-center">
-                    <AppLogoIcon />
-                </div>
+                <AppLogoIcon class="h-28 w-auto max-w-full object-contain sm:h-32" />
             </Link>
 
-            <div class="flex flex-col gap-6">
-                <Card class="rounded-xl">
+            <div class="flex w-full flex-col">
+                <div
+                    v-if="$slots.banner"
+                    class="flex items-center justify-center gap-2 rounded-t-xl bg-yellow-100 px-4 py-3 text-center text-sm font-medium text-yellow-800"
+                >
+                    <slot name="banner" />
+                </div>
+                <Card
+                    :class="
+                        $slots.banner
+                            ? 'rounded-t-none rounded-b-xl'
+                            : 'rounded-xl'
+                    "
+                >
                     <CardHeader class="px-10 pt-8 pb-0 text-center">
                         <CardTitle class="text-xl">{{ title }}</CardTitle>
                         <CardDescription>

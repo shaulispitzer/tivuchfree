@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { CircleCheck, Pencil, RefreshCw, Trash2 } from 'lucide-vue-next';
 import type { PropType } from 'vue';
 
-import { destroy, edit } from '@/routes/admin/properties';
+import { destroy, edit, markTivuchFee } from '@/routes/admin/properties';
 import { markAsTaken, repost } from '@/routes/my-properties';
 import PepiconsPopDotsY from '~icons/pepicons-pop/dots-y';
 
@@ -15,7 +15,9 @@ type PropertyRow = {
     bedrooms: number;
     type: string;
     taken: boolean;
+    tivuch_fee: boolean;
     reported_taken_at: string | null;
+    reported_tivuch_fee_at: string | null;
     user: {
         name: string;
         email: string;
@@ -37,6 +39,7 @@ const markAsTakenModalPropertyId = ref<number | null>(null);
 const feedbackSource = ref<string | null>(null);
 const feedbackPrice = ref('');
 const markingAsTaken = ref(false);
+const markingTivuchFeeId = ref<number | null>(null);
 const markAsTakenThenDelete = ref(false);
 
 const feedbackOptions = [
@@ -114,6 +117,18 @@ function handleRepost(propertyId: number) {
         {},
         {
             preserveScroll: true,
+        },
+    );
+}
+
+function handleMarkTivuchFee(propertyId: number) {
+    markingTivuchFeeId.value = propertyId;
+    router.patch(
+        markTivuchFee(propertyId).url,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => (markingTivuchFeeId.value = null),
         },
     );
 }
@@ -213,6 +228,21 @@ function handleConfirmDelete() {
                                 >
                                     {{ t('common.reportedTaken') }}
                                 </span>
+                                <span
+                                    v-if="property.tivuch_fee"
+                                    class="inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                                >
+                                    {{ t('common.tivuchFee') }}
+                                </span>
+                                <span
+                                    v-else-if="
+                                        property.reported_tivuch_fee_at &&
+                                        !property.tivuch_fee
+                                    "
+                                    class="inline-flex shrink-0 items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800"
+                                >
+                                    {{ t('common.reportedTivuchFee') }}
+                                </span>
                             </div>
                         </td>
                         <td class="px-4 py-3">
@@ -271,6 +301,21 @@ function handleConfirmDelete() {
                                         >
                                             <CircleCheck class="mr-2 size-4" />
                                             {{ t('common.markAsTaken') }}
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuItem
+                                            v-if="!property.tivuch_fee"
+                                            class="cursor-pointer"
+                                            :disabled="
+                                                markingTivuchFeeId ===
+                                                property.id
+                                            "
+                                            @click="
+                                                handleMarkTivuchFee(property.id)
+                                            "
+                                        >
+                                            <CircleCheck class="mr-2 size-4" />
+                                            {{ t('common.markAsTivuchFee') }}
                                         </DropdownMenuItem>
 
                                         <DropdownMenuSeparator />

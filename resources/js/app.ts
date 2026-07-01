@@ -61,7 +61,6 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         setI18nLocale(getInitialLocale(props));
 
-        // #region agent log
         router.on('success', (event) => {
             const locale = normalizeLocale(
                 (event.detail.page.props as { locale?: string }).locale,

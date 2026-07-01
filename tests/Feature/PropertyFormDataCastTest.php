@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Models\Property;
@@ -14,7 +13,7 @@ test('property store accepts empty image_media_ids', function () {
     $user = User::factory()->create();
 
     $street = Street::factory()->create([
-        'neighbourhood' => Neighbourhood::Sanhedria,
+        'neighbourhood_id' => neighbourhoodId(),
     ]);
 
     $response = actingAs($user)->post(route('properties.store'), [
@@ -29,23 +28,22 @@ test('property store accepts empty image_media_ids', function () {
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId()],
         'street' => $street->id,
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => now()->toIso8601String(),
         'available_to' => null,
         'bedrooms' => 1,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::NotFurnished->value,
         'image_media_ids' => [],
-        'temp_upload_id' => null,
-        'main_image_media_id' => null,
     ]);
 
-    $response->assertSessionHasNoErrors();
+    $response->assertRedirect();
 
-    $property = Property::query()->latest()->first();
-
-    expect($property)->not->toBeNull();
-    $response->assertRedirect(route('properties.index'));
+    expect(Property::query()->count())->toBe(1);
 });

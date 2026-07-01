@@ -17,7 +17,7 @@ const props = defineProps({
         required: true,
     },
     neighbourhood_options: {
-        type: Array as PropType<string[]>,
+        type: Array as PropType<Option[]>,
         required: true,
     },
     furnished_options: {

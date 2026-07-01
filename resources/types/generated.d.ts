@@ -9,6 +9,7 @@ contact_name: string | null;
 contact_phone: string | null;
 contact_phone_2: string | null;
 neighbourhoods: Array<any>;
+neighbourhood_labels: Array<any>;
 price: number | null;
 street: string;
 lat: number | null;
@@ -23,6 +24,7 @@ square_meter: number | null;
 views: number;
 furnished: App.Enums.PropertyFurnished;
 taken: boolean;
+tivuch_fee: boolean;
 bathrooms: number | null;
 access: App.Enums.PropertyAccess | null;
 kitchen_dining_room: App.Enums.PropertyKitchenDiningRoom | null;
@@ -112,10 +114,9 @@ locale: string | null;
 };
 }
 declare namespace App.Enums {
+export type Locale = 'en' | 'he';
 export type PropertyOptionLabel = {
 };
-export type Locale = 'en' | 'he';
-export type Neighbourhood = 'Sanhedria' | 'Sanhedria Murchavet' | 'Bar Ilan' | 'Gush 80' | 'Belz' | 'Romema' | 'Sorotzkin' | 'Mekor Baruch' | 'Geula' | 'Givat Shaul' | 'Har Nof' | 'Ramat Eshkol';
 export type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'default';
 export type PropertyAccess = 'step_free_access' | 'steps_only' | 'elevator_non_shabbos' | 'elevator_shabbos';
 export type PropertyAirConditioning = 'fully_airconditioned' | 'partly_airconditioned' | 'not_airconditioned';

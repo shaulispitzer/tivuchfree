@@ -9,6 +9,7 @@ use App\Mail\PropertySubscriptionConfirmation;
 use App\Mail\PropertySubscriptionOtp;
 use App\Models\PropertySubscription;
 use App\Models\PropertySubscriptionPending;
+use App\Services\PropertySubscriptionFormData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -27,18 +28,7 @@ class PropertySubscriptionController extends Controller
                 'email' => $user->email,
             ] : null,
             'subscription_otp_pending' => session('subscription_otp_pending'),
-            'neighbourhood_options' => array_map(
-                fn ($n) => $n->value,
-                \App\Enums\Neighbourhood::cases(),
-            ),
-            'furnished_options' => array_map(
-                fn ($f) => ['value' => $f->value, 'label' => $f->label()],
-                \App\Enums\PropertyFurnished::cases(),
-            ),
-            'type_options' => array_map(
-                fn ($t) => ['value' => $t->value, 'label' => $t->label()],
-                \App\Enums\PropertyLeaseType::cases(),
-            ),
+            ...PropertySubscriptionFormData::options(),
         ]);
     }
 
@@ -49,7 +39,7 @@ class PropertySubscriptionController extends Controller
 
         $existing = PropertySubscription::query()
             ->where('email', $email)
-            ->whereNull('unsubscribed_at')
+            ->whereNull('unsubscribed_at', 'and', false)
             // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->first();
 
@@ -108,13 +98,13 @@ class PropertySubscriptionController extends Controller
 
         $existing = PropertySubscription::query()
             ->where('email', $pending->email)
-            ->whereNull('unsubscribed_at')
+            ->whereNull('unsubscribed_at', 'and', false)
             // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->first();
 
         if ($existing) {
             $existing->update(['filters' => $pending->filters]);
-            $pending->delete();
+            PropertySubscriptionPending::destroy($pending->getKey());
 
             return redirect()->route('properties.index')->success(__('subscription.filtersUpdated'));
         }
@@ -128,7 +118,7 @@ class PropertySubscriptionController extends Controller
             'expires_at' => null, // Permanent; change back to addDays(30) to re-enable expiry
         ]);
 
-        $pending->delete();
+        PropertySubscriptionPending::destroy($pending->getKey());
 
         Mail::to($subscription->email)->locale('en')->send(new PropertySubscriptionConfirmation(
             subscription: $subscription,
@@ -143,7 +133,7 @@ class PropertySubscriptionController extends Controller
     {
         $subscription = PropertySubscription::query()
             ->where('token', $token)
-            ->whereNull('unsubscribed_at')
+            ->whereNull('unsubscribed_at', 'and', false)
             ->firstOrFail();
 
         if (request()->has('confirm') && request()->boolean('confirm')) {
@@ -162,7 +152,7 @@ class PropertySubscriptionController extends Controller
     {
         $subscription = PropertySubscription::query()
             ->where('token', $token)
-            ->whereNull('unsubscribed_at')
+            ->whereNull('unsubscribed_at', 'and', false)
             ->firstOrFail();
 
         $subscription->update(['unsubscribed_at' => now()]);
@@ -174,7 +164,7 @@ class PropertySubscriptionController extends Controller
     {
         $subscription = PropertySubscription::query()
             ->where('token', $token)
-            ->whereNull('unsubscribed_at')
+            ->whereNull('unsubscribed_at', 'and', false)
             // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->firstOrFail();
 
@@ -182,20 +172,9 @@ class PropertySubscriptionController extends Controller
             'subscription' => [
                 'token' => $subscription->token,
                 'email' => $subscription->email,
-                'filters' => $this->filtersToFrontend($subscription->filters),
+                'filters' => PropertySubscriptionFormData::filtersToFrontend($subscription->filters),
             ],
-            'neighbourhood_options' => array_map(
-                fn ($n) => $n->value,
-                \App\Enums\Neighbourhood::cases(),
-            ),
-            'furnished_options' => array_map(
-                fn ($f) => ['value' => $f->value, 'label' => $f->label()],
-                \App\Enums\PropertyFurnished::cases(),
-            ),
-            'type_options' => array_map(
-                fn ($t) => ['value' => $t->value, 'label' => $t->label()],
-                \App\Enums\PropertyLeaseType::cases(),
-            ),
+            ...PropertySubscriptionFormData::options(),
         ]);
     }
 
@@ -203,40 +182,12 @@ class PropertySubscriptionController extends Controller
     {
         $subscription = PropertySubscription::query()
             ->where('token', $token)
-            ->whereNull('unsubscribed_at')
+            ->whereNull('unsubscribed_at', 'and', false)
             // ->where('expires_at', '>', now()) // Re-enable for 30-day expiry
             ->firstOrFail();
 
         $subscription->update(['filters' => $request->filtersForStorage()]);
 
         return redirect()->route('properties.index')->success(__('subscription.filtersUpdated'));
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     * @return array<string, mixed>
-     */
-    private function filtersToFrontend(array $filters): array
-    {
-        $min = $filters['bedrooms_min'] ?? 1;
-        $max = $filters['bedrooms_max'] ?? 10;
-
-        $neighbourhoods = $filters['neighbourhoods'] ?? null;
-        if (is_array($neighbourhoods)) {
-            $neighbourhoods = array_values($neighbourhoods);
-        } else {
-            $legacy = $filters['neighbourhood'] ?? null;
-            $neighbourhoods = is_string($legacy) && $legacy !== '' ? [$legacy] : [];
-        }
-
-        return [
-            'neighbourhoods' => $neighbourhoods,
-            'hide_taken_properties' => ($filters['availability'] ?? 'all') === 'available',
-            'bedrooms_range' => [min($min, $max), max($min, $max)],
-            'furnished' => $filters['furnished'] ?? '',
-            'type' => $filters['type'] ?? '',
-            'available_from' => $filters['available_from'] ?? '',
-            'available_to' => $filters['available_to'] ?? '',
-        ];
     }
 }

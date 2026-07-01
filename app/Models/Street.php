@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\Neighbourhood;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Translatable\HasTranslations;
 
 class Street extends Model
@@ -19,18 +19,13 @@ class Street extends Model
      */
     protected $fillable = [
         'name',
-        'neighbourhood',
+        'neighbourhood_id',
     ];
 
     public array $translatable = ['name'];
 
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function neighbourhood(): BelongsTo
     {
-        return [
-            'neighbourhood' => Neighbourhood::class,
-        ];
+        return $this->belongsTo(Neighbourhood::class);
     }
 }

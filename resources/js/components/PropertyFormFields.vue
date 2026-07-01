@@ -22,7 +22,7 @@ type PropertyFormOptions = {
 };
 
 type Property = {
-    neighbourhoods: string[];
+    neighbourhoods: number[];
     price: number | null;
     street: string;
     building_number: string | null;
@@ -78,7 +78,7 @@ const toDateValue = (value?: string | null) =>
                     :key="option.value"
                     :value="option.value"
                     :selected="
-                        props.property?.neighbourhoods?.includes(
+                        props.property?.neighbourhoods?.map(String).includes(
                             option.value,
                         ) ?? false
                     "

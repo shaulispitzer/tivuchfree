@@ -18,8 +18,8 @@ import { useToast } from 'vue-toastification';
 
 import { router } from '@inertiajs/vue3';
 import { cn } from '@/lib/utils';
-import { index as adminPropertiesIndex } from '@/routes/admin/properties';
-import { destroy, markAsTaken } from '@/routes/my-properties';
+import { index as adminPropertiesIndex, markTivuchFee } from '@/routes/admin/properties';
+import { destroy, markAsTaken, repost } from '@/routes/my-properties';
 import { index, update } from '@/routes/properties';
 
 const { t } = useI18n();
@@ -187,7 +187,7 @@ const translatedLeaseTypes = computed(() =>
 const translatedNeighbourhoods = computed(() =>
     props.options.neighbourhoods.map((option) => ({
         value: option.value,
-        label: t(`neighbourhood.${option.value.replaceAll(' ', '')}`),
+        label: option.label,
     })),
 );
 
@@ -663,6 +663,7 @@ const deleteModalOpen = ref(false);
 const feedbackSource = ref<string | null>(null);
 const feedbackPrice = ref('');
 const markingAsTaken = ref(false);
+const markingTivuchFee = ref(false);
 const deletingId = ref<number | null>(null);
 const markAsTakenThenDelete = ref(false);
 
@@ -733,6 +734,20 @@ function handleMarkAsTaken(): void {
     );
 }
 
+function handleMarkAsNotTaken(): void {
+    markingAsTaken.value = true;
+    router.patch(
+        repost(props.property.id).url,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                markingAsTaken.value = false;
+            },
+        },
+    );
+}
+
 function handleConfirmDelete(): void {
     const propertyId = props.property.id;
     deletingId.value = propertyId;
@@ -741,6 +756,20 @@ function handleConfirmDelete(): void {
         onSuccess: () => (deleteModalOpen.value = false),
         onFinish: () => (deletingId.value = null),
     });
+}
+
+function handleMarkTivuchFee(tivuchFee = true): void {
+    markingTivuchFee.value = true;
+    router.patch(
+        markTivuchFee(props.property.id).url,
+        {
+            tivuch_fee: tivuchFee,
+        },
+        {
+            preserveScroll: true,
+            onFinish: () => (markingTivuchFee.value = false),
+        },
+    );
 }
 </script>
 
@@ -774,6 +803,59 @@ function handleConfirmDelete(): void {
                     >
                 </Button>
             </div>
+        </div>
+
+        <div
+            v-if="adminEdit"
+            class="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3"
+        >
+            <span class="text-sm font-medium text-amber-900">
+                {{ t('common.adminActions') }}
+            </span>
+            <Button
+                v-if="!property.taken"
+                size="sm"
+                type="button"
+                variant="secondary"
+                :disabled="markingAsTaken || markingTivuchFee"
+                @click="openMarkAsTakenModal"
+            >
+                <CircleCheck class="mr-2 size-4" />
+                {{ t('common.markAsTaken') }}
+            </Button>
+            <Button
+                v-else
+                size="sm"
+                type="button"
+                variant="secondary"
+                :disabled="markingAsTaken || markingTivuchFee"
+                @click="handleMarkAsNotTaken"
+            >
+                <CircleCheck class="mr-2 size-4" />
+                {{ t('common.markAsNotTaken') }}
+            </Button>
+            <Button
+                v-if="!property.tivuch_fee"
+                size="sm"
+                type="button"
+                variant="secondary"
+                :disabled="markingAsTaken || markingTivuchFee"
+                @click="handleMarkTivuchFee"
+            >
+                <CircleCheck class="mr-2 size-4" />
+                {{ t('common.markAsTivuchFee') }}
+            </Button>
+            <Button
+                v-else
+                size="sm"
+                type="button"
+                variant="secondary"
+                :disabled="markingAsTaken || markingTivuchFee"
+                @click="handleMarkTivuchFee(false)"
+            >
+                <CircleCheck class="mr-2 size-4" />
+                {{ t('common.markAsNotTivuchFee') }}
+            </Button>
         </div>
 
         <div
@@ -843,7 +925,10 @@ function handleConfirmDelete(): void {
                     </p>
                 </div>
                 <Button
-                    v-if="lifecycle.next_action === 'marked_as_taken'"
+                    v-if="
+                        lifecycle.next_action === 'marked_as_taken' &&
+                        !adminEdit
+                    "
                     size="sm"
                     variant="secondary"
                     class="shrink-0"

@@ -3,16 +3,22 @@ import { Link, router } from '@inertiajs/vue3';
 import {
     BarChart3,
     Building2,
+    Bell,
     LayoutDashboard,
     LogOut,
+    MapPinned,
     MessageSquare,
+    Signpost,
     Users,
 } from 'lucide-vue-next';
 
 import { logout } from '@/routes';
+import { index as adminNeighbourhoodsIndex } from '@/routes/admin/neighbourhoods';
+import { index as adminStreetsIndex } from '@/routes/admin/streets';
 import { index as adminPropertiesIndex } from '@/routes/admin/properties';
 import { index as adminPropertyStatsIndex } from '@/routes/admin/property-stats';
 import { index as adminReviewsIndex } from '@/routes/admin/reviews';
+import { index as adminSubscriptionsIndex } from '@/routes/admin/subscriptions';
 import { index as adminUsersIndex } from '@/routes/admin/users';
 import { index as myPropertiesIndex } from '@/routes/my-properties';
 
@@ -60,11 +66,41 @@ defineProps<Props>();
         <DropdownMenuItem v-if="user.is_admin" :as-child="true">
             <Link
                 class="block w-full cursor-pointer"
+                :href="adminNeighbourhoodsIndex()"
+                prefetch
+            >
+                <MapPinned class="mr-2 h-4 w-4" />
+                {{ t('common.admin') }} - {{ t('common.neighbourhood', 2) }}
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="adminStreetsIndex()"
+                prefetch
+            >
+                <Signpost class="mr-2 h-4 w-4" />
+                {{ t('common.admin') }} - {{ t('common.street', 2) }}
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
                 :href="adminUsersIndex()"
                 prefetch
             >
                 <Users class="mr-2 h-4 w-4" />
                 {{ t('common.admin') }} - {{ t('common.user', 2) }}
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="adminSubscriptionsIndex()"
+                prefetch
+            >
+                <Bell class="mr-2 h-4 w-4" />
+                {{ t('common.admin') }} - {{ t('common.subscriptions') }}
             </Link>
         </DropdownMenuItem>
         <DropdownMenuItem v-if="user.is_admin" :as-child="true">

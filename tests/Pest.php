@@ -41,7 +41,20 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function neighbourhoodId(string $englishName = 'Sanhedria'): int
 {
-    // ..
+    return (int) \App\Models\Neighbourhood::query()
+        ->where('name->en', $englishName)
+        ->value('id');
+}
+
+function streetIdForNeighbourhoodName(string $englishName = 'Sanhedria'): int
+{
+    return \App\Models\Street::factory()->create([
+        'name' => [
+            'en' => 'Test Street',
+            'he' => 'רחוב בדיקה',
+        ],
+        'neighbourhood_id' => neighbourhoodId($englishName),
+    ])->id;
 }

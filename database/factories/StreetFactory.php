@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\Neighbourhood;
+use App\Models\Neighbourhood;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,7 +22,7 @@ class StreetFactory extends Factory
                 'en' => fake()->streetName(),
                 'he' => fake()->streetName(),
             ],
-            'neighbourhood' => fake()->randomElement(Neighbourhood::values()),
+            'neighbourhood_id' => Neighbourhood::factory(),
         ];
     }
 }

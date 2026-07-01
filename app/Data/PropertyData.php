@@ -9,6 +9,7 @@ use App\Enums\PropertyFurnished;
 use App\Enums\PropertyKitchenDiningRoom;
 use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
+use App\Models\Neighbourhood;
 use App\Models\Property;
 use Carbon\CarbonInterface;
 use Spatie\LaravelData\Data;
@@ -19,7 +20,8 @@ class PropertyData extends Data
     /**
      * @param  array<int, string>  $image_urls
      * @param  array<int, string>  $image_thumb_urls
-     * @param  array<int, string>  $neighbourhoods
+     * @param  array<int, int>  $neighbourhoods
+     * @param  array<int, string>  $neighbourhood_labels
      */
     public function __construct(
         public int $id,
@@ -28,6 +30,7 @@ class PropertyData extends Data
         public ?string $contact_phone,
         public ?string $contact_phone_2,
         public array $neighbourhoods,
+        public array $neighbourhood_labels,
         public ?float $price,
         public string $street,
         public ?float $lat,
@@ -42,6 +45,7 @@ class PropertyData extends Data
         public int $views,
         public PropertyFurnished $furnished,
         public bool $taken,
+        public bool $tivuch_fee,
         public ?int $bathrooms,
         public ?PropertyAccess $access,
         public ?PropertyKitchenDiningRoom $kitchen_dining_room,
@@ -66,13 +70,18 @@ class PropertyData extends Data
         Property $property,
 
     ): self {
+        $neighbourhoodIds = is_array($property->neighbourhoods)
+            ? array_values(array_map(static fn (mixed $id): int => (int) $id, $property->neighbourhoods))
+            : [];
+
         return new self(
             id: $property->id,
             user_id: $property->user_id,
             contact_name: $property->contact_name ?? null,
             contact_phone: $property->contact_phone ?? null,
             contact_phone_2: $property->contact_phone_2 ?? null,
-            neighbourhoods: $property->neighbourhoods ?? [],
+            neighbourhoods: $neighbourhoodIds,
+            neighbourhood_labels: Neighbourhood::labelsForIds($neighbourhoodIds),
             price: $property->price !== null ? (float) $property->price : null,
             street: $property->street,
             lat: $property->lat !== null ? (float) $property->lat : null,
@@ -87,6 +96,7 @@ class PropertyData extends Data
             views: $property->views,
             furnished: $property->furnished,
             taken: $property->taken,
+            tivuch_fee: $property->tivuch_fee,
             bathrooms: $property->bathrooms,
             access: $property->access,
             kitchen_dining_room: $property->kitchen_dining_room,

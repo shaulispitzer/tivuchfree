@@ -9,7 +9,7 @@ A new property has been posted that matches your subscription filters.
 
 **Street:** {{ $property->street }}
 
-**Neighbourhoods:** {{ is_array($property->neighbourhoods) ? implode(', ', array_map(fn ($n) => \App\Enums\Neighbourhood::tryFrom($n)?->label() ?? $n, $property->neighbourhoods)) : '' }}
+**Neighbourhoods:** {{ is_array($property->neighbourhoods) ? implode(', ', \App\Models\Neighbourhood::labelsForIds(array_map(static fn ($id) => (int) $id, $property->neighbourhoods))) : '' }}
 
 **Type:** {{ $property->type?->label() ?? 'not specified' }}
 

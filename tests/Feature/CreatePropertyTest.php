@@ -1,8 +1,8 @@
 <?php
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
+use App\Jobs\ProcessNewPropertyListing;
 use App\Jobs\TranslatePropertyAdditionalInfo;
 use App\Models\Property;
 use App\Models\Street;
@@ -25,17 +25,6 @@ beforeEach(function () {
         $mock->shouldReceive('geocode')->andReturn(null);
     });
 });
-
-function streetIdForNeighbourhood(Neighbourhood $neighbourhood): int
-{
-    return Street::factory()->create([
-        'name' => [
-            'en' => 'Test Street',
-            'he' => 'רחוב בדיקה',
-        ],
-        'neighbourhood' => $neighbourhood,
-    ])->id;
-}
 
 it('creates a property without images', function () {
     mock(PropertyGeocoder::class, function (MockInterface $mock): void {
@@ -62,12 +51,16 @@ it('creates a property without images', function () {
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId()],
+        'street' => streetIdForNeighbourhoodName(),
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::FullyFurnished->value,
     ]);
 
@@ -119,12 +112,16 @@ it('stores additional info immediately and translates asynchronously when creati
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId()],
+        'street' => streetIdForNeighbourhoodName(),
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::FullyFurnished->value,
         'additional_info' => 'Bright apartment close to transit.',
     ]);
@@ -137,9 +134,9 @@ it('stores additional info immediately and translates asynchronously when creati
     expect($property->getTranslation('additional_info', 'en'))->toBe('Bright apartment close to transit.');
     expect($property->getTranslation('additional_info', 'he'))->toBe('Bright apartment close to transit.');
 
-    Bus::assertDispatched(TranslatePropertyAdditionalInfo::class, function (TranslatePropertyAdditionalInfo $job) use ($property) {
+    Bus::assertDispatched(ProcessNewPropertyListing::class, function (ProcessNewPropertyListing $job) use ($property) {
         return $job->property->id === $property->id
-            && $job->sourceText === 'Bright apartment close to transit.'
+            && $job->additionalInfo === 'Bright apartment close to transit.'
             && $job->sourceLocale === 'en';
     });
 
@@ -179,12 +176,16 @@ it('stores same additional info in both languages when creating and keeps it whe
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId()],
+        'street' => streetIdForNeighbourhoodName(),
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::FullyFurnished->value,
         'additional_info' => 'דירה קרובה לפארק',
     ]);
@@ -214,14 +215,14 @@ it('updates additional info and translates asynchronously when changing it on up
     /** @var User $user */
     $user = User::factory()->create();
 
-    $streetId = streetIdForNeighbourhood(Neighbourhood::Sanhedria);
+    $streetId = streetIdForNeighbourhoodName();
     $street = Street::query()->findOrFail($streetId);
 
     /** @var Property $property */
     $property = Property::factory()->create([
         'user_id' => $user->id,
         'street' => $street->getTranslation('name', 'he'),
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'additional_info' => [
             'en' => 'Old description.',
             'he' => 'Old description.',
@@ -240,12 +241,15 @@ it('updates additional info and translates asynchronously when changing it on up
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'street' => $streetId,
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::FullyFurnished->value,
         'additional_info' => 'Updated description.',
     ]);
@@ -272,14 +276,14 @@ it('does not translate additional info on update when text is unchanged', functi
     /** @var User $user */
     $user = User::factory()->create();
 
-    $streetId = streetIdForNeighbourhood(Neighbourhood::Sanhedria);
+    $streetId = streetIdForNeighbourhoodName();
     $street = Street::query()->findOrFail($streetId);
 
     /** @var Property $property */
     $property = Property::factory()->create([
         'user_id' => $user->id,
         'street' => $street->getTranslation('name', 'he'),
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'additional_info' => [
             'en' => 'Same description.',
             'he' => 'Same description.',
@@ -298,12 +302,15 @@ it('does not translate additional info on update when text is unchanged', functi
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'street' => $streetId,
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::FullyFurnished->value,
         'additional_info' => 'Same description.',
     ]);
@@ -333,12 +340,16 @@ it('still creates a property when geocoding fails', function () {
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId()],
+        'street' => streetIdForNeighbourhoodName(),
         'floor' => 2,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::FullyFurnished->value,
     ]);
 
@@ -366,12 +377,16 @@ it('stores bedrooms with one decimal place', function () {
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Gush80->value, Neighbourhood::BarIlan->value],
-        'street' => streetIdForNeighbourhood(Neighbourhood::Gush80),
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId('Gush 80'), neighbourhoodId('Bar Ilan')],
+        'street' => streetIdForNeighbourhoodName('Gush 80'),
         'floor' => 4.5,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 1.5,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::NotFurnished->value,
     ]);
 
@@ -400,12 +415,16 @@ it('allows creating a property with a negative floor', function () {
         'has_dud_shemesh' => false,
         'has_machsan' => false,
         'has_parking_spot' => false,
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-        'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+        'confirm_no_tivuch_fee' => true,
+        'neighbourhoods' => [neighbourhoodId()],
+        'street' => streetIdForNeighbourhoodName(),
         'floor' => -1,
         'type' => PropertyLeaseType::LongTerm->value,
         'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
         'bedrooms' => 2,
+        'price' => 5000,
+        'square_meter' => 80,
+        'bathrooms' => 1,
         'furnished' => PropertyFurnished::NotFurnished->value,
     ]);
 
@@ -435,12 +454,15 @@ it('rejects non-numeric floor values', function () {
             'has_dud_shemesh' => false,
             'has_machsan' => false,
             'has_parking_spot' => false,
-            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
-            'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+            'neighbourhoods' => [neighbourhoodId()],
+            'street' => streetIdForNeighbourhoodName(),
             'floor' => 'second',
             'type' => PropertyLeaseType::LongTerm->value,
             'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
             'bedrooms' => 2,
+            'price' => 5000,
+            'square_meter' => 80,
+            'bathrooms' => 1,
             'furnished' => PropertyFurnished::NotFurnished->value,
         ]);
 
@@ -467,21 +489,84 @@ it('validates that no more than three neighbourhoods can be selected', function 
             'has_dud_shemesh' => false,
             'has_machsan' => false,
             'has_parking_spot' => false,
+            'confirm_no_tivuch_fee' => true,
             'neighbourhoods' => [
-                Neighbourhood::Sanhedria->value,
-                Neighbourhood::BarIlan->value,
-                Neighbourhood::Gush80->value,
-                Neighbourhood::Geula->value,
+                neighbourhoodId(),
+                neighbourhoodId('Bar Ilan'),
+                neighbourhoodId('Gush 80'),
+                neighbourhoodId('Geula'),
             ],
-            'street' => streetIdForNeighbourhood(Neighbourhood::Sanhedria),
+            'street' => streetIdForNeighbourhoodName(),
             'floor' => 1,
             'type' => PropertyLeaseType::LongTerm->value,
             'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
             'bedrooms' => 2,
+            'price' => 5000,
+            'square_meter' => 80,
+            'bathrooms' => 1,
             'furnished' => PropertyFurnished::NotFurnished->value,
         ]);
 
     $response
         ->assertRedirect(route('properties.create'))
         ->assertSessionHasErrors(['neighbourhoods']);
+});
+
+it('requires price, square meter, and bathrooms when creating a property', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    $response = actingAs($user)
+        ->from(route('properties.create'))
+        ->post(route('properties.store'), [
+            'contact_name' => 'Required Details Contact',
+            'contact_phone' => '0500000006',
+            'access' => 'steps_only',
+            'kitchen_dining_room' => 'separate',
+            'porch_garden' => 'no',
+            'air_conditioning' => 'not_airconditioned',
+            'apartment_condition' => 'good',
+            'succah_porch' => false,
+            'has_dud_shemesh' => false,
+            'has_machsan' => false,
+            'has_parking_spot' => false,
+            'confirm_no_tivuch_fee' => true,
+            'neighbourhoods' => [neighbourhoodId()],
+            'street' => streetIdForNeighbourhoodName(),
+            'floor' => 2,
+            'type' => PropertyLeaseType::LongTerm->value,
+            'available_from' => Carbon::parse('2024-01-01')->toIso8601String(),
+            'bedrooms' => 2,
+            'furnished' => PropertyFurnished::FullyFurnished->value,
+        ]);
+
+    $response
+        ->assertRedirect(route('properties.create'))
+        ->assertSessionHasErrors(['price', 'square_meter', 'bathrooms']);
+});
+
+it('indicates when the user has no existing listings on the create page', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    actingAs($user)
+        ->get(route('properties.create'))
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page
+            ->component('properties/Create')
+            ->where('hasExistingListings', false));
+});
+
+it('indicates when the user already has listings on the create page', function () {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    Property::factory()->create(['user_id' => $user->id]);
+
+    actingAs($user)
+        ->get(route('properties.create'))
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page
+            ->component('properties/Create')
+            ->where('hasExistingListings', true));
 });

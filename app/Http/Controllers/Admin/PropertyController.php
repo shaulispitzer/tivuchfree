@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Data\PropertyData;
 use App\Data\PropertyFormOptionsData;
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyAccess;
 use App\Enums\PropertyAirConditioning;
 use App\Enums\PropertyApartmentCondition;
@@ -14,8 +13,10 @@ use App\Enums\PropertyLeaseType;
 use App\Enums\PropertyPorchGarden;
 use App\Http\Controllers\Controller;
 use App\Mail\PropertyListingStatusChange;
+use App\Models\Neighbourhood;
 use App\Models\Property;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,7 +40,9 @@ class PropertyController extends Controller
                 'bedrooms' => $property->bedrooms,
                 'type' => $property->type?->value,
                 'taken' => $property->taken,
+                'tivuch_fee' => $property->tivuch_fee,
                 'reported_taken_at' => $property->reported_taken_at?->toDateTimeString(),
+                'reported_tivuch_fee_at' => $property->reported_tivuch_fee_at?->toDateTimeString(),
                 'user' => [
                     'name' => $property->user?->name,
                     'email' => $property->user?->email,
@@ -69,9 +72,27 @@ class PropertyController extends Controller
             ));
         }
 
-        $property->delete();
+        Property::destroy($property->getKey());
 
-        return redirect()->route('admin.properties.index')->success('Property deleted successfully');
+        return redirect()->route('admin.properties.index', [])->success('Property deleted successfully');
+    }
+
+    public function markTivuchFee(Request $request, Property $property): RedirectResponse
+    {
+        $this->authorize('update', $property);
+
+        $validated = $request->validate([
+            'tivuch_fee' => ['sometimes', 'boolean'],
+        ]);
+
+        $tivuchFee = $validated['tivuch_fee'] ?? true;
+
+        $property->forceFill([
+            'tivuch_fee' => $tivuchFee,
+            'reported_tivuch_fee_at' => $tivuchFee ? null : $property->reported_tivuch_fee_at,
+        ])->save();
+
+        return back()->success($tivuchFee ? 'Property marked as tivuch fee' : 'Property marked as not tivuch fee');
     }
 
     /**
@@ -124,7 +145,7 @@ class PropertyController extends Controller
     private function formOptions(): PropertyFormOptionsData
     {
         return PropertyFormOptionsData::fromEnums(
-            Neighbourhood::cases(),
+            Neighbourhood::optionData(),
             PropertyLeaseType::cases(),
             PropertyFurnished::cases(),
             PropertyAccess::cases(),

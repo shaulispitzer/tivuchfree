@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Neighbourhood;
 use App\Enums\PropertyFurnished;
 use App\Enums\PropertyLeaseType;
 use App\Jobs\NotifyPropertySubscribers;
@@ -23,7 +22,7 @@ test('logged-in user can subscribe to property updates', function () {
 
     $response = $this->actingAs($user)->post(route('property-subscriptions.store'), [
         'filters' => [
-            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+            'neighbourhoods' => [neighbourhoodId()],
             'hide_taken_properties' => false,
             'bedrooms_range' => [2, 4],
             'furnished' => '',
@@ -106,7 +105,7 @@ test('existing subscriber can update filters', function () {
         'email' => $user->email,
         'user_id' => $user->id,
         'filters' => [
-            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+            'neighbourhoods' => [neighbourhoodId()],
             'availability' => 'all',
             'bedrooms_min' => 1,
             'bedrooms_max' => 10,
@@ -122,7 +121,7 @@ test('existing subscriber can update filters', function () {
 
     $response = $this->actingAs($user)->post(route('property-subscriptions.store'), [
         'filters' => [
-            'neighbourhoods' => [Neighbourhood::Geula->value],
+            'neighbourhoods' => [neighbourhoodId('Geula')],
             'hide_taken_properties' => true,
             'bedrooms_range' => [3, 5],
             'furnished' => PropertyFurnished::FullyFurnished->value,
@@ -134,7 +133,7 @@ test('existing subscriber can update filters', function () {
 
     $response->assertRedirect(route('properties.index'));
     $subscription->refresh();
-    expect($subscription->filters['neighbourhoods'])->toEqual([Neighbourhood::Geula->value]);
+    expect($subscription->filters['neighbourhoods'])->toEqual([neighbourhoodId('Geula')]);
     expect($subscription->filters['availability'])->toBe('available');
 });
 
@@ -180,7 +179,7 @@ test('new property triggers notification to matching subscribers', function () {
         'email' => 'subscriber@example.com',
         'user_id' => null,
         'filters' => [
-            'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+            'neighbourhoods' => [neighbourhoodId()],
             'availability' => 'all',
             'bedrooms_min' => 2,
             'bedrooms_max' => 4,
@@ -195,7 +194,7 @@ test('new property triggers notification to matching subscribers', function () {
     ]);
 
     $property = Property::factory()->create([
-        'neighbourhoods' => [Neighbourhood::Sanhedria->value],
+        'neighbourhoods' => [neighbourhoodId()],
         'bedrooms' => 3,
         'taken' => false,
     ]);

@@ -14,14 +14,14 @@ type Option = {
 
 type Street = {
     id: number;
-    neighbourhood: string;
+    neighbourhood_id: number;
     name: {
         en: string;
         he: string;
     };
 };
 
-defineProps({
+const props = defineProps({
     street: {
         type: Object as PropType<Street>,
         required: true,
@@ -31,6 +31,8 @@ defineProps({
         required: true,
     },
 });
+
+const neighbourhoodId = ref(String(props.street.neighbourhood_id));
 </script>
 
 <template>
@@ -49,24 +51,27 @@ defineProps({
         v-slot="{ errors, processing }"
     >
         <div class="grid gap-2">
-            <Label for="neighbourhood">Neighbourhood</Label>
-            <select
-                id="neighbourhood"
-                name="neighbourhood"
-                required
-                class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-                :value="street.neighbourhood"
-            >
-                <option value="" disabled>Select neighbourhood</option>
-                <option
-                    v-for="option in neighbourhoods"
-                    :key="option.value"
-                    :value="option.value"
-                >
-                    {{ option.label }}
-                </option>
-            </select>
-            <InputError :message="errors.neighbourhood" />
+            <Label for="neighbourhood_id">Neighbourhood</Label>
+            <Select v-model="neighbourhoodId">
+                <SelectTrigger id="neighbourhood_id" class="w-full">
+                    <SelectValue placeholder="Select neighbourhood" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem
+                        v-for="option in neighbourhoods"
+                        :key="option.value"
+                        :value="option.value"
+                    >
+                        {{ option.label }}
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+            <input
+                type="hidden"
+                name="neighbourhood_id"
+                :value="neighbourhoodId"
+            />
+            <InputError :message="errors.neighbourhood_id" />
         </div>
 
         <div class="grid gap-2">

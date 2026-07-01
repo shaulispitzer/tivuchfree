@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Neighbourhood;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,20 +12,16 @@ class StreetUpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $street = $this->route('street');
-
-        return $this->user()?->can('update', $street) ?? false;
+        return $this->user()?->is_admin === true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'neighbourhood' => ['required', Rule::enum(Neighbourhood::class)],
+            'neighbourhood_id' => ['required', 'integer', Rule::exists('neighbourhoods', 'id')],
             'name' => ['required', 'array'],
             'name.en' => ['required', 'string', 'max:255'],
             'name.he' => ['required', 'string', 'max:255'],
