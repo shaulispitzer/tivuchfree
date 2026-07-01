@@ -584,6 +584,7 @@ test('admins can view admin properties index', function () {
             ->has('properties', 1)
             ->where('properties.0.id', $property->id)
             ->where('properties.0.street', $property->street)
+            ->where('properties.0.created_at', $property->created_at->toDateTimeString())
             ->where('properties.0.user.name', $property->user->name)
         );
 });

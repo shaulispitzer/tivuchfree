@@ -34,6 +34,7 @@ class PropertyController extends Controller
             ->get()
             ->map(fn (Property $property) => [
                 'id' => $property->id,
+                'created_at' => $property->created_at?->toDateTimeString(),
                 'street' => $property->street,
                 'building_number' => $property->building_number,
                 'floor' => $property->floor,

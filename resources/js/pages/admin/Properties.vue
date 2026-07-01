@@ -5,10 +5,13 @@ import type { PropType } from 'vue';
 
 import { destroy, edit, markTivuchFee } from '@/routes/admin/properties';
 import { markAsTaken, repost } from '@/routes/my-properties';
+import { format, formatDistanceToNow } from 'date-fns';
+import { enGB, he } from 'date-fns/locale';
 import PepiconsPopDotsY from '~icons/pepicons-pop/dots-y';
 
 type PropertyRow = {
     id: number;
+    created_at: string;
     street: string;
     building_number: number;
     floor: number;
@@ -48,6 +51,39 @@ const feedbackOptions = [
     { value: 'agent', label: 'Tivuch (agent)' },
     { value: 'other', label: 'Other' },
 ];
+
+const dateLocale = (): string | undefined =>
+    typeof document !== 'undefined' &&
+    document.documentElement?.lang?.startsWith('he')
+        ? 'he'
+        : typeof navigator !== 'undefined' &&
+            navigator.language?.startsWith('he')
+          ? 'he'
+          : undefined;
+
+function formatDateTime(
+    value: string | null,
+): { formattedDate: string; fullDate: string } | null {
+    if (!value) {
+        return null;
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    const locale = dateLocale() === 'he' ? he : enGB;
+
+    return {
+        formattedDate: formatDistanceToNow(date, {
+            addSuffix: true,
+            locale,
+        }),
+        fullDate: format(date, 'do MMM yyyy, HH:mm:ss', { locale }),
+    };
+}
 
 function openMarkAsTakenModal(propertyId: number) {
     markAsTakenThenDelete.value = false;
@@ -182,6 +218,7 @@ function handleConfirmDelete() {
                         </th>
                         <th class="px-4 py-3 text-left font-medium">Type</th>
                         <th class="px-4 py-3 text-left font-medium">Status</th>
+                        <th class="px-4 py-3 text-left font-medium">Added</th>
                         <th class="px-4 py-3 text-left font-medium">Owner</th>
                         <th class="px-4 py-3 text-right font-medium">
                             Actions
@@ -244,6 +281,35 @@ function handleConfirmDelete() {
                                     {{ t('common.reportedTivuchFee') }}
                                 </span>
                             </div>
+                        </td>
+                        <td class="px-4 py-3 text-muted-foreground">
+                            <template v-if="formatDateTime(property.created_at)">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger as-child>
+                                            <span class="cursor-help">
+                                                <span
+                                                    class="text-xs text-muted-foreground"
+                                                >
+                                                    {{
+                                                        formatDateTime(
+                                                            property.created_at,
+                                                        )!.formattedDate
+                                                    }}
+                                                </span>
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <span class="font-medium">{{
+                                                formatDateTime(
+                                                    property.created_at,
+                                                )!.fullDate
+                                            }}</span>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </template>
+                            <span v-else>—</span>
                         </td>
                         <td class="px-4 py-3">
                             <span class="font-medium">{{

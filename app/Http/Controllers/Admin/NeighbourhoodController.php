@@ -77,6 +77,6 @@ class NeighbourhoodController extends Controller
 
         Neighbourhood::destroy($neighbourhood->getKey());
 
-        return redirect()->route('admin.neighbourhoods.index', []);
+        return redirect()->route('admin.neighbourhoods.index', [])->success('Neighbourhood deleted successfully');
     }
 }
