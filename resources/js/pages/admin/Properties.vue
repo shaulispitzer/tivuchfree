@@ -208,6 +208,7 @@ function handleConfirmDelete() {
             <table class="w-full text-sm">
                 <thead class="bg-muted/50">
                     <tr>
+                        <th class="px-4 py-3 text-left font-medium">ID</th>
                         <th class="px-4 py-3 text-left font-medium">Street</th>
                         <th class="px-4 py-3 text-left font-medium">
                             Building
@@ -231,6 +232,13 @@ function handleConfirmDelete() {
                         :key="property.id"
                         class="bg-background transition-colors hover:bg-muted/30"
                     >
+                        <td class="px-4 py-3">
+                            {{
+                                property.type === 'medium_term'
+                                    ? '6' + property.id
+                                    : '1' + property.id
+                            }}
+                        </td>
                         <td class="px-4 py-3">{{ property.street }}</td>
                         <td class="px-4 py-3">
                             {{ property.building_number }}
@@ -283,7 +291,9 @@ function handleConfirmDelete() {
                             </div>
                         </td>
                         <td class="px-4 py-3 text-muted-foreground">
-                            <template v-if="formatDateTime(property.created_at)">
+                            <template
+                                v-if="formatDateTime(property.created_at)"
+                            >
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger as-child>
