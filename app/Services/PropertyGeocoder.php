@@ -36,6 +36,8 @@ class PropertyGeocoder
                     'country' => 'Israel',
                     'format' => 'json',
                     'limit' => 1,
+                    'bounded' => 1,
+                    'viewbox' => '35.06004,31.88510,35.43357,31.71119',
                 ]);
 
             if (! $response->successful()) {
