@@ -216,9 +216,8 @@ function createMarkerIcon(taken: boolean): DivIcon {
 }
 
 function propertyTooltipHtml(property: MapProperty): string {
-    const closeButton = property.taken
-        ? ''
-        : `
+    return `
+                <div class="property-map-tooltip-content${property.taken ? ' property-map-tooltip-content--taken' : ''}">
                     <button
                         type="button"
                         class="property-map-tooltip-close"
@@ -229,11 +228,6 @@ function propertyTooltipHtml(property: MapProperty): string {
                     >
                         &times;
                     </button>
-                `;
-
-    return `
-                <div class="property-map-tooltip-content${property.taken ? ' property-map-tooltip-content--taken' : ''}">
-                    ${closeButton}
                     ${
                         property.taken
                             ? `<span class="property-map-tooltip-taken">${t('common.taken')}</span>`
@@ -333,8 +327,8 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
         marker.bindTooltip(propertyTooltipHtml(property), {
             direction: 'top',
             offset: [0, 0],
-            permanent: !property.taken,
-            interactive: !property.taken,
+            permanent: true,
+            interactive: true,
             opacity: 1,
             className: property.taken
                 ? 'property-map-tooltip property-map-tooltip--taken'
@@ -582,7 +576,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.property-map-tooltip-content--taken) {
-    padding: 1.35rem 0.625rem 0.5rem;
+    padding-top: 1.35rem;
 }
 
 :deep(.property-map-tooltip-taken) {
