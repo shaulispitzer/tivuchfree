@@ -554,7 +554,8 @@ test('properties index returns paginated data', function () {
 });
 
 test('properties map view returns all filtered data with lightweight payload', function () {
-    Property::factory()->count(13)->create();
+    Property::factory()->count(12)->create();
+    Property::factory()->taken()->create();
 
     $response = $this->get(route('properties.index', [
         'view' => 'map',
@@ -567,7 +568,9 @@ test('properties map view returns all filtered data with lightweight payload', f
             ->where('filters.view', 'map')
             ->has('properties', 13)
             ->has('properties.0.id')
+            ->has('properties.0.taken')
             ->missing('properties.0.available_from')
+            ->where('properties', fn ($properties) => collect($properties)->contains('taken', true))
         );
 });
 

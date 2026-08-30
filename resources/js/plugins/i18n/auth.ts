@@ -41,6 +41,8 @@ export default {
             emailAddress: "Email address",
             emailPlaceholder: "email@example.com",
             passwordPlaceholder: "Password",
+            showPassword: "Show password",
+            hidePassword: "Hide password",
             dontHaveAccount: "Don't have an account?",
             logIn: "Log in",
 
@@ -147,6 +149,8 @@ export default {
             emailAddress: "כתובת אימייל",
             emailPlaceholder: "email@example.com",
             passwordPlaceholder: "סיסמה",
+            showPassword: "הצג סיסמה",
+            hidePassword: "הסתר סיסמה",
             dontHaveAccount: "אין לך חשבון?",
             logIn: "התחבר",
 

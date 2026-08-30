@@ -34,6 +34,7 @@ type MapProperty = {
     lat: number | null;
     lon: number | null;
     type: App.Enums.PropertyLeaseType;
+    taken: boolean;
 };
 
 const ViewMode = {
@@ -291,7 +292,7 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
         });
         marker.bindTooltip(
             `
-                <div class="property-map-tooltip-content">
+                <div class="property-map-tooltip-content${property.taken ? ' property-map-tooltip-content--taken' : ''}">
                     <button
                         type="button"
                         class="property-map-tooltip-close"
@@ -302,6 +303,11 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
                     >
                         &times;
                     </button>
+                    ${
+                        property.taken
+                            ? `<span class="property-map-tooltip-taken">${t('common.taken')}</span>`
+                            : ''
+                    }
                     <p class="property-map-tooltip-id">#${property.type === 'medium_term' ? '6' : '1'}${property.id}</p>
                     <p>${formatMapBedrooms(property.bedrooms)}</p>
                     <p>${formatMapPrice(property.price)}</p>
@@ -539,6 +545,29 @@ onBeforeUnmount(() => {
     font-size: 0.75rem;
     line-height: 1rem;
     white-space: nowrap;
+    overflow: hidden;
+}
+
+:deep(.property-map-tooltip-content--taken) {
+    padding-top: 1.35rem;
+}
+
+:deep(.property-map-tooltip-taken) {
+    position: absolute;
+    top: 0.35rem;
+    left: 50%;
+    z-index: 2;
+    border: 2px solid rgb(220 38 38);
+    border-radius: 0.15rem;
+    padding: 0.05rem 0.35rem;
+    color: rgb(220 38 38);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    user-select: none;
+    transform: translateX(-50%) rotate(-18deg);
 }
 
 :deep(.property-map-tooltip-close) {
