@@ -296,6 +296,12 @@ test('property show is returned as a modal with full details except user fields'
         ->assertJsonMissingPath('props.modal.props.property.user_id');
 });
 
+test('taken property show returns not found', function () {
+    $property = Property::factory()->taken()->create();
+
+    $this->get(route('properties.show', $property))->assertNotFound();
+});
+
 test('property show increments views on each visit', function () {
     $property = Property::factory()->create(['views' => 5]);
 

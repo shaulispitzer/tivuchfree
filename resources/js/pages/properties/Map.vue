@@ -133,6 +133,7 @@ const propertiesWithCoordinates = computed(() =>
 );
 
 let markerIcon: DivIcon | null = null;
+let takenMarkerIcon: DivIcon | null = null;
 
 function roundBedrooms(value: number): number {
     return Math.round((value + Number.EPSILON) * 2) / 2;
@@ -202,6 +203,49 @@ function formatMapBedrooms(value: number): string {
     return `${roundBedrooms(value)} ${t('common.rooms')}`;
 }
 
+function createMarkerIcon(taken: boolean): DivIcon {
+    return L.divIcon({
+        className: taken
+            ? 'property-map-marker property-map-marker--taken'
+            : 'property-map-marker',
+        html: '<span class="property-map-marker-dot"></span>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        tooltipAnchor: [0, -18],
+    });
+}
+
+function propertyTooltipHtml(property: MapProperty): string {
+    const closeButton = property.taken
+        ? ''
+        : `
+                    <button
+                        type="button"
+                        class="property-map-tooltip-close"
+                        aria-label="${t('common.closeTooltip')}"
+                        onmousedown="event.preventDefault(); event.stopPropagation();"
+                        ontouchstart="event.preventDefault(); event.stopPropagation();"
+                        onclick="event.stopPropagation(); this.closest('.leaflet-tooltip')?.remove();"
+                    >
+                        &times;
+                    </button>
+                `;
+
+    return `
+                <div class="property-map-tooltip-content${property.taken ? ' property-map-tooltip-content--taken' : ''}">
+                    ${closeButton}
+                    ${
+                        property.taken
+                            ? `<span class="property-map-tooltip-taken">${t('common.taken')}</span>`
+                            : ''
+                    }
+                    <p class="property-map-tooltip-id">#${property.type === 'medium_term' ? '6' : '1'}${property.id}</p>
+                    <p>${formatMapBedrooms(property.bedrooms)}</p>
+                    <p>${formatMapPrice(property.price)}</p>
+                </div>
+            `;
+}
+
 function openPropertyModal(propertyId: number): void {
     router.get(
         show(propertyId),
@@ -229,13 +273,8 @@ function ensureMapInitialized(): void {
     }).addTo(mapInstance.value);
 
     markerLayer.value = L.layerGroup().addTo(mapInstance.value);
-    markerIcon = L.divIcon({
-        className: 'property-map-marker',
-        html: '<span class="property-map-marker-dot"></span>',
-        iconSize: [24, 24],
-        iconAnchor: [12, 24],
-        tooltipAnchor: [0, -18],
-    });
+    markerIcon = createMarkerIcon(false);
+    takenMarkerIcon = createMarkerIcon(true);
 
     mapInstance.value.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
 }
@@ -266,7 +305,8 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
     if (
         mapInstance.value === null ||
         markerLayer.value === null ||
-        markerIcon === null
+        markerIcon === null ||
+        takenMarkerIcon === null
     ) {
         return;
     }
@@ -288,43 +328,27 @@ function renderMapMarkers(shouldFitBounds: boolean): void {
         }
 
         const marker = L.marker([property.lat, property.lon], {
-            icon: markerIcon,
+            icon: property.taken ? takenMarkerIcon : markerIcon,
         });
-        marker.bindTooltip(
-            `
-                <div class="property-map-tooltip-content${property.taken ? ' property-map-tooltip-content--taken' : ''}">
-                    <button
-                        type="button"
-                        class="property-map-tooltip-close"
-                        aria-label="${t('common.closeTooltip')}"
-                        onmousedown="event.preventDefault(); event.stopPropagation();"
-                        ontouchstart="event.preventDefault(); event.stopPropagation();"
-                        onclick="event.stopPropagation(); this.closest('.leaflet-tooltip')?.remove();"
-                    >
-                        &times;
-                    </button>
-                    ${
-                        property.taken
-                            ? `<span class="property-map-tooltip-taken">${t('common.taken')}</span>`
-                            : ''
-                    }
-                    <p class="property-map-tooltip-id">#${property.type === 'medium_term' ? '6' : '1'}${property.id}</p>
-                    <p>${formatMapBedrooms(property.bedrooms)}</p>
-                    <p>${formatMapPrice(property.price)}</p>
-                </div>
-            `,
-            {
-                direction: 'top',
-                offset: [0, 0],
-                permanent: true,
-                interactive: true,
-                opacity: 1,
-                className: 'property-map-tooltip',
-            },
-        );
+        marker.bindTooltip(propertyTooltipHtml(property), {
+            direction: 'top',
+            offset: [0, 0],
+            permanent: !property.taken,
+            interactive: !property.taken,
+            opacity: 1,
+            className: property.taken
+                ? 'property-map-tooltip property-map-tooltip--taken'
+                : 'property-map-tooltip',
+        });
 
         marker.on('tooltipopen', () => applyTooltipStackOrder(marker));
-        marker.on('click', () => openPropertyModal(property.id));
+
+        if (!property.taken) {
+            const open = (): void => openPropertyModal(property.id);
+            marker.on('click', open);
+            marker.getTooltip()?.on('click', open);
+        }
+
         marker.addTo(markerLayer.value);
         applyTooltipStackOrder(marker);
         bounds.extend([property.lat, property.lon]);
@@ -493,6 +517,10 @@ onBeforeUnmount(() => {
     border: 0;
 }
 
+:deep(.property-map-marker--taken.leaflet-interactive) {
+    cursor: default;
+}
+
 :deep(.property-map-marker-dot) {
     display: block;
     width: 24px;
@@ -509,11 +537,16 @@ onBeforeUnmount(() => {
     border-radius: 0.5rem;
     background: white;
     color: var(--primary);
+    cursor: pointer;
     box-shadow:
         0 0 0 1px rgb(15 23 42 / 0.15),
         0 2px 4px rgb(15 23 42 / 0.25),
         0 4px 12px rgb(15 23 42 / 0.45),
         0 8px 24px rgb(15 23 42 / 0.35);
+}
+
+:deep(.property-map-tooltip--taken) {
+    cursor: default;
 }
 
 :deep(.property-map-tooltip.leaflet-tooltip-top:before) {
@@ -549,7 +582,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.property-map-tooltip-content--taken) {
-    padding-top: 1.35rem;
+    padding: 1.35rem 0.625rem 0.5rem;
 }
 
 :deep(.property-map-tooltip-taken) {
