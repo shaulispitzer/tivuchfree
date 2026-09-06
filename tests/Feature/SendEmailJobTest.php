@@ -11,6 +11,7 @@ use App\Mail\WelcomeEmail;
 use App\Models\Property;
 use App\Models\PropertySubscription;
 use App\Models\User;
+use Illuminate\Queue\Middleware\RateLimited;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -213,6 +214,36 @@ test('NotifyPropertySubscribers staggers SendEmailJob dispatches at 1 per second
 
     // 3 subscriptions → delays of 0s, 1s, 2s (one per second).
     Queue::assertPushed(SendEmailJob::class, 3);
+});
+
+// ─── Retry Policy (rate-limit releases must not exhaust attempts) ─────────────
+
+test('SendEmailJob retries by time and only fails after real exceptions', function () {
+    $job = new SendEmailJob('test@example.com', new PropertySubscriptionOtp('test@example.com', '111111'));
+
+    expect($job->maxExceptions)->toBe(3)
+        ->and($job->retryUntil())->toBeInstanceOf(DateTimeInterface::class)
+        ->and($job->retryUntil()->getTimestamp())->toBeGreaterThan(now()->addHour()->getTimestamp());
+
+    $middleware = $job->middleware();
+
+    expect($middleware)->toHaveCount(1)
+        ->and($middleware[0])->toBeInstanceOf(RateLimited::class)
+        ->and($middleware[0]->releaseAfter)->toBe(2);
+});
+
+test('WelcomeEmail retries by time and only fails after real exceptions', function () {
+    $mailable = new WelcomeEmail(User::factory()->create());
+
+    expect($mailable->maxExceptions)->toBe(3)
+        ->and($mailable->retryUntil())->toBeInstanceOf(DateTimeInterface::class)
+        ->and($mailable->retryUntil()->getTimestamp())->toBeGreaterThan(now()->addHour()->getTimestamp());
+
+    $middleware = $mailable->middleware();
+
+    expect($middleware)->toHaveCount(1)
+        ->and($middleware[0])->toBeInstanceOf(RateLimited::class)
+        ->and($middleware[0]->releaseAfter)->toBe(2);
 });
 
 // ─── WelcomeEmail (ShouldQueue mailable) ─────────────────────────────────────

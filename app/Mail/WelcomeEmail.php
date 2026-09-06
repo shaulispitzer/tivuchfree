@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\User;
+use DateTimeInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -15,7 +16,20 @@ class WelcomeEmail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    /**
+     * Fail only after real send exceptions. Rate-limit releases do not count.
+     */
+    public int $maxExceptions = 3;
+
     public function __construct(public User $user) {}
+
+    /**
+     * Rate-limit releases consume attempts, so retry by time instead of a try count.
+     */
+    public function retryUntil(): DateTimeInterface
+    {
+        return now()->plus(hours: 2);
+    }
 
     public function envelope(): Envelope
     {
@@ -41,7 +55,7 @@ class WelcomeEmail extends Mailable implements ShouldQueue
      */
     public function middleware(): array
     {
-        return [new RateLimited('resend')];
+        return [(new RateLimited('resend'))->releaseAfter(2)];
     }
 
     /**

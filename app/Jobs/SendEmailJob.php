@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use DateTimeInterface;
 use Illuminate\Contracts\Mail\Mailable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -14,9 +15,9 @@ class SendEmailJob implements ShouldQueue
     use Queueable;
 
     /**
-     * Generous retry window so rate-limited releases don't exhaust attempts.
+     * Fail only after real send exceptions. Rate-limit releases do not count.
      */
-    public int $tries = 20;
+    public int $maxExceptions = 3;
 
     private readonly string $locale;
 
@@ -30,11 +31,19 @@ class SendEmailJob implements ShouldQueue
     }
 
     /**
+     * Rate-limit releases consume attempts, so retry by time instead of a try count.
+     */
+    public function retryUntil(): DateTimeInterface
+    {
+        return now()->plus(hours: 2);
+    }
+
+    /**
      * @return array<int, object>
      */
     public function middleware(): array
     {
-        return [new RateLimited('resend')];
+        return [(new RateLimited('resend'))->releaseAfter(2)];
     }
 
     public function handle(): void
