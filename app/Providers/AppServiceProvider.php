@@ -36,7 +36,12 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiters();
         $this->configureQueueEvents();
         $this->configureMailboxGate();
-        $this->ensureMailboxRoutesAreRegistered();
+
+        // Must run after the route cache is loaded; registering during boot is
+        // wiped when Laravel replaces the route collection from cache.
+        $this->app->booted(function (): void {
+            $this->ensureMailboxRoutesAreRegistered();
+        });
 
         Property::observe(PropertyObserver::class);
     }

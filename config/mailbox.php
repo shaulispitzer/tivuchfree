@@ -7,15 +7,14 @@ return [
     | Mailbox Master Switch
     |--------------------------------------------------------------------------
     |
-    | Controls whether the Mailbox transport captures outgoing mail and
-    | whether the dashboard routes are registered. When false, the package
-    | is completely inert — no capture, no HTTP endpoints. Enabled whenever
-    | MAIL_MAILER is set to "mailbox" (local / staging); leave production on
-    | a real mailer (e.g. resend) so the dashboard stays off.
+    | Always true so dashboard routes are included in `route:cache` on Laravel
+    | Cloud (build-time env may not have MAIL_MAILER=mailbox yet). Access is
+    | gated in AppServiceProvider (viewMailbox) and capture only happens when
+    | MAIL_MAILER=mailbox. Production should use a real mailer so the gate stays closed.
     |
     */
 
-    'enabled' => env('MAIL_MAILER') === 'mailbox',
+    'enabled' => true,
 
     /*
     |--------------------------------------------------------------------------
