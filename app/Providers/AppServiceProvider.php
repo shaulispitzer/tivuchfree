@@ -7,13 +7,16 @@ use App\Notifications\JobFailedNotification;
 use App\Observers\PropertyObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -41,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         // wiped when Laravel replaces the route collection from cache.
         $this->app->booted(function (): void {
             $this->ensureMailboxRoutesAreRegistered();
+            $this->ensureMailboxStorageIsReady();
         });
 
         Property::observe(PropertyObserver::class);
@@ -89,11 +93,77 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * @internal Exposes route recovery for feature tests.
+     * Create the dedicated mailbox SQLite file and run package migrations when
+     * missing. Laravel Cloud does not run `mailbox:install`, so the first visit
+     * would otherwise 500 on a missing database file.
+     */
+    protected function ensureMailboxStorageIsReady(): void
+    {
+        if (config('mail.default') !== 'mailbox') {
+            return;
+        }
+
+        if (config('mailbox.store.driver', 'sqlite') !== 'sqlite') {
+            return;
+        }
+
+        $connectionName = (string) config('mailbox.store.database.connection', 'mailbox');
+        $connection = config("database.connections.{$connectionName}");
+
+        if (! is_array($connection) || ($connection['driver'] ?? null) !== 'sqlite') {
+            return;
+        }
+
+        $dbPath = $connection['database'] ?? null;
+
+        if (! is_string($dbPath) || $dbPath === '' || $dbPath === ':memory:') {
+            return;
+        }
+
+        $directory = dirname($dbPath);
+
+        if (! File::isDirectory($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        if (! File::exists($dbPath)) {
+            File::put($dbPath, '');
+        }
+
+        $table = (string) config('mailbox.store.database.table', 'mailbox_messages');
+
+        if (Schema::connection($connectionName)->hasTable($table)) {
+            return;
+        }
+
+        $migrations = base_path('vendor/redberry/mailbox-for-laravel/database/migrations');
+
+        if (! File::isDirectory($migrations)) {
+            return;
+        }
+
+        Artisan::call('migrate', [
+            '--database' => $connectionName,
+            '--path' => $migrations,
+            '--realpath' => true,
+            '--force' => true,
+        ]);
+    }
+
+    /**
+     * @internal Exposes mailbox bootstrap helpers for feature tests.
      */
     public function registerMailboxRoutesIfMissing(): void
     {
         $this->ensureMailboxRoutesAreRegistered();
+    }
+
+    /**
+     * @internal Exposes mailbox storage bootstrap for feature tests.
+     */
+    public function prepareMailboxStorageIfNeeded(): void
+    {
+        $this->ensureMailboxStorageIsReady();
     }
 
     protected function configureDefaults(): void

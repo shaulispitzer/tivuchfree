@@ -40,6 +40,31 @@ test('mailbox dashboard is available to guests when the mailer is mailbox', func
     $this->get('/'.config('mailbox.path', 'mailbox-test'))->assertOk();
 });
 
+test('mailbox sqlite database is created automatically when missing', function () {
+    $dbPath = storage_path('app/mailbox/test-mailbox-'.uniqid('', true).'.sqlite');
+
+    config([
+        'mail.default' => 'mailbox',
+        'mailbox.store.driver' => 'sqlite',
+        'database.connections.mailbox' => [
+            'driver' => 'sqlite',
+            'database' => $dbPath,
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ],
+    ]);
+
+    /** @var AppServiceProvider $provider */
+    $provider = app()->getProvider(AppServiceProvider::class);
+    $provider->prepareMailboxStorageIfNeeded();
+
+    expect(file_exists($dbPath))->toBeTrue()
+        ->and(Illuminate\Support\Facades\Schema::connection('mailbox')->hasTable('mailbox_messages'))->toBeTrue();
+
+    Illuminate\Support\Facades\DB::purge('mailbox');
+    @unlink($dbPath);
+});
+
 test('mailbox routes are registered after boot when missing from the route cache', function () {
     config([
         'mail.default' => 'mailbox',
