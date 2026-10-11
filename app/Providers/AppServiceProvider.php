@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiters();
         $this->configureQueueEvents();
         $this->configureMailboxGate();
+        $this->ensureMailboxRoutesAreRegistered();
 
         Property::observe(PropertyObserver::class);
     }
@@ -48,6 +50,45 @@ class AppServiceProvider extends ServiceProvider
         Gate::define(config('mailbox.gate', 'viewMailbox'), static function ($user = null): bool {
             return config('mail.default') === 'mailbox';
         });
+    }
+
+    /**
+     * Laravel Cloud may build the route cache before runtime env vars like
+     * MAIL_MAILER=mailbox are available, so the package skips registering
+     * /mailbox-test. Re-load those routes when the mailer is mailbox and the
+     * named route is missing (e.g. stale route:cache).
+     */
+    protected function ensureMailboxRoutesAreRegistered(): void
+    {
+        if (config('mail.default') !== 'mailbox') {
+            return;
+        }
+
+        $path = trim((string) config('mailbox.path', 'mailbox'), '/');
+
+        foreach (Route::getRoutes() as $route) {
+            if ($route->uri() === $path) {
+                return;
+            }
+        }
+
+        $routes = base_path('vendor/redberry/mailbox-for-laravel/routes/mailbox.php');
+
+        if (! is_file($routes)) {
+            return;
+        }
+
+        config(['mailbox.enabled' => true]);
+
+        require $routes;
+    }
+
+    /**
+     * @internal Exposes route recovery for feature tests.
+     */
+    public function registerMailboxRoutesIfMissing(): void
+    {
+        $this->ensureMailboxRoutesAreRegistered();
     }
 
     protected function configureDefaults(): void
