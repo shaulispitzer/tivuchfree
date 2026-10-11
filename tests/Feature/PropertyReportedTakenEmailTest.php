@@ -27,8 +27,14 @@ test('reporting a property as taken queues an email with confirm and keep-availa
     expect($html)
         ->toContain(route('properties.confirm-reported-taken', $property))
         ->toContain(route('properties.keep-available', $property))
+        ->toContain(__('mail.reported_taken.title'))
         ->toContain(__('mail.reported_taken.button_confirm_taken'))
         ->toContain(__('mail.reported_taken.button_not_taken_yet'));
+
+    $envelope = $mailable->envelope();
+
+    expect($envelope->subject)->toBe(__('mail.reported_taken.subject'))
+        ->and($envelope->subject)->toContain('Action needed');
 });
 
 test('owner can open confirm reported taken modal when property is reported taken', function () {
