@@ -9,12 +9,13 @@ return [
     |
     | Controls whether the Mailbox transport captures outgoing mail and
     | whether the dashboard routes are registered. When false, the package
-    | is completely inert — no capture, no HTTP endpoints. Defaults to
-    | "true" in every environment except "production".
+    | is completely inert — no capture, no HTTP endpoints. Enabled whenever
+    | MAIL_MAILER is set to "mailbox" (local / staging); leave production on
+    | a real mailer (e.g. resend) so the dashboard stays off.
     |
     */
 
-    'enabled' => (bool) env('MAILBOX_ENABLED', env('APP_ENV') !== 'production'),
+    'enabled' => env('MAIL_MAILER') === 'mailbox',
 
     /*
     |--------------------------------------------------------------------------
@@ -44,7 +45,7 @@ return [
     |
     */
 
-    'path' => env('MAILBOX_PATH', 'mailbox'),
+    'path' => env('MAILBOX_PATH', 'mailbox-test'),
 
     /*
     |--------------------------------------------------------------------------
@@ -64,12 +65,10 @@ return [
     | Authorization Gate
     |--------------------------------------------------------------------------
     |
-    | The ability name checked by the AuthorizeMailbox middleware. The
-    | default gate in the service provider only allows the "local"
-    | environment. Anywhere else (staging, review apps, production) every
-    | request is denied until you define Gate::define('viewMailbox', ...)
-    | in your app. Captured mail contains password reset links and tokens,
-    | so make that gate strict.
+    | The ability name checked by the AuthorizeMailbox middleware. This app
+    | allows the dashboard whenever MAIL_MAILER=mailbox (see AppServiceProvider),
+    | including guests on staging. Production should use a real mailer so this
+    | gate stays closed.
     |
     */
 

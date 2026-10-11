@@ -9,6 +9,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
@@ -33,8 +34,20 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureRateLimiters();
         $this->configureQueueEvents();
+        $this->configureMailboxGate();
 
         Property::observe(PropertyObserver::class);
+    }
+
+    /**
+     * Allow the mailbox dashboard whenever MAIL_MAILER=mailbox so staging
+     * reviewers (including guests) can inspect captured mail without admin access.
+     */
+    protected function configureMailboxGate(): void
+    {
+        Gate::define(config('mailbox.gate', 'viewMailbox'), static function ($user = null): bool {
+            return config('mail.default') === 'mailbox';
+        });
     }
 
     protected function configureDefaults(): void
