@@ -158,6 +158,7 @@ declare module 'vue' {
     SidebarTrigger: typeof import('./../components/ui/sidebar/SidebarTrigger.vue')['default']
     Skeleton: typeof import('./../components/ui/skeleton/Skeleton.vue')['default']
     Spinner: typeof import('./../components/ui/spinner/Spinner.vue')['default']
+    SubscriptionPromptBanner: typeof import('./../components/SubscriptionPromptBanner.vue')['default']
     SubscriptionSettings: typeof import('./../components/properties/SubscriptionSettings.vue')['default']
     SubscriptionSubscribeButton: typeof import('./../components/SubscriptionSubscribeButton.vue')['default']
     Switch: typeof import('./../components/ui/switch/Switch.vue')['default']

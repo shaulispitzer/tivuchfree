@@ -193,3 +193,40 @@
     --slider-tooltip-bg: var(--primary);
     --slider-handle-ring-color: #ef444430;
 }
+
+.subscribe-side-button--spotlight {
+    --subscribe-spotlight: hsl(48 98% 52%);
+    box-shadow:
+        0 0 0 3px #fff,
+        0 0 0 6px var(--subscribe-spotlight),
+        0 4px 14px rgb(15 23 42 / 0.28);
+    animation: subscribe-side-button-flash 0.9s ease-in-out infinite;
+}
+
+@keyframes subscribe-side-button-flash {
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 2px hsl(48 98% 52% / 0.55),
+            0 0 0 5px hsl(48 98% 52% / 0.2),
+            0 4px 14px rgb(15 23 42 / 0.2);
+    }
+
+    50% {
+        box-shadow:
+            0 0 0 3px #fff,
+            0 0 0 7px hsl(48 98% 48%),
+            0 0 18px hsl(48 98% 52% / 0.65),
+            0 4px 14px rgb(15 23 42 / 0.28);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .subscribe-side-button--spotlight {
+        animation: none;
+        box-shadow:
+            0 0 0 3px #fff,
+            0 0 0 6px hsl(48 98% 52%),
+            0 4px 14px rgb(15 23 42 / 0.28);
+    }
+}

@@ -7,8 +7,12 @@
 
 {{ __('mail.reported_taken.call_to_action') }}
 
-<x-mail::button :url="$editUrl">
-{{ __('mail.reported_taken.button') }}
+<x-mail::button :url="route('properties.confirm-reported-taken', $property)" color="error">
+{{ __('mail.reported_taken.button_confirm_taken') }}
+</x-mail::button>
+
+<x-mail::button :url="route('properties.keep-available', $property)" color="success">
+{{ __('mail.reported_taken.button_not_taken_yet') }}
 </x-mail::button>
 
 {{ __('mail.reported_taken.thanks') }}<br>

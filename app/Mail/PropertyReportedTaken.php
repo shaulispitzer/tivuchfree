@@ -27,8 +27,6 @@ class PropertyReportedTaken extends Mailable
         return new Content(
             markdown: 'mail.property.reported-taken',
             with: [
-                'property' => $this->property,
-                'editUrl' => route('properties.edit', $this->property),
                 'daysToResolve' => 3,
             ],
         );

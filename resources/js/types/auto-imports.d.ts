@@ -7,6 +7,11 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue').EffectScope
+  const SUBSCRIBE_BANNER_LONG_MS: typeof import('../composables/useSubscribeDiscovery').SUBSCRIBE_BANNER_LONG_MS
+  const SUBSCRIBE_BANNER_SHORT_MS: typeof import('../composables/useSubscribeDiscovery').SUBSCRIBE_BANNER_SHORT_MS
+  const SUBSCRIBE_COACHMARK_AFTER_BANNER_MS: typeof import('../composables/useSubscribeDiscovery').SUBSCRIBE_COACHMARK_AFTER_BANNER_MS
+  const SUBSCRIBE_COACHMARK_DELAY_MS: typeof import('../composables/useSubscribeDiscovery').SUBSCRIBE_COACHMARK_DELAY_MS
+  const SUBSCRIBE_COACHMARK_DISMISS_MS: typeof import('../composables/useSubscribeDiscovery').SUBSCRIBE_COACHMARK_DISMISS_MS
   const can: typeof import('momentum-lock').can
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
@@ -20,6 +25,8 @@ declare global {
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
   const getInitials: typeof import('../composables/useInitials').getInitials
   const h: typeof import('vue').h
+  const hideSubscribeBannerFor: typeof import('../composables/useSubscribeDiscovery').hideSubscribeBannerFor
+  const hideSubscribeCoachmark: typeof import('../composables/useSubscribeDiscovery').hideSubscribeCoachmark
   const initializeTheme: typeof import('../composables/useAppearance').initializeTheme
   const inject: typeof import('vue').inject
   const isProxy: typeof import('vue').isProxy
@@ -27,6 +34,8 @@ declare global {
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
+  const isSubscribeBannerHidden: typeof import('../composables/useSubscribeDiscovery').isSubscribeBannerHidden
+  const isSubscribeCoachmarkHidden: typeof import('../composables/useSubscribeDiscovery').isSubscribeCoachmarkHidden
   const markRaw: typeof import('vue').markRaw
   const nextTick: typeof import('vue').nextTick
   const onActivated: typeof import('vue').onActivated
@@ -72,6 +81,7 @@ declare global {
   const useModel: typeof import('vue').useModel
   const usePage: typeof import('@inertiajs/vue3').usePage
   const useSlots: typeof import('vue').useSlots
+  const useSubscribeDiscovery: typeof import('../composables/useSubscribeDiscovery').useSubscribeDiscovery
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useTwoFactorAuth: typeof import('../composables/useTwoFactorAuth').useTwoFactorAuth
   const vueShimsD: typeof import('./vue-shims.d').default
@@ -102,6 +112,11 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly SUBSCRIBE_BANNER_LONG_MS: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['SUBSCRIBE_BANNER_LONG_MS']>
+    readonly SUBSCRIBE_BANNER_SHORT_MS: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['SUBSCRIBE_BANNER_SHORT_MS']>
+    readonly SUBSCRIBE_COACHMARK_AFTER_BANNER_MS: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['SUBSCRIBE_COACHMARK_AFTER_BANNER_MS']>
+    readonly SUBSCRIBE_COACHMARK_DELAY_MS: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['SUBSCRIBE_COACHMARK_DELAY_MS']>
+    readonly SUBSCRIBE_COACHMARK_DISMISS_MS: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['SUBSCRIBE_COACHMARK_DISMISS_MS']>
     readonly can: UnwrapRef<typeof import('momentum-lock')['can']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
@@ -115,12 +130,16 @@ declare module 'vue' {
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
     readonly getInitials: UnwrapRef<typeof import('../composables/useInitials')['getInitials']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly hideSubscribeBannerFor: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['hideSubscribeBannerFor']>
+    readonly hideSubscribeCoachmark: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['hideSubscribeCoachmark']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
+    readonly isSubscribeBannerHidden: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['isSubscribeBannerHidden']>
+    readonly isSubscribeCoachmarkHidden: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['isSubscribeCoachmarkHidden']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
@@ -164,6 +183,7 @@ declare module 'vue' {
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly usePage: UnwrapRef<typeof import('@inertiajs/vue3')['usePage']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
+    readonly useSubscribeDiscovery: UnwrapRef<typeof import('../composables/useSubscribeDiscovery')['useSubscribeDiscovery']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useTwoFactorAuth: UnwrapRef<typeof import('../composables/useTwoFactorAuth')['useTwoFactorAuth']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>

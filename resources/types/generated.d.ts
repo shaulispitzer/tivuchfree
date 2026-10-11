@@ -43,6 +43,7 @@ main_image_thumb_url: string | null;
 image_thumb_urls: Array<any>;
 created_at: string;
 reported_taken_at: string | null;
+reported_tivuch_fee_at: string | null;
 };
 export type PropertyFormOptionsData = {
 neighbourhoods: Array<any>;

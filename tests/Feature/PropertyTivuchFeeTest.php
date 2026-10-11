@@ -64,7 +64,8 @@ test('admin edit page is accessible and includes admin edit flag', function () {
         ->assertInertia(fn ($page) => $page
             ->component('properties/Edit')
             ->where('adminEdit', true)
-            ->where('property.id', $property->id));
+            ->where('property.id', $property->id)
+            ->whereNot('property.reported_tivuch_fee_at', null));
 });
 
 test('non-admin cannot access admin property edit page', function () {
@@ -107,6 +108,22 @@ test('tivuch fee property show returns not found', function () {
     $property = Property::factory()->tivuchFee()->create();
 
     $this->get(route('properties.show', $property))->assertNotFound();
+});
+
+test('owner edit page does not include reported tivuch fee', function () {
+    $owner = User::factory()->create();
+    $property = Property::factory()->create([
+        'user_id' => $owner->id,
+        'reported_tivuch_fee_at' => now(),
+    ]);
+
+    $this->actingAs($owner)
+        ->get(route('properties.edit', $property))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('properties/Edit')
+            ->missing('adminEdit')
+            ->missing('property.reported_tivuch_fee_at'));
 });
 
 test('properties list includes tivuch_fee flag', function () {

@@ -27,8 +27,8 @@
                 class="fixed inset-0 overflow-y-auto"
             >
                 <div
-                    class="flex min-h-full items-start justify-center text-center"
-                    :class="[semiouterPadding]"
+                    class="flex min-h-full justify-center text-center"
+                    :class="[align, semiouterPadding]"
                 >
                     <TransitionChild
                         as="template"
@@ -48,7 +48,7 @@
                                 margin,
                                 position,
                             ]"
-                            class="shadow-soft-lg w-full overflow-hidden border border-gray-200 bg-white text-start align-middle transition-all"
+                            class="shadow-soft-lg flex w-full flex-col overflow-hidden border border-gray-200 bg-white text-start align-middle transition-all"
                         >
                             <button
                                 v-if="closable"
@@ -59,7 +59,7 @@
                             </button>
                             <div
                                 v-if="title"
-                                class="space-s-3 mb-4 flex items-center pt-2"
+                                class="space-s-3 mb-4 flex shrink-0 items-center pt-2"
                             >
                                 <div v-if="icon">
                                     <Icon
@@ -75,13 +75,20 @@
                                 </DialogTitle>
                                 <slot name="title" />
                             </div>
-                            <div :class="{ 'mt-2': !!title }">
+                            <div
+                                :class="[
+                                    { 'mt-2': !!title },
+                                    height
+                                        ? 'min-h-0 flex-1 overflow-y-auto'
+                                        : null,
+                                ]"
+                            >
                                 <slot />
                             </div>
 
                             <div
                                 v-if="actions"
-                                class="space-s-3 -m-2 mt-6 flex justify-end"
+                                class="space-s-3 -m-2 mt-6 flex shrink-0 justify-end"
                             >
                                 <Button
                                     v-if="cancelable"
@@ -181,6 +188,10 @@ const props = defineProps({
     semiouterPadding: {
         type: String,
         default: 'py-[10vh]',
+    },
+    align: {
+        type: String,
+        default: 'items-start',
     },
     height: {
         type: String,

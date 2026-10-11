@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
+use App\Http\Controllers\Admin\MapViewController as AdminMapViewController;
 use App\Http\Controllers\Admin\NeighbourhoodController as AdminNeighbourhoodController;
 use App\Http\Controllers\Admin\PropertyController as AdminPropertyController;
 use App\Http\Controllers\Admin\PropertyStatController as AdminPropertyStatController;
@@ -48,6 +49,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('properties/{property}/mark-tivuch-fee', [AdminPropertyController::class, 'markTivuchFee'])->name('properties.mark-tivuch-fee');
     Route::get('property-stats', [AdminPropertyStatController::class, 'index'])->name('property-stats.index');
     Route::delete('property-stats/{propertyStat}', [AdminPropertyStatController::class, 'destroy'])->name('property-stats.destroy');
+    Route::get('map-views', [AdminMapViewController::class, 'index'])->name('map-views.index');
     Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
     Route::patch('users/{user}/make-admin', [AdminUserController::class, 'makeAdmin'])->name('users.make-admin');
     Route::patch('users/{user}/revoke-admin', [AdminUserController::class, 'revokeAdmin'])->name('users.revoke-admin');
@@ -91,6 +93,14 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::get('properties/streets', [PropertyController::class, 'streets'])->name('properties.streets');
     Route::post('properties', [PropertyController::class, 'store'])->name('properties.store');
     Route::get('properties/{property}/edit', [PropertyController::class, 'edit'])->name('properties.edit');
+    Route::get('properties/{property}/confirm-reported-taken', [PropertyController::class, 'confirmReportedTakenModal'])
+        ->name('properties.confirm-reported-taken');
+    Route::post('properties/{property}/confirm-reported-taken', [PropertyController::class, 'confirmReportedTaken'])
+        ->name('properties.confirm-reported-taken.store');
+    Route::get('properties/{property}/keep-available', [PropertyController::class, 'keepAvailableModal'])
+        ->name('properties.keep-available');
+    Route::post('properties/{property}/keep-available', [PropertyController::class, 'keepAvailable'])
+        ->name('properties.keep-available.store');
     Route::get('properties/{property}/images', [PropertyController::class, 'images'])->name('properties.images.index');
     Route::post('properties/{property}/images', [PropertyController::class, 'storeImage'])->name('properties.images.store');
     Route::delete('properties/{property}/images/{media}', [PropertyController::class, 'destroyImage'])->name('properties.images.destroy');

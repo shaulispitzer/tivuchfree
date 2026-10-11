@@ -806,6 +806,13 @@ function handleMarkTivuchFee(tivuchFee = true): void {
         </div>
 
         <div
+            v-if="adminEdit && property.reported_tivuch_fee_at"
+            class="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-center text-xs font-medium text-red-700"
+        >
+            {{ t('common.reportedTivuchFee') }}
+        </div>
+
+        <div
             v-if="adminEdit"
             class="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3"
         >

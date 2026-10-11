@@ -292,6 +292,8 @@ test('property show is returned as a modal with full details except user fields'
         ->assertJsonPath('props.modal.props.property.id', $property->id)
         ->assertJsonPath('props.modal.props.property.street', $property->street)
         ->assertJsonPath('props.modal.props.property.building_number', (int) $property->building_number)
+        ->assertJsonPath('props.modal.props.property.contact_name', $property->contact_name)
+        ->assertJsonPath('props.modal.props.property.contact_phone', $property->contact_phone)
         ->assertJsonMissingPath('props.modal.props.property.user')
         ->assertJsonMissingPath('props.modal.props.property.user_id');
 });

@@ -124,6 +124,8 @@ export default {
                 'Confirm that no tivuch fee will be taken for this property',
             backToList: 'Back to list',
             contactSection: 'Contact',
+            contactOwner: 'Contact the owner',
+            contactOwnerHint: 'Call the number below to get in touch.',
             contactName: 'Contact Name',
             contactPhone: 'Contact Phone',
             contactPhone2: 'Second Contact Phone',
@@ -248,6 +250,15 @@ export default {
             defaultPropertyImageAlt: 'Default property image',
             m2: 'm²',
             priceStats: 'Price Stats',
+            mapViews: 'Map Views',
+            mapViewsDescription:
+                'Unique people who opened the map view (once per person per day).',
+            today: 'Today',
+            last7Days: 'Last 7 days',
+            last30Days: 'Last 30 days',
+            last30DaysDaily: 'Daily unique visitors (last 30 days)',
+            allTime: 'All time',
+            uniqueVisitors: 'Unique visitors',
             source: 'Source',
             advertised: 'Advertised',
             takenAt: 'Taken At',
@@ -286,6 +297,15 @@ export default {
             reportedTakenWarningBody:
                 'This property was reported as taken on {date}. You have {days} {multipledays} to cancel this report or it will be automatically marked as taken.',
             cancelReport: 'Cancel Report',
+            confirmTaken: 'Confirm taken',
+            keepNotTaken: 'Not taken yet',
+            confirmReportedTakenTitle: 'Would you like to confirm this is taken?',
+            confirmReportedTakenBody:
+                'Confirming will mark this property as taken.',
+            keepPropertyAvailableTitle:
+                'Are you sure you want to keep this as not taken?',
+            keepPropertyAvailableBody:
+                'This will cancel the taken report and keep your property listed as available.',
             day: 'day',
             days: 'days',
             ourStatsShow:
@@ -350,6 +370,14 @@ export default {
             updateFilters: 'Update your subscription filters',
             updateFiltersIntro:
                 'Change the filters below to receive emails for different property criteria.',
+            bannerTitle: 'Get email alerts for new listings',
+            bannerDescription:
+                'Subscribe once and we will notify you when new apartments match your filters.',
+            dontShowAgain: "Don't show again",
+            coachmarkTitle: 'Subscribe anytime from here',
+            coachmarkDescription:
+                'This button stays on the listings page so you can turn on email updates whenever you like.',
+            gotIt: 'Got it',
         },
     },
     he: {
@@ -474,6 +502,8 @@ export default {
             confirmNoTivuchFee: 'אני מאשר/ת שלא ייגבה דמי תיווך עבור נכס זה',
             backToList: 'חזרה לרשימה',
             contactSection: 'פרטי קשר',
+            contactOwner: 'צור קשר עם בעל הנכס',
+            contactOwnerHint: 'התקשרו למספר למטה כדי ליצור קשר.',
             contactName: 'שם איש קשר',
             contactPhone: 'טלפון איש קשר',
             contactPhone2: 'טלפון נוסף',
@@ -593,6 +623,15 @@ export default {
             defaultPropertyImageAlt: 'תמונת נכס ברירת מחדל',
             m2: 'מ"ר',
             priceStats: 'סטטיסטיקת מחירים',
+            mapViews: 'צפיות במפה',
+            mapViewsDescription:
+                'אנשים ייחודיים שפתחו את תצוגת המפה (פעם אחת לאדם ביום).',
+            today: 'היום',
+            last7Days: '7 הימים האחרונים',
+            last30Days: '30 הימים האחרונים',
+            last30DaysDaily: 'מבקרים ייחודיים לפי יום (30 הימים האחרונים)',
+            allTime: 'כל הזמנים',
+            uniqueVisitors: 'מבקרים ייחודיים',
             source: 'מקור',
             advertised: 'מודעה',
             takenAt: 'תפוס בתאריך',
@@ -630,6 +669,13 @@ export default {
             reportedTakenWarningBody:
                 'נכס זה דווח כתפוס בתאריך {date}. יש לך {days} {multipledays} לבטל את הדיווח אחרת הוא יסומן אוטומטית כתפוס.',
             cancelReport: 'בטל דיווח',
+            confirmTaken: 'אשר כתפוס',
+            keepNotTaken: 'עדיין לא תפוס',
+            confirmReportedTakenTitle: 'האם לאשר שהנכס תפוס?',
+            confirmReportedTakenBody: 'אישור יסמן את הנכס כתפוס.',
+            keepPropertyAvailableTitle: 'האם להשאיר את הנכס כלא תפוס?',
+            keepPropertyAvailableBody:
+                'פעולה זו תבטל את הדיווח ותשאיר את הנכס כפנוי.',
             day: 'יום',
             days: 'ימים',
             ourStatsShow:
@@ -691,6 +737,14 @@ export default {
             updateFilters: 'עדכן את סינוני ההרשמה',
             updateFiltersIntro:
                 'שנה את הסינונים למטה כדי לקבל אימיילים לפי קריטריונים שונים.',
+            bannerTitle: 'קבלו התראות במייל על מודעות חדשות',
+            bannerDescription:
+                'הירשמו פעם אחת ונעדכן אתכם כשדירות חדשות יתאימו לסינונים שלכם.',
+            dontShowAgain: 'אל תציג שוב',
+            coachmarkTitle: 'אפשר להירשם מכאן בכל עת',
+            coachmarkDescription:
+                'הכפתור הזה נשאר בעמוד המודעות כדי שתוכלו להפעיל עדכונים במייל מתי שתרצו.',
+            gotIt: 'הבנתי',
         },
     },
 };

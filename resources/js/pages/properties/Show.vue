@@ -11,9 +11,11 @@ import {
     KeyRound,
     Layers,
     ParkingSquare,
+    Phone,
     Ruler,
     SunMedium,
     Trees,
+    User,
     Warehouse,
 } from 'lucide-vue-next';
 import PepiconsPopExpand from '~icons/pepicons-pop/expand?raw';
@@ -316,8 +318,11 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
         :confirmable="false"
         :cancel-label="t('common.close')"
         margin="mt-0"
+        align="items-center"
+        semiouter-padding="h-full p-4"
+        height="max-h-full"
     >
-        <div class="max-h-[80vh] space-y-6 overflow-y-auto p-1 sm:p-2">
+        <div class="space-y-6">
             <div class="space-y-3">
                 <div
                     v-if="imageUrls.length > 0"
@@ -470,27 +475,41 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                     property.contact_phone ||
                     property.contact_phone_2
                 "
-                class="space-y-2 rounded-md bg-muted/20 p-4"
+                class="space-y-3 rounded-lg border-2 border-primary bg-primary/5 p-4 shadow-sm"
             >
-                <p class="text-xs text-muted-foreground">
-                    {{ t('common.contactSection') }}
-                </p>
-                <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                    <span v-if="property.contact_name" class="font-medium">
-                        {{ property.contact_name }}
-                    </span>
-                    <span
+                <div class="flex items-center gap-2">
+                    <Phone class="h-5 w-5 shrink-0 text-primary" />
+                    <p class="text-base font-semibold text-primary">
+                        {{ t('common.contactOwner') }}
+                    </p>
+                </div>
+
+                <div
+                    v-if="property.contact_name"
+                    class="flex items-center gap-2 text-sm"
+                >
+                    <User class="h-4 w-4 shrink-0 text-primary" />
+                    <span class="font-semibold">{{
+                        property.contact_name
+                    }}</span>
+                </div>
+                <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <a
                         v-if="property.contact_phone"
-                        class="text-muted-foreground"
+                        :href="`tel:${property.contact_phone}`"
+                        class="inline-flex items-center justify-center gap-2 rounded-md border border-primary/40 bg-background px-3 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
                     >
+                        <Phone class="h-4 w-4 shrink-0" />
                         {{ property.contact_phone }}
-                    </span>
-                    <span
+                    </a>
+                    <a
                         v-if="property.contact_phone_2"
-                        class="text-muted-foreground"
+                        :href="`tel:${property.contact_phone_2}`"
+                        class="inline-flex items-center justify-center gap-2 rounded-md border border-primary/40 bg-background px-3 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
                     >
+                        <Phone class="h-4 w-4 shrink-0" />
                         {{ property.contact_phone_2 }}
-                    </span>
+                    </a>
                 </div>
             </div>
 
@@ -572,11 +591,11 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
             <Transition name="lightbox">
                 <div
                     v-if="lightboxOpen"
-                    class="lightbox-outer fixed inset-0 z-9999 flex items-center justify-center bg-black sm:bg-transparent sm:p-6 sm:backdrop-blur-sm"
+                    class="lightbox-outer fixed inset-0 z-9999 flex items-center justify-center bg-black"
                     @click.self="closeLightbox"
                 >
                     <div
-                        class="lightbox-inner relative flex h-full w-full flex-col overflow-hidden bg-black sm:h-[90dvh] sm:max-h-[90dvh] sm:max-w-5xl sm:rounded-2xl sm:shadow-2xl"
+                        class="lightbox-inner relative flex h-full w-full flex-col overflow-hidden bg-black"
                     >
                         <button
                             type="button"
@@ -621,14 +640,14 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                                     :key="`lb-${url}-${index}`"
                                 >
                                     <div
-                                        class="lightbox-slide-content flex h-full w-full items-center justify-center px-3 py-2 sm:px-12"
+                                        class="lightbox-slide-content flex h-full w-full items-center justify-center px-3 py-2 sm:px-6"
                                     >
                                         <img
                                             :src="url"
                                             :alt="
                                                 t('common.mainPropertyImageAlt')
                                             "
-                                            class="max-h-full max-w-full object-contain sm:shadow-2xl"
+                                            class="max-h-full max-w-full object-contain"
                                         />
                                     </div>
                                 </SwiperSlide>
@@ -641,14 +660,11 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                         >
                             <Swiper
                                 :modules="[Thumbs]"
-                                :space-between="5"
-                                :slides-per-view="5"
+                                :space-between="6"
+                                :slides-per-view="'auto'"
                                 :watch-slides-progress="true"
                                 :slide-to-clicked-slide="true"
-                                :breakpoints="{
-                                    640: { slidesPerView: 7, spaceBetween: 6 },
-                                    768: { slidesPerView: 9, spaceBetween: 6 },
-                                }"
+                                :centered-slides="false"
                                 class="lightbox-thumbs-swiper"
                                 @swiper="setLightboxThumbsSwiper"
                             >
@@ -659,7 +675,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                                     <img
                                         :src="url"
                                         :alt="t('common.propertyThumbnailAlt')"
-                                        class="h-10 w-full rounded border-2 border-transparent object-cover transition-all sm:h-14 sm:rounded-md"
+                                        class="h-full w-full rounded border-2 border-transparent object-cover transition-all sm:rounded-md"
                                         loading="lazy"
                                     />
                                 </SwiperSlide>
@@ -709,8 +725,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
     display: none;
 }
 
-/* Phone landscape: detected by small height (phones ~360–430px tall in landscape).
-   Override sm: breakpoint styles that add padding/rounding/max-width. */
+/* Phone landscape: detected by small height (phones ~360–430px tall in landscape). */
 @media (orientation: landscape) and (max-height: 500px) {
     .lightbox-thumbs-strip {
         display: none;
@@ -722,20 +737,6 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
 
     .lightbox-landscape-close {
         display: flex;
-    }
-
-    .lightbox-outer {
-        padding: 0;
-        background: black;
-        backdrop-filter: none;
-    }
-
-    .lightbox-inner {
-        height: 100%;
-        max-height: 100%;
-        max-width: 100%;
-        border-radius: 0;
-        box-shadow: none;
     }
 
     .lightbox-slide-content {
@@ -808,17 +809,26 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
     justify-content: center;
 }
 
-/* Lightbox thumbnails */
+/* Lightbox thumbnails — fixed size so they keep a natural aspect ratio */
 .lightbox-thumbs-swiper :deep(.swiper-wrapper) {
     justify-content: center;
 }
 
 .lightbox-thumbs-swiper :deep(.swiper-slide) {
+    width: 4.5rem;
+    height: 3rem;
     cursor: pointer;
     opacity: 0.95;
     transition:
         opacity 0.2s,
         transform 0.2s;
+}
+
+@media (min-width: 640px) {
+    .lightbox-thumbs-swiper :deep(.swiper-slide) {
+        width: 6.5rem;
+        height: 4.25rem;
+    }
 }
 
 .lightbox-thumbs-swiper :deep(.swiper-slide:hover) {

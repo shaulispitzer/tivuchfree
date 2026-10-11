@@ -225,6 +225,8 @@ watch(activeView, () => {
 
     <SubscriptionSubscribeButton />
 
+    <SubscriptionPromptBanner />
+
     <PropertyFilters
         :filters="filters"
         :neighbourhood_options="neighbourhood_options"

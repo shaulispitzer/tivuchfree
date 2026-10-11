@@ -64,6 +64,7 @@ class PropertyData extends Data
         public array $image_thumb_urls,
         public CarbonInterface $created_at,
         public ?CarbonInterface $reported_taken_at,
+        public ?CarbonInterface $reported_tivuch_fee_at,
     ) {}
 
     public static function fromModel(
@@ -119,6 +120,7 @@ class PropertyData extends Data
                 ->all(),
             created_at: $property->created_at,
             reported_taken_at: $property->reported_taken_at,
+            reported_tivuch_fee_at: $property->reported_tivuch_fee_at,
         );
     }
 }

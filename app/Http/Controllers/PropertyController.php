@@ -23,6 +23,7 @@ use App\Models\Neighbourhood;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
+use App\Services\MapViewRecorder;
 use App\Services\PropertyStatRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +42,7 @@ class PropertyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, MapViewRecorder $mapViewRecorder)
     {
         $query = $request->query();
         if (isset($query['neighbourhood']) && ! isset($query['neighbourhoods'])) {
@@ -123,6 +124,8 @@ class PropertyController extends Controller
         };
 
         if ($view === 'map') {
+            $mapViewRecorder->record($request);
+
             $properties = $propertiesQuery
                 ->get()
                 ->map(fn (Property $property) => (
@@ -457,7 +460,8 @@ class PropertyController extends Controller
         $property->setRelation('user', null);
 
         return Inertia::render('properties/Edit', [
-            'property' => PropertyData::fromModel($property),
+            'property' => PropertyData::fromModel($property)
+                ->except('reported_tivuch_fee_at'),
             'options' => $this->formOptions(),
             'lifecycle' => $this->propertyLifecycleInfo($property),
         ]);
@@ -624,6 +628,68 @@ class PropertyController extends Controller
         return back()->success(__('message.reportCancelledSuccessfully'));
     }
 
+    public function confirmReportedTakenModal(Property $property)
+    {
+        $this->authorize('update', $property);
+        $this->ensureActiveReportedTaken($property);
+
+        return Inertia::modal('properties/ConfirmReportedTaken', [
+            'propertyId' => $property->id,
+        ])->baseRoute('properties.edit', $property);
+    }
+
+    public function confirmReportedTaken(Property $property, PropertyStatRecorder $propertyStatRecorder): RedirectResponse
+    {
+        $this->authorize('update', $property);
+        $this->ensureActiveReportedTaken($property);
+
+        $property->forceFill([
+            'taken' => true,
+            'taken_at' => now(),
+            'reported_taken_at' => null,
+        ])->save();
+
+        $propertyStatRecorder->recordTaken($property->fresh());
+
+        $property->loadMissing('user');
+        if ($property->user?->email) {
+            $address = trim($property->street.($property->building_number ? ' '.$property->building_number : ''));
+            Mail::to($property->user->email)->queue(new PropertyListingStatusChange(
+                $property->user->name,
+                $address,
+                'marked_as_taken',
+                'manually',
+            ));
+        }
+
+        return redirect()->route('properties.edit', $property)->success('Property marked as taken');
+    }
+
+    public function keepAvailableModal(Property $property)
+    {
+        $this->authorize('update', $property);
+        $this->ensureActiveReportedTaken($property);
+
+        return Inertia::modal('properties/KeepPropertyAvailable', [
+            'propertyId' => $property->id,
+        ])->baseRoute('properties.edit', $property);
+    }
+
+    public function keepAvailable(Property $property): RedirectResponse
+    {
+        $this->authorize('update', $property);
+        $this->ensureActiveReportedTaken($property);
+
+        $property->forceFill(['reported_taken_at' => null])->save();
+
+        return redirect()->route('properties.edit', $property)->success(__('message.reportCancelledSuccessfully'));
+    }
+
+    protected function ensureActiveReportedTaken(Property $property): void
+    {
+        abort_unless($property->reported_taken_at !== null && ! $property->taken, 404);
+    }
+
     public function destroyMyProperty(Request $request, Property $property): RedirectResponse
     {
         if ($property->user_id !== $request->user()->id) {
@@ -659,7 +725,7 @@ class PropertyController extends Controller
 
         return Inertia::modal('properties/Show', [
             'property' => PropertyData::fromModel($property)
-                ->except('user', 'user_id', 'taken', 'lon', 'lat', 'reported_taken_at')
+                ->except('user', 'user_id', 'taken', 'lon', 'lat', 'reported_taken_at', 'reported_tivuch_fee_at')
                 ->toArray(),
         ])->baseRoute('properties.index', $isMapView ? ['view' => 'map'] : []);
     }

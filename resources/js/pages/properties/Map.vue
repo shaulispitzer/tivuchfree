@@ -466,6 +466,8 @@ onBeforeUnmount(() => {
 
     <SubscriptionSubscribeButton />
 
+    <SubscriptionPromptBanner />
+
     <div class="relative z-10">
         <PropertyFilters
             :filters="filters"

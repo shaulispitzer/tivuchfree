@@ -6,6 +6,7 @@ import {
     Bell,
     LayoutDashboard,
     LogOut,
+    Map,
     MapPinned,
     MessageSquare,
     Signpost,
@@ -16,6 +17,7 @@ import { logout } from '@/routes';
 import { index as adminNeighbourhoodsIndex } from '@/routes/admin/neighbourhoods';
 import { index as adminStreetsIndex } from '@/routes/admin/streets';
 import { index as adminPropertiesIndex } from '@/routes/admin/properties';
+import { index as adminMapViewsIndex } from '@/routes/admin/map-views';
 import { index as adminPropertyStatsIndex } from '@/routes/admin/property-stats';
 import { index as adminReviewsIndex } from '@/routes/admin/reviews';
 import { index as adminSubscriptionsIndex } from '@/routes/admin/subscriptions';
@@ -111,6 +113,16 @@ defineProps<Props>();
             >
                 <BarChart3 class="mr-2 h-4 w-4" />
                 {{ t('common.admin') }} - Price Stats
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="adminMapViewsIndex()"
+                prefetch
+            >
+                <Map class="mr-2 h-4 w-4" />
+                {{ t('common.admin') }} - {{ t('common.mapViews') }}
             </Link>
         </DropdownMenuItem>
         <DropdownMenuItem v-if="user.is_admin" :as-child="true">
