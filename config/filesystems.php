@@ -67,8 +67,13 @@ return [
             'bucket' => env('AWS_BUCKET'),
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'visibility' => 'public',
+            // R2 expects path-style URLs (bucket in path, not subdomain).
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
+            // R2 does not support S3 object ACLs; public access is via bucket URL / custom domain.
+            'visibility' => 'private',
+            // aws-sdk-php >= 3.337 sends checksum headers R2 does not implement.
+            'request_checksum_calculation' => 'when_required',
+            'response_checksum_validation' => 'when_required',
             'throw' => false,
             'report' => false,
         ],
