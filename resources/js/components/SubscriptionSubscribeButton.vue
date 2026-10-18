@@ -108,7 +108,7 @@ onUnmounted(() => {
         >
             <div
                 v-if="showCoachmark"
-                class="subscribe-coachmark fixed top-1/2 left-[4.75rem] z-50 w-[min(16.5rem,calc(100vw-5.5rem))] -translate-y-1/2 rounded-lg border border-[hsl(48_85%_42%/0.45)] bg-[hsl(48_90%_95%/0.97)] p-3.5 shadow-[0_10px_28px_rgb(15_23_42/0.18)] backdrop-blur-sm"
+                class="subscribe-coachmark fixed top-1/2 left-19 z-50 w-[min(16.5rem,calc(100vw-5.5rem))] -translate-y-1/2 rounded-lg border border-[hsl(48_85%_42%/0.45)] bg-[hsl(48_90%_95%/0.97)] p-3.5 shadow-[0_10px_28px_rgb(15_23_42/0.18)] backdrop-blur-sm"
                 role="status"
             >
                 <div
@@ -117,11 +117,12 @@ onUnmounted(() => {
                 />
 
                 <p class="text-sm leading-snug font-semibold text-foreground">
-                    {{ t('subscription.coachmarkTitle') }}
+                    {{ t('subscription.coachmarkTitle') }} 🙂
                 </p>
-                <p class="mt-1 text-xs leading-relaxed text-foreground/70">
-                    {{ t('subscription.coachmarkDescription') }}
-                </p>
+                <p
+                    class="mt-1 text-xs leading-relaxed text-foreground/70"
+                    v-html="t('subscription.coachmarkDescription')"
+                ></p>
 
                 <div class="mt-3 flex items-center justify-end">
                     <button

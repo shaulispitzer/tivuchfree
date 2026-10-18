@@ -32,7 +32,10 @@ const resolvedLocale = computed(() =>
     isHebrewLocale.value ? 'he-IL' : 'en-US',
 );
 
-const defaultPlaceholder = today(getLocalTimeZone()) as unknown as DateValue;
+const defaultPlaceholder = computed(
+    () =>
+        (props.modelValue ?? today(getLocalTimeZone())) as unknown as DateValue,
+);
 
 const df = computed(
     () =>

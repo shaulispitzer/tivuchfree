@@ -124,7 +124,7 @@ export default {
                 'Confirm that no tivuch fee will be taken for this property',
             backToList: 'Back to list',
             contactSection: 'Contact',
-            contactOwner: 'Contact the owner',
+            contactOwner: 'Contact Owner',
             contactOwnerHint: 'Call the number below to get in touch.',
             contactName: 'Contact Name',
             contactPhone: 'Contact Phone',
@@ -298,14 +298,15 @@ export default {
                 'This property was reported as taken on {date}. You have {days} {multipledays} to cancel this report or it will be automatically marked as taken.',
             cancelReport: 'Cancel Report',
             confirmTaken: 'Confirm taken',
-            keepNotTaken: 'Not taken yet',
-            confirmReportedTakenTitle: 'Would you like to confirm this is taken?',
+            keepNotTaken: 'Confirm: Not taken',
+            confirmReportedTakenTitle:
+                'Would you like to confirm this is taken?',
             confirmReportedTakenBody:
                 'Confirming will mark this property as taken.',
             keepPropertyAvailableTitle:
-                'Are you sure you want to keep this as not taken?',
+                'Are you sure you want this listing to remain live?',
             keepPropertyAvailableBody:
-                'This will cancel the taken report and keep your property listed as available.',
+                'This will <strong>cancel the taken report</strong> and keep your property listed as available.',
             day: 'day',
             days: 'days',
             ourStatsShow:
@@ -370,13 +371,13 @@ export default {
             updateFilters: 'Update your subscription filters',
             updateFiltersIntro:
                 'Change the filters below to receive emails for different property criteria.',
-            bannerTitle: 'Get email alerts for new listings',
+            bannerTitle: 'Get free email alerts for new listings',
             bannerDescription:
-                'Subscribe once and we will notify you when new apartments match your filters.',
+                'Subscribe to receive an email every time a new listing (that match your filters) is posted.',
             dontShowAgain: "Don't show again",
-            coachmarkTitle: 'Subscribe anytime from here',
+            coachmarkTitle: "I'm the subscribe button",
             coachmarkDescription:
-                'This button stays on the listings page so you can turn on email updates whenever you like.',
+                "I'm always here on the listing pages. Click me whenever to subscribe to receive <strong>free email updates</strong>.",
             gotIt: 'Got it',
         },
     },
@@ -651,8 +652,7 @@ export default {
             reportTaken: 'דווח כתפוס',
             reportTakenSuccess: 'הודענו לבעל הנכס שהוא תפוס',
             reportTivuchFee: 'דווח על דמי תיווך',
-            reportTivuchFeeSuccess:
-                'הודענו למנהל Tivuch Free על הדיווח',
+            reportTivuchFeeSuccess: 'הודענו למנהל Tivuch Free על הדיווח',
             reportTivuchFeeMessage:
                 'דווח על מודעה זו שיש בה דמי תיווך. מנהל Tivuch Free יקבל הודעה.',
             reportedTivuchFee: 'דווח על דמי תיווך',
@@ -670,12 +670,13 @@ export default {
                 'נכס זה דווח כתפוס בתאריך {date}. יש לך {days} {multipledays} לבטל את הדיווח אחרת הוא יסומן אוטומטית כתפוס.',
             cancelReport: 'בטל דיווח',
             confirmTaken: 'אשר כתפוס',
-            keepNotTaken: 'עדיין לא תפוס',
+            keepNotTaken: 'אשר: לא תפוס',
             confirmReportedTakenTitle: 'האם לאשר שהנכס תפוס?',
             confirmReportedTakenBody: 'אישור יסמן את הנכס כתפוס.',
-            keepPropertyAvailableTitle: 'האם להשאיר את הנכס כלא תפוס?',
+            keepPropertyAvailableTitle: 'האם להשאיר את הרשימה כפנויה?',
             keepPropertyAvailableBody:
-                'פעולה זו תבטל את הדיווח ותשאיר את הנכס כפנוי.',
+                'פעולה זו <strong>תבטל את הדיווח</strong> ותשאיר את הנכס כפנוי.',
+
             day: 'יום',
             days: 'ימים',
             ourStatsShow:
@@ -737,13 +738,13 @@ export default {
             updateFilters: 'עדכן את סינוני ההרשמה',
             updateFiltersIntro:
                 'שנה את הסינונים למטה כדי לקבל אימיילים לפי קריטריונים שונים.',
-            bannerTitle: 'קבלו התראות במייל על מודעות חדשות',
+            bannerTitle: 'קבלו התראות במייל על מודעות חדשות בחינם',
             bannerDescription:
-                'הירשמו פעם אחת ונעדכן אתכם כשדירות חדשות יתאימו לסינונים שלכם.',
+                'הירשמו פעם אחת ונעדכן אתכם כשרשימות חדשות יתאימו לסינונים שלכם.',
             dontShowAgain: 'אל תציג שוב',
-            coachmarkTitle: 'אפשר להירשם מכאן בכל עת',
+            coachmarkTitle: 'אני הכפתור להירשם',
             coachmarkDescription:
-                'הכפתור הזה נשאר בעמוד המודעות כדי שתוכלו להפעיל עדכונים במייל מתי שתרצו.',
+                ' אני תמיד כאן בעמוד המודעות. יש ללחוץ עלי להירשם לקבל<strong> התראות במייל בחינם</strong>.',
             gotIt: 'הבנתי',
         },
     },

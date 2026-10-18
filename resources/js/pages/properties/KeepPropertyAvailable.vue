@@ -7,9 +7,10 @@
         :processing="processing"
         @confirm="confirm"
     >
-        <p class="text-sm text-muted-foreground">
-            {{ t('common.keepPropertyAvailableBody') }}
-        </p>
+        <p
+            class="text-sm text-muted-foreground"
+            v-html="t('common.keepPropertyAvailableBody')"
+        />
     </Modal>
 </template>
 

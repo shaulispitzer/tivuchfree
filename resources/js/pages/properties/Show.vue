@@ -396,16 +396,67 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                 </div>
             </div>
 
-            <div class="space-y-1">
-                <h1 class="text-2xl font-semibold">{{ fullAddress }}</h1>
+            <div class="flex items-start justify-between gap-4 px-2">
+                <div class="min-w-0 flex-1 space-y-1">
+                    <h1 class="text-2xl font-semibold">{{ fullAddress }}</h1>
+                    <p
+                        class="text-sm text-muted-foreground"
+                        :class="{ italic: isMissing(neighbourhoodsLabel) }"
+                    >
+                        {{ neighbourhoodsLabel ?? t('common.notSpecified') }}
+                    </p>
+                    <div
+                        class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground"
+                    >
+                        <span class="inline-flex items-center gap-1.5">
+                            <CalendarDays class="h-3.5 w-3.5 text-primary" />
+                            <span>{{ t('common.availableFrom') }}</span>
+                            <span
+                                class="font-medium"
+                                :class="{
+                                    italic: isMissing(
+                                        formatDate(property.available_from),
+                                    ),
+                                }"
+                            >
+                                {{
+                                    formatDate(property.available_from) ??
+                                    t('common.notSpecified')
+                                }}
+                            </span>
+                        </span>
+                        <span
+                            v-if="isMediumTerm"
+                            class="inline-flex items-center gap-1.5"
+                        >
+                            <CalendarClock class="h-3.5 w-3.5 text-primary" />
+                            <span>{{ t('common.availableTo') }}</span>
+                            <span
+                                class="font-medium"
+                                :class="{
+                                    italic: isMissing(
+                                        formatDate(property.available_to),
+                                    ),
+                                }"
+                            >
+                                {{
+                                    formatDate(property.available_to) ??
+                                    t('common.notSpecified')
+                                }}
+                            </span>
+                        </span>
+                    </div>
+                    <div v-if="isMediumTerm">
+                        <Badge
+                            class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800"
+                        >
+                            <CalendarClock class="h-3.5 w-3.5" />
+                            {{ t('common.mediumTermRental') }}
+                        </Badge>
+                    </div>
+                </div>
                 <p
-                    class="text-sm text-muted-foreground"
-                    :class="{ italic: isMissing(neighbourhoodsLabel) }"
-                >
-                    {{ neighbourhoodsLabel ?? t('common.notSpecified') }}
-                </p>
-                <p
-                    class="text-xl font-semibold text-primary"
+                    class="shrink-0 text-xl font-semibold text-primary"
                     :class="{
                         'text-muted-foreground italic': isMissing(
                             property.price,
@@ -418,55 +469,6 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                             : t('common.notSpecified')
                     }}
                 </p>
-                <div
-                    class="flex flex-wrap items-center gap-3 text-xs text-muted-foreground"
-                >
-                    <span class="inline-flex items-center gap-1.5">
-                        <CalendarDays class="h-3.5 w-3.5 text-primary" />
-                        <span>{{ t('common.availableFrom') }}</span>
-                        <span
-                            class="font-medium"
-                            :class="{
-                                italic: isMissing(
-                                    formatDate(property.available_from),
-                                ),
-                            }"
-                        >
-                            {{
-                                formatDate(property.available_from) ??
-                                t('common.notSpecified')
-                            }}
-                        </span>
-                    </span>
-                    <span
-                        v-if="isMediumTerm"
-                        class="inline-flex items-center gap-1.5"
-                    >
-                        <CalendarClock class="h-3.5 w-3.5 text-primary" />
-                        <span>{{ t('common.availableTo') }}</span>
-                        <span
-                            class="font-medium"
-                            :class="{
-                                italic: isMissing(
-                                    formatDate(property.available_to),
-                                ),
-                            }"
-                        >
-                            {{
-                                formatDate(property.available_to) ??
-                                t('common.notSpecified')
-                            }}
-                        </span>
-                    </span>
-                </div>
-                <div v-if="isMediumTerm">
-                    <Badge
-                        class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800"
-                    >
-                        <CalendarClock class="h-3.5 w-3.5" />
-                        {{ t('common.mediumTermRental') }}
-                    </Badge>
-                </div>
             </div>
 
             <div
@@ -475,7 +477,7 @@ const propertyDetails = computed<PropertyDetail[]>(() => {
                     property.contact_phone ||
                     property.contact_phone_2
                 "
-                class="space-y-3 rounded-lg border-2 border-primary bg-primary/5 p-4 shadow-sm"
+                class="w-fit space-y-3 rounded-lg border-2 border-primary bg-primary/5 p-4 shadow-sm"
             >
                 <div class="flex items-center gap-2">
                     <Phone class="h-5 w-5 shrink-0 text-primary" />

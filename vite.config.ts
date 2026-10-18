@@ -13,6 +13,14 @@ import tailwindcss from '@tailwindcss/vite';
 import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 
 export default defineConfig({
+    server: {
+        // Force IPv4 — on Windows, `localhost` often binds to [::1] and breaks HMR.
+        host: '127.0.0.1',
+        hmr: {
+            host: '127.0.0.1',
+            protocol: 'ws',
+        },
+    },
     resolve: {
         alias: {
             '@': '/resources/js',

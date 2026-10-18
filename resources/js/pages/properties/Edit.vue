@@ -18,7 +18,10 @@ import { useToast } from 'vue-toastification';
 
 import { router } from '@inertiajs/vue3';
 import { cn } from '@/lib/utils';
-import { index as adminPropertiesIndex, markTivuchFee } from '@/routes/admin/properties';
+import {
+    index as adminPropertiesIndex,
+    markTivuchFee,
+} from '@/routes/admin/properties';
 import { destroy, markAsTaken, repost } from '@/routes/my-properties';
 import { index, update } from '@/routes/properties';
 
@@ -937,7 +940,7 @@ function handleMarkTivuchFee(tivuchFee = true): void {
                         !adminEdit
                     "
                     size="sm"
-                    variant="secondary"
+                    variant="outline"
                     class="shrink-0"
                     type="button"
                     :disabled="markingAsTaken"
