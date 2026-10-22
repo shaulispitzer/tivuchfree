@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdvertisementController as AdminAdvertisementController;
 use App\Http\Controllers\Admin\FailedJobController as AdminFailedJobController;
 use App\Http\Controllers\Admin\MapViewController as AdminMapViewController;
 use App\Http\Controllers\Admin\NeighbourhoodController as AdminNeighbourhoodController;
@@ -67,6 +68,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('neighbourhoods/{neighbourhood}/edit', [AdminNeighbourhoodController::class, 'edit'])->name('neighbourhoods.edit');
     Route::put('neighbourhoods/{neighbourhood}', [AdminNeighbourhoodController::class, 'update'])->name('neighbourhoods.update');
     Route::delete('neighbourhoods/{neighbourhood}', [AdminNeighbourhoodController::class, 'destroy'])->name('neighbourhoods.destroy');
+    Route::get('ads', [AdminAdvertisementController::class, 'index'])->name('ads.index');
+    Route::get('ads/create', [AdminAdvertisementController::class, 'create'])->name('ads.create');
+    Route::post('ads', [AdminAdvertisementController::class, 'store'])->name('ads.store');
+    Route::get('ads/{advertisement}/edit', [AdminAdvertisementController::class, 'edit'])->name('ads.edit');
+    Route::put('ads/{advertisement}', [AdminAdvertisementController::class, 'update'])->name('ads.update');
+    Route::delete('ads/{advertisement}', [AdminAdvertisementController::class, 'destroy'])->name('ads.destroy');
     Route::get('streets', [StreetController::class, 'index'])->name('streets.index');
     Route::get('streets/create', [StreetController::class, 'create'])->name('streets.create');
     Route::post('streets', [StreetController::class, 'store'])->name('streets.store');

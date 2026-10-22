@@ -27,7 +27,6 @@ import {
 import type { Paginator } from '@/types';
 import { CircleHelp, Download } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
-import ChevronDown16 from '~icons/octicon/chevron-down-16';
 
 type Street = {
     id: number;
@@ -328,11 +327,6 @@ async function handleGenerateCsv(): Promise<void> {
                                         :class="triggerClass"
                                     >
                                         <SelectValue placeholder="Choose neighbourhood" />
-                                        <template #trigger-icon>
-                                            <ChevronDown16
-                                                class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                                            />
-                                        </template>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem
@@ -471,11 +465,6 @@ Bar Ilan,Eli HaCohen,עלי הכהן</pre
                         :class="triggerClass"
                     >
                         <SelectValue placeholder="All neighbourhoods" />
-                        <template #trigger-icon>
-                            <ChevronDown16
-                                class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                            />
-                        </template>
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All neighbourhoods</SelectItem>

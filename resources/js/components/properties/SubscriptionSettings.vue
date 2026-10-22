@@ -229,11 +229,6 @@ defineExpose({
                                     t('propertyFilters.allFurnishedOptions')
                                 "
                             />
-                            <template #trigger-icon>
-                                <ChevronDown16
-                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                                />
-                            </template>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem :value="ALL_FURNISHED_VALUE">
@@ -293,11 +288,6 @@ defineExpose({
                             <SelectValue
                                 :placeholder="t('propertyFilters.allTypes')"
                             />
-                            <template #trigger-icon>
-                                <ChevronDown16
-                                    class="size-4 opacity-50 transition-transform duration-300 group-data-[state=open]:rotate-x-180"
-                                />
-                            </template>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem :value="ALL_TYPES_VALUE">

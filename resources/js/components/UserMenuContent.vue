@@ -8,12 +8,14 @@ import {
     LogOut,
     Map,
     MapPinned,
+    Megaphone,
     MessageSquare,
     Signpost,
     Users,
 } from 'lucide-vue-next';
 
 import { logout } from '@/routes';
+import { index as adminAdsIndex } from '@/routes/admin/ads';
 import { index as adminNeighbourhoodsIndex } from '@/routes/admin/neighbourhoods';
 import { index as adminStreetsIndex } from '@/routes/admin/streets';
 import { index as adminPropertiesIndex } from '@/routes/admin/properties';
@@ -133,6 +135,16 @@ defineProps<Props>();
             >
                 <MessageSquare class="mr-2 h-4 w-4" />
                 {{ t('common.admin') }} - {{ t('common.adminReviews') }}
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
+            <Link
+                class="block w-full cursor-pointer"
+                :href="adminAdsIndex()"
+                prefetch
+            >
+                <Megaphone class="mr-2 h-4 w-4" />
+                {{ t('common.admin') }} - {{ t('common.ads') }}
             </Link>
         </DropdownMenuItem>
         <!-- <DropdownMenuItem :as-child="true">

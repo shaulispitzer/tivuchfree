@@ -32,10 +32,29 @@ const SortValue = {
     Newest: 'newest',
 } as const;
 
+type Ad = {
+    id: number;
+    url: string;
+    image_url: string;
+    position: number;
+};
+
+type ListItem =
+    | { type: 'property'; property: App.Data.PropertyData }
+    | { type: 'ad'; ad: Ad; key: string };
+
 const props = defineProps({
     properties: {
         type: Object as PropType<Paginator<App.Data.PropertyData>>,
         required: true,
+    },
+    ads: {
+        type: Array as PropType<Ad[]>,
+        default: () => [],
+    },
+    ad_insert_after: {
+        type: Array as PropType<number[]>,
+        default: () => [],
     },
     can_create: {
         type: Boolean,
@@ -70,6 +89,41 @@ const props = defineProps({
     },
 });
 const { t } = useI18n();
+
+const listItems = computed((): ListItem[] => {
+    const properties = props.properties.data;
+    const ads = props.ads;
+
+    if (ads.length === 0 || properties.length === 0) {
+        return properties.map((property) => ({
+            type: 'property' as const,
+            property,
+        }));
+    }
+
+    const insertAfter = new Set(props.ad_insert_after);
+    const from = props.properties.from ?? 1;
+    const items: ListItem[] = [];
+    let adCursor = Math.floor((from - 1) / 5);
+
+    properties.forEach((property, index) => {
+        items.push({ type: 'property', property });
+
+        if (!insertAfter.has(index)) {
+            return;
+        }
+
+        const ad = ads[adCursor % ads.length];
+        items.push({
+            type: 'ad',
+            ad,
+            key: `ad-${ad.id}-${from + index}`,
+        });
+        adCursor += 1;
+    });
+
+    return items;
+});
 
 const activeView = ref<ViewModeValue>(props.filters.view ?? ViewMode.List);
 const showFilters = ref(true);
@@ -246,11 +300,13 @@ watch(activeView, () => {
     <div
         class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
     >
-        <PropertyCard
-            v-for="property in properties.data"
-            :key="property.id"
-            :property="property"
-        />
+        <template v-for="item in listItems" :key="item.type === 'property' ? item.property.id : item.key">
+            <PropertyCard
+                v-if="item.type === 'property'"
+                :property="item.property"
+            />
+            <AdCard v-else :ad="item.ad" />
+        </template>
     </div>
 
     <PaginationNav

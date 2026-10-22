@@ -19,12 +19,14 @@ use App\Jobs\TranslatePropertyAdditionalInfo;
 use App\Mail\PropertyListingStatusChange;
 use App\Mail\PropertyReportedTaken;
 use App\Mail\PropertyReportedTivuchFee;
+use App\Models\Advertisement;
 use App\Models\Neighbourhood;
 use App\Models\Property;
 use App\Models\Street;
 use App\Models\TempUpload;
 use App\Services\MapViewRecorder;
 use App\Services\PropertyStatRecorder;
+use App\Support\PropertyListAds;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -177,6 +179,11 @@ class PropertyController extends Controller
 
         return Inertia::render('properties/List', [
             'properties' => $properties,
+            'ads' => Advertisement::activeForList(),
+            'ad_insert_after' => PropertyListAds::insertAfterIndexes(
+                $properties->count(),
+                $properties->firstItem() ?? 1,
+            ),
             'can_create' => Auth::check(),
             'subscription_otp_pending' => session('subscription_otp_pending'),
             'filters' => [

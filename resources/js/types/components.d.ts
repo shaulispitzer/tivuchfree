@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AdCard: typeof import('./../components/AdCard.vue')['default']
     Alert: typeof import('./../components/ui/alert/Alert.vue')['default']
     AlertDescription: typeof import('./../components/ui/alert/AlertDescription.vue')['default']
     AlertError: typeof import('./../components/AlertError.vue')['default']
