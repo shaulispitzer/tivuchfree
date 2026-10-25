@@ -11,7 +11,7 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 beforeEach(function () {
-    Storage::fake('public');
+    Storage::fake(Advertisement::diskName());
 });
 
 test('admins can create update and delete advertisements', function () {
@@ -32,7 +32,7 @@ test('admins can create update and delete advertisements', function () {
     expect($advertisement->position)->toBe(1)
         ->and($advertisement->url)->toBe('https://example.com/promo')
         ->and($advertisement->is_active)->toBeTrue();
-    Storage::disk('public')->assertExists($advertisement->image_path);
+    Storage::disk(Advertisement::diskName())->assertExists($advertisement->image_path);
 
     $updateResponse = actingAs($admin)->put(route('admin.ads.update', $advertisement), [
         'position' => 2,
@@ -107,6 +107,27 @@ test('non admins cannot manage advertisements', function () {
 
     actingAs($user)->delete(route('admin.ads.destroy', $advertisement))
         ->assertForbidden();
+});
+
+test('advertisement images are stored on the media library disk', function () {
+    config()->set('media-library.disk_name', 's3');
+    Storage::fake('s3');
+
+    /** @var User $admin */
+    $admin = User::factory()->admin()->create();
+
+    actingAs($admin)->post(route('admin.ads.store'), [
+        'position' => 1,
+        'url' => 'https://example.com/promo',
+        'is_active' => true,
+        'image' => UploadedFile::fake()->image('ad.jpg', 1200, 800),
+    ])->assertRedirect();
+
+    $advertisement = Advertisement::query()->first();
+
+    expect($advertisement)->not->toBeNull();
+    Storage::disk('s3')->assertExists($advertisement->image_path);
+    expect($advertisement->imageUrl())->toStartWith(Storage::disk('s3')->url(''));
 });
 
 test('property list includes only active ads ordered by position', function () {

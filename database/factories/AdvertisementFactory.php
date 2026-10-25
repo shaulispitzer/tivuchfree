@@ -20,7 +20,7 @@ class AdvertisementFactory extends Factory
     public function definition(): array
     {
         $image = UploadedFile::fake()->image('ad.jpg', 1200, 800);
-        $path = Storage::disk('public')->putFile('ads', $image);
+        $path = Storage::disk(Advertisement::diskName())->putFile('ads', $image);
 
         return [
             'position' => Advertisement::MIN_POSITION,

@@ -40,10 +40,15 @@ class Advertisement extends Model
         ];
     }
 
+    public static function diskName(): string
+    {
+        return (string) config('media-library.disk_name', 'public');
+    }
+
     public function imageUrl(): string
     {
         /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = Storage::disk(static::diskName());
 
         return $disk->url($this->image_path);
     }
@@ -77,8 +82,10 @@ class Advertisement extends Model
 
     public function deleteImage(): void
     {
-        if ($this->image_path !== '' && Storage::disk('public')->exists($this->image_path)) {
-            Storage::disk('public')->delete($this->image_path);
+        $disk = Storage::disk(static::diskName());
+
+        if ($this->image_path !== '' && $disk->exists($this->image_path)) {
+            $disk->delete($this->image_path);
         }
     }
 }

@@ -54,7 +54,7 @@ class AdvertisementController extends Controller
 
     public function store(AdvertisementStoreRequest $request): RedirectResponse
     {
-        $path = $request->file('image')->store('ads', 'public');
+        $path = $request->file('image')->store('ads', Advertisement::diskName());
 
         $advertisement = Advertisement::create([
             'position' => $request->integer('position'),
@@ -96,7 +96,7 @@ class AdvertisementController extends Controller
 
         if ($request->hasFile('image')) {
             $advertisement->deleteImage();
-            $data['image_path'] = $request->file('image')->store('ads', 'public');
+            $data['image_path'] = $request->file('image')->store('ads', Advertisement::diskName());
         }
 
         $advertisement->update($data);
