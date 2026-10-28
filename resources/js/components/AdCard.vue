@@ -26,12 +26,12 @@ const { t } = useI18n();
         class="block h-full cursor-pointer focus-visible:outline-none"
     >
         <article
-            class="relative h-full min-h-80 overflow-hidden rounded-xl border border-input bg-card shadow-sm transition hover:-translate-y-0.5 hover:scale-101 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary/40"
+            class="relative h-full min-h-80 overflow-hidden rounded-xl border border-input bg-muted shadow-sm transition hover:-translate-y-0.5 hover:scale-101 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary/40"
         >
             <img
                 :src="ad.image_url"
                 :alt="t('common.adImageAlt')"
-                class="absolute inset-0 size-full object-cover"
+                class="absolute inset-0 size-full object-contain object-center"
                 loading="lazy"
             />
             <span
